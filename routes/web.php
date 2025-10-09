@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Home page
 Route::get('/', function () {
     return view('welcome'); // or 'home' if that’s your file name
 })->name('home');
