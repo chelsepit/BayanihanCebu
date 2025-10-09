@@ -15,7 +15,6 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Home page
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
@@ -35,23 +34,3 @@ Route::get('/fundraisers', function () {
     return view('fundraisers.index');
 })->name('fundraisers');
 
-// Keep using auth.check instead of auth
-Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
-    Route::get('/city/dashboard', [CityDashboardController::class, 'index'])->name('city.dashboard');
-});
-
-Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
-    Route::get('/barangay/dashboard', [BarangayDashboardController::class, 'index'])->name('barangay.dashboard');
-});
-
-Route::middleware(['auth.check', 'role:resident'])->group(function () {
-    Route::get('/resident/dashboard', [ResidentDashboardController::class, 'index'])->name('resident.dashboard');
-});
-
-Route::middleware(['auth.check', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-});
-
-Route::middleware(['auth.check'])->group(function () {
-    Route::get('/api/user', [LoginController::class, 'getCurrentUser']);
-});
