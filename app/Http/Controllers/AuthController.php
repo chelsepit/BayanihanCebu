@@ -52,18 +52,17 @@ public function register(Request $request)
         'password' => 'required',
     ]);
 
-    // Find the user by email
     $user = User::where('email', $credentials['email'])->first();
 
-    // Check if user exists and password matches
     if (!$user || !Hash::check($credentials['password'], $user->password_hash)) {
         return back()->withErrors(['email' => 'Invalid email or password.']);
     }
 
-    // Store user info in session
+    // Store user info in session - MATCH LoginController format
     session([
+        'authenticated' => true,
         'user_id' => $user->user_id,
-        'role' => $user->role,
+        'user_role' => $user->role, // Changed from 'role' to 'user_role'
         'full_name' => $user->full_name,
         'barangay_id' => $user->barangay_id,
     ]);
