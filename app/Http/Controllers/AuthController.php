@@ -46,7 +46,37 @@ public function register(Request $request)
 }
 
     public function login(Request $request)
-    {
-        // login logic later
+{
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    // Find the user by email
+    $user = User::where('email', $credentials['email'])->first();
+
+    // Check if user exists and password matches
+    if (!$user || !Hash::check($credentials['password'], $user->password_hash)) {
+        return back()->withErrors(['email' => 'Invalid email or password.']);
     }
+
+    // Store user info in session
+    session([
+        'user_id' => $user->user_id,
+        'role' => $user->role,
+        'full_name' => $user->full_name,
+        'barangay_id' => $user->barangay_id,
+    ]);
+
+    // Redirect based on role
+    switch ($user->role) {
+        case 'ldrrmo':
+            return redirect()->route('city.dashboard');
+        case 'bdrrmc':
+            return redirect()->route('barangay.dashboard');
+        default:
+            return redirect()->route('resident.dashboard');
+    }
+}
+
 }
