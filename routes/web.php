@@ -8,7 +8,6 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-// Home page
 Route::get('/', function () {
     return view('welcome'); // or 'home' if that’s your file name
 })->name('home');
@@ -31,3 +30,4 @@ Route::get('/barangay/map', function () {
 Route::get('/fundraisers', function () {
     return view('fundraisers.index'); // placeholder view
 })->name('fundraisers');
+
