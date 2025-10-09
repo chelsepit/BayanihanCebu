@@ -18,7 +18,8 @@
 
         <!-- Tabs -->
         <div class="flex mb-6 border border-gray-200 rounded-lg overflow-hidden">
-            <a href="{{ route('login') }}" class="w-1/2 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 text-center">
+            <a href="{{ route('login') }}" 
+               class="w-1/2 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 text-center">
                 Staff Login
             </a>
             <button class="w-1/2 py-2 text-sm font-medium bg-white text-green-700 border-b-2 border-green-500">
@@ -32,69 +33,76 @@
             Register to access full barangay donation data
         </p>
 
-        <!-- Registration Form -->
-        <form method="POST" action="{{ route('register') }}">
+        <!-- ✅ Registration Form -->
+        <form method="POST" action="{{ route('register.post') }}">
             @csrf
 
+            <!-- Full Name -->
             <div class="mb-4">
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input type="text" id="name" name="name" required
-                       class="w-full border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required
+                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                        placeholder="Juan Dela Cruz">
+                @error('full_name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <!-- Barangay Dropdown --> <!--palihug kog edit sa backend lamat -->
-            <div class="mb-4">
-                <label for="barangay" class="block text-sm font-medium text-gray-700 mb-1">Barangay</label>
-                <select id="barangay" name="barangay" required
-                        class="w-full border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
-                    <option value="" disabled selected>Select your barangay</option>
-                    <option value="Lahug">Lahug</option>
-                    <option value="Guadalupe">Guadalupe</option>
-                    <option value="Banilad">Banilad</option>
-                    <option value="Mabolo">Mabolo</option>
-                    <option value="Capitol Site">Capitol Site</option>
-                    <option value="Talamban">Talamban</option>
-                    <option value="Basak">Basak</option>
-                    <option value="Labangon">Labangon</option>
-                    <option value="Sambag II">Sambag II</option>
-                    <option value="Luz">Luz</option>
-                </select>
-            </div>
-
+            <!-- Email -->
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input type="email" id="email" name="email" required
-                       class="w-full border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                       placeholder="juan@example.com">
+                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="juan@donortrack.ph">
+                @error('email')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
+            <!-- Password -->
             <div class="mb-4">
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input type="password" id="password" name="password" required
-                       class="w-full border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="••••••••">
+                @error('password')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-4">
+                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password
+                </label>
+                <input type="password" id="password_confirmation" name="password_confirmation" required
+                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                        placeholder="••••••••">
             </div>
 
-            <!-- Verification Info -->
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-6">
-                <p class="text-sm font-medium text-gray-700 mb-1">Verification Required</p>
-                <p class="text-xs text-gray-500">
-                    Your account will need to be verified by staff before gaining full access.
-                </p>
+            <!-- Barangay Dropdown -->
+            <div class="mb-6">
+                <label for="barangay_id" class="block text-sm font-medium text-gray-700 mb-1">Barangay</label>
+                <select id="barangay_id" name="barangay_id" required
+                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select your barangay</option>
+                    @foreach($barangays as $barangay)
+                        <option value="{{ $barangay->barangay_id }}">{{ $barangay->name }}</option>
+                    @endforeach
+                </select>
+                @error('barangay_id')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
+            <!-- Submit Button -->
             <button type="submit"
-                    class="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Register Account</span>
+                    class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2">
+                <span>Register</span>
             </button>
         </form>
 
+        <!-- Back to Home -->
         <div class="mt-4 text-center">
             <a href="{{ url('/') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to home</a>
         </div>
