@@ -18,3 +18,23 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 }
+/*
+Admin Account:
+
+Email: admin@bayanihancebu.com
+Password: admin123
+LDRRMO Account:
+
+Email: ldrrmo@cebu.gov.ph
+Password: ldrrmo123
+BDRRMC Accounts:
+
+Emails: bdrrmc.B001@bayanihancebu.com (through B005)
+Password: bdrrmc123
+Resident Accounts:
+
+Email: john.doe@example.com
+Email: jane.smith@example.com
+Email: maria.santos@example.com
+Password: resident123
+*/
