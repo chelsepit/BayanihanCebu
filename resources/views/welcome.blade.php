@@ -68,7 +68,7 @@
         <div class="container">
             <h2 class="section-title">Cebu City Barangays</h2>
             <p class="section-subtitle">Click on any barangay to view detailed donation tracking and distribution information</p>
-            
+
             <div class="map-container">
                 <div class="map-wrapper">
                     <div id="barangayMap" class="map">

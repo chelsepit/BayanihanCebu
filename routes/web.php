@@ -30,3 +30,4 @@ Route::get('/barangay/map', function () {
 Route::get('/fundraisers', function () {
     return view('fundraisers.index'); // placeholder view
 })->name('fundraisers');
+
