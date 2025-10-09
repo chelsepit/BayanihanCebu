@@ -1,19 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::get('/', function () {
     return view('welcome'); // or 'home' if that’s your file name
 })->name('home');
 
-// Login page
-Route::get('/login', function () {
-    return view('auth.login'); // create this later
-})->name('login');
 
-Route::get('/register', function () {
-    return view('auth.register'); // create this later
-})->name('register');
+
+
 
 // Donation tracking page
 Route::get('/donation/track', function () {
