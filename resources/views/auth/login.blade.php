@@ -31,11 +31,11 @@
         <p class="text-center text-gray-500 text-sm mb-6">Staff and Admin access only</p>
 
         <!-- Login Form -->
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login.post') }}">
             @csrf
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" id="email" name="email" required
+                <input   type="email" id="email" name="email" required
                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                        placeholder="staff@donortrack.ph">
             </div>
