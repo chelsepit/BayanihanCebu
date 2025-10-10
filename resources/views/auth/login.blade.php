@@ -31,6 +31,7 @@
         <p class="text-center text-gray-500 text-sm mb-6">Staff and Admin access only</p>
 
         <!-- Login Form -->
+
         <form method="POST" action="{{ route('login.post') }}">
             @csrf
             <div class="mb-4">
@@ -55,7 +56,24 @@
                      d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
                 <span>Sign In</span>
             </button>
+
+
         </form>
+
+        @if ($errors->any())
+    <div class="mt-3 rounded-lg border border-red-400 bg-red-50 text-red-700 text-sm px-4 py-3 flex items-center gap-2 animate-fade-in">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 110 14a7 7 0 010-14z" />
+        </svg>
+        <div>
+            @foreach ($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    </div>
+@endif
+
+
 
         <div class="mt-4 text-center">
             <a href="#" class="text-sm text-blue-600 hover:underline">Forgot password?</a>

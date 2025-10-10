@@ -22,53 +22,71 @@ class LoginController extends Controller
     /**
      * Handle login request
      */
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+   public function login(Request $request)
+{
+    // 1️⃣ Validate input fields
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        // Find user by email
-        $user = DB::table('users')
-            ->where('email', $request->email)
-            ->first();
+    try {
+        // 2️⃣ Find user by email
+        $user = DB::table('users')->where('email', $request->email)->first();
 
-        // Check if user exists and password is correct
-        if (!$user || !Hash::check($request->password, $user->password_hash)) {
+        if (!$user) {
             return back()->withErrors([
-                'email' => 'The provided credentials do not match our records.',
-            ])->withInput($request->only('email'));
+                'email' => 'No account found with that email.',
+            ])->withInput();
         }
 
-        // Generate remember token (session token)
+        // 3️⃣ Check password
+        if (!Hash::check($request->password, $user->password_hash)) {
+            return back()->withErrors([
+                'password' => 'Incorrect password.',
+            ])->withInput();
+        }
+
+        // 4️⃣ Check if user is active (optional but recommended)
+        if (isset($user->status) && $user->status !== 'active') {
+            return back()->withErrors([
+                'email' => 'Your account is inactive. Contact the administrator.',
+            ])->withInput();
+        }
+
+        // 5️⃣ Generate token and store session
         $rememberToken = Str::random(60);
 
-        // Update user's remember token in database
         DB::table('users')
             ->where('user_id', $user->user_id)
             ->update([
                 'remember_token' => $rememberToken,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
-        // Store user information in session
         session([
-            'user_id' => $user->user_id,
-            'user_role' => $user->role,
-            'user_name' => $user->full_name,
-            'user_email' => $user->email,
-            'barangay_id' => $user->barangay_id,
-            'remember_token' => $rememberToken,
-            'authenticated' => true
+            'user_id'       => $user->user_id,
+            'role'          => $user->role,   // ✅ fixed name
+            'user_name'     => $user->full_name,
+            'user_email'    => $user->email,
+            'barangay_id'   => $user->barangay_id,
+            'remember_token'=> $rememberToken,
+            'authenticated' => true,
         ]);
 
-        // Regenerate session to prevent fixation attacks
         $request->session()->regenerate();
 
-        // Redirect based on user role
+        // 6️⃣ Redirect by role
         return $this->redirectToDashboard($user->role);
+
+    } catch (\Exception $e) {
+        // 7️⃣ Catch unexpected errors (DB down, session issues, etc.)
+        return back()->withErrors([
+            'email' => 'An unexpected error occurred. Please try again later.',
+        ])->withInput();
     }
+}
+
 
     /**
      * Redirect to appropriate dashboard based on role
