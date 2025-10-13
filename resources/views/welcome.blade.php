@@ -335,8 +335,8 @@
         <div class="hero-overlay"></div>
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Transparent Donation Tracking for Cebu</h1>
-                <p class="hero-subtitle">Every donation tracked. Every impact measured. Building trust through blockchain transparency.</p>
+                <h1 class="hero-title">Barangays helping barangays.</h1>
+                <p class="hero-subtitle">Connecting communities through transparent aid, shared resources, and trust.</p>
                 <div class="hero-buttons">
                     <a href="{{ route('donation.track') }}" class="btn btn-primary">
                         <span class="icon">🔍</span> Track Your Donation

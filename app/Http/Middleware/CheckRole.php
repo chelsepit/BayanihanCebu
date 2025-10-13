@@ -15,7 +15,7 @@ class CheckRole
             return redirect('/login');
         }
 
-        $userRole = session('role'); // Changed from session('user_role')
+        $userRole = session('user_role'); // Changed from session('user_role')
 
         if (!in_array($userRole, $roles)) {
             abort(403, 'Unauthorized access.');
