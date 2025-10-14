@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>DonorTrack - Transparent Donation Tracking for Cebu</title>
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -669,7 +671,7 @@
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    
+
     <script>
         // Initialize map centered on Cebu City
         const map = L.map('barangayMap').setView([10.3157, 123.8854], 12);
@@ -791,7 +793,7 @@
             })
             .catch(error => {
                 console.error('Error loading map data:', error);
-                document.getElementById('recentActivity').innerHTML = 
+                document.getElementById('recentActivity').innerHTML =
                     '<li style="text-align: center; color: #ef4444; padding: 20px;">Error loading data</li>';
             });
 
@@ -809,6 +811,7 @@
             });
         });
     </script>
+    @include('partials.footer')
 
     <script src="{{ asset('js/app.js') }}"></script>
 </body>
