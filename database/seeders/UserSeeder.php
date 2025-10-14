@@ -42,7 +42,7 @@ class UserSeeder extends Seeder
         ]);
 
         // Create BDRRMC users for each barangay
-        $barangayIds = ['B001', 'B002', 'B003', 'B004', 'B005'];
+        $barangayIds = ['CC001', 'CC002', 'CC003', 'CC004', 'CC005'];
         foreach ($barangayIds as $index => $barangayId) {
             DB::table('users')->insert([
                 'user_id' => 'U' . str_pad($index + 3, 3, '0', STR_PAD_LEFT),
@@ -64,19 +64,19 @@ class UserSeeder extends Seeder
                 'user_id' => 'U008',
                 'full_name' => 'John Doe',
                 'email' => 'john.doe@example.com',
-                'barangay_id' => 'B001'
+                'barangay_id' => 'CC001'
             ],
             [
                 'user_id' => 'U009',
                 'full_name' => 'Jane Smith',
                 'email' => 'jane.smith@example.com',
-                'barangay_id' => 'B002'
+                'barangay_id' => 'CC002'
             ],
             [
                 'user_id' => 'U010',
                 'full_name' => 'Maria Santos',
                 'email' => 'maria.santos@example.com',
-                'barangay_id' => 'B003'
+                'barangay_id' => 'CC003'
             ]
         ];
 
