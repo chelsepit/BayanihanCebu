@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CityDashboardController;
 use App\Http\Controllers\BarangayDashboardController;
 use App\Http\Controllers\ResidentDashboardController;
+use App\Http\Controllers\DisasterMapController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -39,3 +40,17 @@ Route::get('/fundraisers', function () {
     return view('fundraisers.index');
 })->name('fundraisers');
 
+
+
+// Disaster Map Routes
+Route::get('/', [DisasterMapController::class, 'index'])->name('home');
+
+// Donation Routes
+Route::post('/track-donation', [DisasterMapController::class, 'trackDonation'])->name('donation.track');
+Route::get('/donate/{disaster}', [DisasterMapController::class, 'showDonateForm'])->name('disaster.donate');
+Route::post('/donate/{disaster}', [DisasterMapController::class, 'processDonation'])->name('donation.process');
+Route::get('/donation/success/{trackingCode}', [DisasterMapController::class, 'donationSuccess'])->name('donation.success');
+
+// Statistics API
+Route::get('/api/statistics', [DisasterMapController::class, 'statistics'])->name('api.statistics');
+Route::get('/api/barangays', [DisasterMapController::class, 'apiBarangays'])->name('api.barangays');

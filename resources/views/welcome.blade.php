@@ -424,6 +424,213 @@
         </div>
     </section>
 
+<!-- Live Disaster Map Section -->
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+    
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Live Disaster Map of Cebu</h2>
+        <p class="text-gray-600">Real-time status of barangays across Cebu City</p>
+        
+        <!-- Legend -->
+        <div class="flex justify-center items-center gap-4 mt-4 flex-wrap">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                <span class="text-sm text-gray-700">Safe</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                <span class="text-sm text-gray-700">Warning</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                <span class="text-sm text-gray-700">Critical</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="text-sm text-gray-700">Emergency</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ session('error') }}</span>
+        </div>
+    @endif
+
+    <!-- Disaster Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        
+        @foreach($barangays as $barangay)
+            @php
+                $disaster = $barangay->currentDisaster;
+                $statusColors = [
+                    'safe' => 'green',
+                    'warning' => 'yellow',
+                    'critical' => 'orange',
+                    'emergency' => 'red',
+                ];
+                $color = $statusColors[$barangay->status] ?? 'gray';
+            @endphp
+
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            {{ $barangay->name }}
+                        </h3>
+                        <span class="px-3 py-1 bg-{{ $color }}-100 text-{{ $color }}-800 text-xs font-semibold rounded-full">
+                            {{ ucfirst($barangay->status) }}
+                        </span>
+                    </div>
+
+                    @if($disaster)
+                        <!-- Disaster Information -->
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Affected Families:</span>
+                                <span class="font-semibold text-gray-800">{{ number_format($disaster->affected_families) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Donations Received:</span>
+                                <span class="font-semibold text-green-600">₱{{ number_format($disaster->total_donations, 2) }}</span>
+                            </div>
+                        </div>
+
+                        @if($disaster->urgentNeeds->count() > 0)
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-500 mb-2">Urgent Needs:</p>
+                                <div class="flex gap-2 flex-wrap">
+                                    @foreach($disaster->urgentNeeds as $need)
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                                            {{ ucfirst($need->type) }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <a href="{{ route('disaster.donate', $disaster->id) }}" class="block w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors text-center">
+                            Donate to {{ $barangay->name }}
+                        </a>
+                    @else
+                        <!-- Safe Status -->
+                        <p class="text-gray-600 text-sm mb-4">All clear - no active disasters</p>
+                    @endif
+                </div>
+            </div>
+        @endforeach
+
+    </div>
+
+    <!-- Track Your Donation Section -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-8 mb-12">
+        <div class="text-center max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Track Your Donation</h3>
+            <p class="text-gray-600 mb-6">Enter your tracking code to see the status and distribution details of your donation</p>
+            
+            <form action="{{ route('donation.track') }}" method="POST" class="flex gap-3 max-w-md mx-auto">
+                @csrf
+                <input 
+                    type="text" 
+                    name="tracking_code"
+                    placeholder="Enter Tracking Code (e.g., 1015-1430-48231)" 
+                    class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                >
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
+                    Track
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Why Trust BayanihanCebu Section -->
+    <div class="text-center mb-8">
+        <h3 class="text-2xl font-bold text-gray-800 mb-8">Why Trust BayanihanCebu?</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Blockchain Verified -->
+            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold text-gray-800 mb-3">Blockchain Verified</h4>
+                <p class="text-gray-600">Every transaction is recorded on the Lisk Blockchain for complete transparency</p>
+            </div>
+
+            <!-- Direct to Barangays -->
+            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold text-gray-800 mb-3">Direct to Barangays</h4>
+                <p class="text-gray-600">Donations go directly to affected communities, managed by local BDRMC officers</p>
+            </div>
+
+            <!-- Real-Time Tracking -->
+            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                </div>
+                <h4 class="text-xl font-semibold text-gray-800 mb-3">Real-Time Tracking</h4>
+                <p class="text-gray-600">See exactly how your donation is being used with live updates and receipts</p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+/* Optional: Add smooth hover animations */
+.hover\:shadow-lg {
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Optional: Add pulse animation for emergency cards */
+@keyframes pulse-emergency {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* You can add this class to emergency status badges if you want them to pulse */
+.pulse-emergency {
+    animation: pulse-emergency 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
+
+
+
     {{-- Footer --}}
     <footer class="footer">
         <div class="container">
