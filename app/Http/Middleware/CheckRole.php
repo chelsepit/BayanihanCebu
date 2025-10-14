@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -15,7 +16,8 @@ class CheckRole
             return redirect('/login');
         }
 
-        $userRole = session('user_role'); // Changed from session('user_role')
+        // Use 'role' from session (matches LoginController)
+        $userRole = session('role');
 
         if (!in_array($userRole, $roles)) {
             abort(403, 'Unauthorized access.');
