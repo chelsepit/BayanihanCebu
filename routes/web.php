@@ -24,6 +24,11 @@ Route::get('/barangay/map', [BarangayMapController::class, 'index'])->name('bara
 Route::get('/api/barangay-map-data', [BarangayMapController::class, 'getMapData']);
 Route::get('/api/barangay/{barangayId}', [BarangayMapController::class, 'getBarangayDetails']);
 
+Route::get('/city/dashboard', [CityDashboardController::class, 'index'])->name('city.dashboard');
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+Route::get('/barangay/dashboard', [BarangayDashboardController::class, 'index'])->name('barangay.dashboard');
+Route::get('/resident/dashboard', [ResidentDashboardController::class, 'index'])->name('resident.dashboard');
+
 // Donation tracking page
 Route::get('/donation/track', function () {
     return view('donation.track');
