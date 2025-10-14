@@ -2,57 +2,85 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Barangay extends Model
 {
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'barangays';
+    use HasFactory;
 
-    /**
-     * The primary key associated with the table.
-     */
-    protected $primaryKey = 'barangay_id';
-
-    /**
-     * Indicates if the IDs are auto-incrementing.
-     */
-    public $incrementing = false;
-
-    /**
-     * The data type of the primary key.
-     */
-    protected $keyType = 'string';
-
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
-        'barangay_id',
         'name',
-        'city',
-        'district',
+        'slug',
         'latitude',
         'longitude',
-        'disaster_status',
-        'contact_person',
-        'contact_phone',
-        'contact_email',
-        'affected_families',
-        'needs_summary',
-        'blockchain_address',
+        'status',
+        'description',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
-    protected $casts = [
-        'latitude' => 'decimal:6',
-        'longitude' => 'decimal:6',
-        'affected_families' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($barangay) {
+            if (empty($barangay->slug)) {
+                $barangay->slug = Str::slug($barangay->name);
+            }
+        });
+    }
+
+    public function disasters()
+    {
+        return $this->hasMany(Disaster::class);
+    }
+
+    public function activeDisasters()
+    {
+        return $this->hasMany(Disaster::class)->where('is_active', true);
+    }
+
+    public function currentDisaster()
+    {
+        return $this->hasOne(Disaster::class)
+            ->where('is_active', true)
+            ->latest();
+    }
+
+    public function hasActiveDisaster()
+    {
+        return $this->activeDisasters()->exists();
+    }
+
+    public function getTotalAffectedFamiliesAttribute()
+    {
+        return $this->activeDisasters()->sum('affected_families');
+    }
+
+    public function getTotalDonationsAttribute()
+    {
+        return $this->activeDisasters()->sum('total_donations');
+    }
+
+    public function updateStatus()
+    {
+        $activeDisaster = $this->currentDisaster()->first();
+        
+        if (!$activeDisaster) {
+            $this->update(['status' => 'safe']);
+            return;
+        }
+
+        $this->update(['status' => $activeDisaster->severity]);
+    }
+
+    public function scopeWithActiveDisasters($query)
+    {
+        return $query->whereHas('activeDisasters');
+    }
+
+    public function scopeSafe($query)
+    {
+        return $query->where('status', 'safe');
+    }
 }

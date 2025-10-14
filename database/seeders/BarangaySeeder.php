@@ -3,297 +3,153 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Barangay;
+use App\Models\Disaster;
+use App\Models\UrgentNeed;
+use App\Models\Donation;
 
 class BarangaySeeder extends Seeder
 {
-    /**
-     * Seed barangays from multiple cities/municipalities in Cebu Province
-     * Carl's Task: Day 1-2 Backend Foundation
-     *
-     * ID Format: {CITY_CODE}{NUMBER}
-     * - CC = Cebu City
-     * - MC = Mandaue City
-     * - LL = Lapu-Lapu City
-     * - TC = Talisay City
-     * - BC = Bogo City
-     */
     public function run(): void
     {
+        // Create Barangays
         $barangays = [
-            // ========== CEBU CITY (CC001-CC005) ==========
-            [
-                'barangay_id' => 'CC001',
-                'name' => 'Lahug',
-                'city' => 'Cebu City',
-                'district' => 'District 1',
-                'latitude' => 10.3321,
-                'longitude' => 123.8942,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Maria Santos',
-                'contact_phone' => '+63 917 123 4567',
-                'contact_email' => 'lahug.bdrrmc@cebu.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'CC002',
-                'name' => 'Mabolo',
-                'city' => 'Cebu City',
-                'district' => 'District 1',
-                'latitude' => 10.3259,
-                'longitude' => 123.9036,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Juan Dela Cruz',
-                'contact_phone' => '+63 917 234 5678',
-                'contact_email' => 'mabolo.bdrrmc@cebu.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'CC003',
-                'name' => 'Guadalupe',
-                'city' => 'Cebu City',
-                'district' => 'District 2',
-                'latitude' => 10.3114,
-                'longitude' => 123.8819,
-                'disaster_status' => 'warning',
-                'contact_person' => 'Pedro Reyes',
-                'contact_phone' => '+63 917 345 6789',
-                'contact_email' => 'guadalupe.bdrrmc@cebu.gov.ph',
-                'affected_families' => 25,
-                'needs_summary' => 'Flood-prone area, needs sandbags and relief goods',
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'CC004',
-                'name' => 'Banilad',
-                'city' => 'Cebu City',
-                'district' => 'District 1',
-                'latitude' => 10.3428,
-                'longitude' => 123.9144,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Rosa Garcia',
-                'contact_phone' => '+63 917 456 7890',
-                'contact_email' => 'banilad.bdrrmc@cebu.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'CC005',
-                'name' => 'Talamban',
-                'city' => 'Cebu City',
-                'district' => 'District 2',
-                'latitude' => 10.3572,
-                'longitude' => 123.9144,
-                'disaster_status' => 'critical',
-                'contact_person' => 'Carlos Mendoza',
-                'contact_phone' => '+63 917 567 8901',
-                'contact_email' => 'talamban.bdrrmc@cebu.gov.ph',
-                'affected_families' => 150,
-                'needs_summary' => 'Fire incident, urgent need for temporary shelter and food',
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            ['name' => 'Apas', 'status' => 'safe'],
+            ['name' => 'Basak Pardo', 'status' => 'safe'],
+            ['name' => 'Basak San Nicolas', 'status' => 'warning'],
+            ['name' => 'Buasay', 'status' => 'safe'],
+            ['name' => 'Capitol Site', 'status' => 'safe'],
+            ['name' => 'Mabolo', 'status' => 'safe'],
+            ['name' => 'Tisa', 'status' => 'safe'],
+            ['name' => 'Guadalupe', 'status' => 'emergency'],
+            ['name' => 'Bambad', 'status' => 'warning'],
+            ['name' => 'Talamban', 'status' => 'warning'],
+            ['name' => 'Lahug', 'status' => 'critical'],
+        ];
 
-            // ========== MANDAUE CITY (MC001-MC003) ==========
-            [
-                'barangay_id' => 'MC001',
-                'name' => 'Centro',
-                'city' => 'Mandaue City',
-                'district' => 'District 1',
-                'latitude' => 10.3237,
-                'longitude' => 123.9225,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Linda Torres',
-                'contact_phone' => '+63 918 111 2222',
-                'contact_email' => 'centro.bdrrmc@mandaue.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'MC002',
-                'name' => 'Basak',
-                'city' => 'Mandaue City',
-                'district' => 'District 2',
-                'latitude' => 10.3398,
-                'longitude' => 123.9267,
-                'disaster_status' => 'warning',
-                'contact_person' => 'Antonio Cruz',
-                'contact_phone' => '+63 918 222 3333',
-                'contact_email' => 'basak.bdrrmc@mandaue.gov.ph',
-                'affected_families' => 35,
-                'needs_summary' => 'Flooding issues, needs water pumps and sanitation kits',
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'MC003',
-                'name' => 'Alang-Alang',
-                'city' => 'Mandaue City',
-                'district' => 'District 1',
-                'latitude' => 10.3519,
-                'longitude' => 123.9441,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Elena Ramos',
-                'contact_phone' => '+63 918 333 4444',
-                'contact_email' => 'alangalang.bdrrmc@mandaue.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        foreach ($barangays as $barangayData) {
+            $barangay = Barangay::create($barangayData);
 
-            // ========== LAPU-LAPU CITY (LL001-LL003) ==========
-            [
-                'barangay_id' => 'LL001',
-                'name' => 'Poblacion',
-                'city' => 'Lapu-Lapu City',
-                'district' => 'District 1',
-                'latitude' => 10.3103,
-                'longitude' => 123.9494,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Roberto Silva',
-                'contact_phone' => '+63 919 111 2222',
-                'contact_email' => 'poblacion.bdrrmc@lacity.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'LL002',
-                'name' => 'Mactan',
-                'city' => 'Lapu-Lapu City',
-                'district' => 'District 2',
-                'latitude' => 10.3122,
-                'longitude' => 123.9819,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Carmen Lopez',
-                'contact_phone' => '+63 919 222 3333',
-                'contact_email' => 'mactan.bdrrmc@lacity.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'LL003',
-                'name' => 'Basak',
-                'city' => 'Lapu-Lapu City',
-                'district' => 'District 1',
-                'latitude' => 10.3047,
-                'longitude' => 123.9553,
-                'disaster_status' => 'emergency',
-                'contact_person' => 'Fernando Diaz',
-                'contact_phone' => '+63 919 333 4444',
-                'contact_email' => 'basak.bdrrmc@lacity.gov.ph',
-                'affected_families' => 320,
-                'needs_summary' => 'Typhoon damage, urgent need for food, water, medical supplies',
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            // Create disasters for barangays with active status
+            if ($barangayData['status'] !== 'safe') {
+                $this->createDisasterForBarangay($barangay, $barangayData['status']);
+            }
+        }
+    }
 
-            // ========== TALISAY CITY (TC001-TC002) ==========
-            [
-                'barangay_id' => 'TC001',
-                'name' => 'Poblacion',
-                'city' => 'Talisay City',
-                'district' => 'District 1',
-                'latitude' => 10.2448,
-                'longitude' => 123.8492,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Gloria Fernandez',
-                'contact_phone' => '+63 920 111 2222',
-                'contact_email' => 'poblacion.bdrrmc@talisay.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+    private function createDisasterForBarangay($barangay, $severity)
+    {
+        $disasterData = [
+            'warning' => [
+                'Basak San Nicolas' => [
+                    'type' => 'flood',
+                    'affected_families' => 50,
+                    'total_donations' => 50000,
+                    'needs' => ['food'],
+                ],
+                'Bambad' => [
+                    'type' => 'flood',
+                    'affected_families' => 45,
+                    'total_donations' => 23150,
+                    'needs' => ['food', 'water'],
+                ],
+                'Talamban' => [
+                    'type' => 'landslide',
+                    'affected_families' => 32,
+                    'total_donations' => 82000,
+                    'needs' => ['food'],
+                ],
             ],
-            [
-                'barangay_id' => 'TC002',
-                'name' => 'Tabunok',
-                'city' => 'Talisay City',
-                'district' => 'District 2',
-                'latitude' => 10.2636,
-                'longitude' => 123.8511,
-                'disaster_status' => 'warning',
-                'contact_person' => 'Miguel Santos',
-                'contact_phone' => '+63 920 222 3333',
-                'contact_email' => 'tabunok.bdrrmc@talisay.gov.ph',
-                'affected_families' => 18,
-                'needs_summary' => 'Coastal flooding risk, needs early warning system',
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+            'critical' => [
+                'Lahug' => [
+                    'type' => 'fire',
+                    'affected_families' => 120,
+                    'total_donations' => 84420,
+                    'needs' => ['medical', 'shelter'],
+                ],
             ],
-
-            // ========== BOGO CITY (BC001-BC002) ==========
-            [
-                'barangay_id' => 'BC001',
-                'name' => 'Poblacion',
-                'city' => 'Bogo City',
-                'district' => 'District 1',
-                'latitude' => 11.0519,
-                'longitude' => 124.0069,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Ana Martinez',
-                'contact_phone' => '+63 921 111 2222',
-                'contact_email' => 'poblacion.bdrrmc@bogo.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'barangay_id' => 'BC002',
-                'name' => 'Bungtod',
-                'city' => 'Bogo City',
-                'district' => 'District 2',
-                'latitude' => 11.0583,
-                'longitude' => 124.0139,
-                'disaster_status' => 'safe',
-                'contact_person' => 'Sofia Ramirez',
-                'contact_phone' => '+63 921 222 3333',
-                'contact_email' => 'bungtod.bdrrmc@bogo.gov.ph',
-                'affected_families' => 0,
-                'needs_summary' => null,
-                'blockchain_address' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+            'emergency' => [
+                'Guadalupe' => [
+                    'type' => 'flood',
+                    'affected_families' => 250,
+                    'total_donations' => 125000,
+                    'needs' => ['food', 'water', 'medical'],
+                ],
             ],
         ];
 
-        DB::table('barangays')->insert($barangays);
+        $data = $disasterData[$severity][$barangay->name] ?? null;
 
-        $this->command->info('✅ 15 barangays seeded across Cebu Province:');
-        $this->command->info('   - Cebu City: 5 barangays (CC001-CC005)');
-        $this->command->info('   - Mandaue City: 3 barangays (MC001-MC003)');
-        $this->command->info('   - Lapu-Lapu City: 3 barangays (LL001-LL003)');
-        $this->command->info('   - Talisay City: 2 barangays (TC001-TC002)');
-        $this->command->info('   - Bogo City: 2 barangays (BC001-BC002)');
+        if (!$data) {
+            return;
+        }
+
+        $disaster = Disaster::create([
+            'barangay_id' => $barangay->id,
+            'title' => ucfirst($data['type']) . ' in ' . $barangay->name,
+            'description' => 'Active ' . $data['type'] . ' disaster affecting the community.',
+            'type' => $data['type'],
+            'severity' => $severity,
+            'affected_families' => $data['affected_families'],
+            'total_donations' => $data['total_donations'],
+            'is_active' => true,
+            'started_at' => now()->subDays(rand(1, 7)),
+        ]);
+
+        // Create urgent needs
+        foreach ($data['needs'] as $need) {
+            UrgentNeed::create([
+                'disaster_id' => $disaster->id,
+                'type' => $need,
+                'quantity_needed' => rand(50, 200),
+                'unit' => $this->getUnitForNeedType($need),
+                'quantity_fulfilled' => rand(10, 50),
+                'is_fulfilled' => false,
+            ]);
+        }
+
+        // Create some sample donations
+        for ($i = 0; $i < rand(3, 8); $i++) {
+            Donation::create([
+                'disaster_id' => $disaster->id,
+                'amount' => rand(1000, 50000),
+                'donation_type' => 'monetary',
+                'status' => ['confirmed', 'distributed'][rand(0, 1)],
+                'transaction_hash' => '0x' . bin2hex(random_bytes(32)),
+                'donor_name' => $this->getRandomDonorName(),
+                'donor_email' => 'donor' . rand(1000, 9999) . '@example.com',
+                'is_anonymous' => rand(0, 1),
+                'distributed_at' => rand(0, 1) ? now()->subDays(rand(1, 5)) : null,
+            ]);
+        }
+    }
+
+    private function getUnitForNeedType($type)
+    {
+        return match($type) {
+            'food' => 'kg',
+            'water' => 'liters',
+            'medical' => 'kits',
+            'shelter' => 'tents',
+            'clothing' => 'pieces',
+            'hygiene' => 'kits',
+            default => 'units',
+        };
+    }
+
+    private function getRandomDonorName()
+    {
+        $names = [
+            'Juan Dela Cruz',
+            'Maria Santos',
+            'Jose Garcia',
+            'Ana Reyes',
+            'Pedro Martinez',
+            'Carmen Lopez',
+            'Miguel Torres',
+            'Sofia Rivera',
+        ];
+
+        return $names[array_rand($names)];
     }
 }
