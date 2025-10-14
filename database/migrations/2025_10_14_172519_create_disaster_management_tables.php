@@ -11,20 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barangays', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->enum('status', ['safe', 'warning', 'critical', 'emergency'])->default('safe');
-            $table->text('description')->nullable();
-            $table->timestamps();
+        // Add missing columns to existing barangays table
+        Schema::table('barangays', function (Blueprint $table) {
+            $table->string('slug')->unique()->nullable()->after('name');
+            $table->enum('status', ['safe', 'warning', 'critical', 'emergency'])->default('safe')->after('disaster_status');
+            $table->text('description')->nullable()->after('needs_summary');
         });
 
         Schema::create('disasters', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('barangay_id')->constrained()->onDelete('cascade');
+            $table->string('barangay_id', 10);
+            $table->foreign('barangay_id')->references('barangay_id')->on('barangays')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
             $table->enum('type', ['flood', 'fire', 'earthquake', 'typhoon', 'landslide', 'other'])->default('other');
@@ -77,6 +74,10 @@ return new class extends Migration
         Schema::dropIfExists('donations');
         Schema::dropIfExists('urgent_needs');
         Schema::dropIfExists('disasters');
-        Schema::dropIfExists('barangays');
+
+        // Remove added columns from barangays table
+        Schema::table('barangays', function (Blueprint $table) {
+            $table->dropColumn(['slug', 'status', 'description']);
+        });
     }
 };

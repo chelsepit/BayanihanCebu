@@ -12,19 +12,19 @@ class BarangaySeeder extends Seeder
 {
     public function run(): void
     {
-        // Create Barangays
+        // Create Barangays with specific IDs for the first few (for user seeder compatibility)
         $barangays = [
-            ['name' => 'Apas', 'status' => 'safe'],
-            ['name' => 'Basak Pardo', 'status' => 'safe'],
-            ['name' => 'Basak San Nicolas', 'status' => 'warning'],
-            ['name' => 'Buasay', 'status' => 'safe'],
-            ['name' => 'Capitol Site', 'status' => 'safe'],
-            ['name' => 'Mabolo', 'status' => 'safe'],
-            ['name' => 'Tisa', 'status' => 'safe'],
-            ['name' => 'Guadalupe', 'status' => 'emergency'],
-            ['name' => 'Bambad', 'status' => 'warning'],
-            ['name' => 'Talamban', 'status' => 'warning'],
-            ['name' => 'Lahug', 'status' => 'critical'],
+            ['barangay_id' => 'CC001', 'name' => 'Apas', 'city' => 'Cebu City', 'status' => 'safe'],
+            ['barangay_id' => 'CC002', 'name' => 'Basak Pardo', 'city' => 'Cebu City', 'status' => 'safe'],
+            ['barangay_id' => 'CC003', 'name' => 'Basak San Nicolas', 'city' => 'Cebu City', 'status' => 'warning'],
+            ['barangay_id' => 'CC004', 'name' => 'Buasay', 'city' => 'Cebu City', 'status' => 'safe'],
+            ['barangay_id' => 'CC005', 'name' => 'Capitol Site', 'city' => 'Cebu City', 'status' => 'safe'],
+            ['name' => 'Mabolo', 'city' => 'Cebu City', 'status' => 'safe'],
+            ['name' => 'Tisa', 'city' => 'Cebu City', 'status' => 'safe'],
+            ['name' => 'Guadalupe', 'city' => 'Cebu City', 'status' => 'emergency'],
+            ['name' => 'Bambad', 'city' => 'Cebu City', 'status' => 'warning'],
+            ['name' => 'Talamban', 'city' => 'Cebu City', 'status' => 'warning'],
+            ['name' => 'Lahug', 'city' => 'Cebu City', 'status' => 'critical'],
         ];
 
         foreach ($barangays as $barangayData) {
@@ -85,7 +85,7 @@ class BarangaySeeder extends Seeder
         }
 
         $disaster = Disaster::create([
-            'barangay_id' => $barangay->id,
+            'barangay_id' => $barangay->barangay_id,
             'title' => ucfirst($data['type']) . ' in ' . $barangay->name,
             'description' => 'Active ' . $data['type'] . ' disaster affecting the community.',
             'type' => $data['type'],
@@ -112,6 +112,7 @@ class BarangaySeeder extends Seeder
         for ($i = 0; $i < rand(3, 8); $i++) {
             Donation::create([
                 'disaster_id' => $disaster->id,
+                'tracking_code' => 'DN' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 10)),
                 'amount' => rand(1000, 50000),
                 'donation_type' => 'monetary',
                 'status' => ['confirmed', 'distributed'][rand(0, 1)],

@@ -95,13 +95,13 @@ class LoginController extends Controller
     {
         switch ($role) {
             case 'admin':
-                return redirect()->intended('/admin/dashboard');
+                return redirect('/admin/dashboard');
             case 'ldrrmo':
-                return redirect()->intended('/city/dashboard');
+                return redirect('/city/dashboard');
             case 'bdrrmc':
-                return redirect()->intended('/barangay/dashboard');
+                return redirect('/barangay/dashboard');
             case 'resident':
-                return redirect()->intended('/resident/dashboard');
+                return redirect('/resident/dashboard');
             default:
                 return redirect('/');
         }

@@ -43,7 +43,7 @@ class ResourceNeedSeeder extends Seeder
                 'status' => 'pending',
             ],
             [
-                'barangay_id' => 'MC001',
+                'barangay_id' => 'CC003',
                 'category' => 'shelter',
                 'description' => 'Tarpaulins and emergency tents',
                 'quantity' => '30 tarpaulins, 10 tents',
