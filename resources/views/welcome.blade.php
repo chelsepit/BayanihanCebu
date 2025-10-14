@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>DonorTrack - Transparent Donation Tracking for Cebu</title>
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Google Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
     <style>
         /* Map specific styles */
@@ -424,45 +430,9 @@
         </div>
     </section>
 
-    {{-- Footer --}}
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>About</h4>
-                    <p>DonorTrack is a blockchain-based transparent donation platform, ensuring accountability and impact.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Quick Links</h4>
-                    <ul>
-                       <li><a href="#map">Barangay Map</a></li>
-                        <li><a href="{{ route('donation.track') }}">Track Donation</a></li>
-                        <li><a href="{{ route('fundraisers') }}">Fundraisers</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Connect</h4>
-                    <p>Email: info@donortrack.ph</p>
-                    <p>Phone: +63 32 123 4567</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 DonorTrack. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    
+
     <script>
         // Initialize map centered on Cebu City
         const map = L.map('barangayMap').setView([10.3157, 123.8854], 12);
@@ -584,7 +554,7 @@
             })
             .catch(error => {
                 console.error('Error loading map data:', error);
-                document.getElementById('recentActivity').innerHTML = 
+                document.getElementById('recentActivity').innerHTML =
                     '<li style="text-align: center; color: #ef4444; padding: 20px;">Error loading data</li>';
             });
 
@@ -602,6 +572,7 @@
             });
         });
     </script>
+    @include('partials.footer')
 
     <script src="{{ asset('js/app.js') }}"></script>
 </body>
