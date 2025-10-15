@@ -4,52 +4,425 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>DonorTrack - Transparent Donation Tracking for Cebu</title>
-
+    <title>BayanihanCebu - Transparent Disaster Relief for Cebu</title>
+    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+    <script src="{{ asset('js/simple-realtime.js') }}"></script>
     <style>
-        /* Map specific styles */
-        .barangay-section {
-            padding: 60px 0;
-            background: #f9fafb;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .section-title {
-            font-size: 36px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 12px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
             color: #1f2937;
         }
 
-        .section-subtitle {
-            text-align: center;
-            color: #6b7280;
-            font-size: 18px;
-            margin-bottom: 40px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        .map-container {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px;
-            max-width: 1400px;
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 60px 20px 80px;
+            position: relative;
+        }
+
+        .hero-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 13px;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .sign-in-btn {
+            background: white;
+            color: #1e40af;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .sign-in-btn:hover {
+            background: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        .hero-content {
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        .map-wrapper {
+        .hero-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .hero-text h2 {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-donate {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-donate:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-track {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-track:hover {
+            background: white;
+            color: #1e40af;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .blockchain-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #10b981;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* Map Section */
+        .map-section {
+            padding: 80px 20px;
+            background: #f9fafb;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-header h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            font-size: 18px;
+            color: #6b7280;
+        }
+
+        .status-legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .legend-dot.safe { background: #10b981; }
+        .legend-dot.warning { background: #f59e0b; }
+        .legend-dot.critical { background: #f97316; }
+        .legend-dot.emergency { background: #ef4444; }
+
+        /* Barangay Cards Grid */
+        .barangay-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+        }
+
+        .barangay-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .barangay-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .barangay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .barangay-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.safe {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.critical {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .status-badge.emergency {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .barangay-info {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .barangay-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-top: 1px solid #f3f4f6;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-item-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .urgent-needs {
+            margin-bottom: 15px;
+        }
+
+        .urgent-needs-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .needs-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .need-tag {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .donate-btn {
+            width: 100%;
+            background: #ef4444;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .donate-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Map Container */
+        .map-container {
+            max-width: 1200px;
+            margin: 0 auto;
             background: white;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             overflow: hidden;
-            position: relative;
             height: 600px;
+            margin-bottom: 40px;
         }
 
         #barangayMap {
@@ -57,585 +430,528 @@
             height: 100%;
         }
 
-        .map-legend {
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
+        /* Track Donation Section */
+        .track-section {
+            padding: 80px 20px;
             background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            z-index: 1000;
         }
 
-        .legend-title {
-            font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #1f2937;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #4b5563;
-        }
-
-        .legend-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .marker {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            display: inline-block;
-        }
-
-        .marker-green { background: #10b981; }
-        .marker-orange { background: #f59e0b; }
-        .marker-gray { background: #6b7280; }
-        .marker-light { background: #d1d5db; }
-
-        .map-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .sidebar-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .sidebar-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .activity-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .activity-item {
-            padding: 12px;
-            border-bottom: 1px solid #f3f4f6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.2s;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-item:hover {
-            background: #f9fafb;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 32px;
-            height: 24px;
-            padding: 0 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-blue {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-green {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .impact-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .impact-item {
+        .track-container {
+            max-width: 700px;
+            margin: 0 auto;
             text-align: center;
-            padding: 15px;
-            background: #f9fafb;
-            border-radius: 8px;
         }
 
-        .impact-number {
-            font-size: 24px;
+        .track-container h2 {
+            font-size: 32px;
             font-weight: 700;
             color: #1f2937;
-            margin-bottom: 4px;
+            margin-bottom: 12px;
         }
 
-        .impact-label {
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Custom Leaflet Popup Styles */
-        .leaflet-popup-content-wrapper {
-            border-radius: 8px;
-            padding: 0;
-        }
-
-        .leaflet-popup-content {
-            margin: 0;
-            min-width: 250px;
-        }
-
-        .popup-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .popup-title {
+        .track-container p {
             font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
+            color: #6b7280;
+            margin-bottom: 30px;
         }
 
-        .popup-subtitle {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .popup-body {
-            padding: 15px;
-        }
-
-        .popup-stat {
+        .track-form {
             display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .popup-stat:last-child {
-            border-bottom: none;
+        .track-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
         }
 
-        .popup-label {
-            color: #6b7280;
-            font-size: 13px;
+        .track-input:focus {
+            outline: none;
+            border-color: #3b82f6;
         }
 
-        .popup-value {
-            color: #1f2937;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-active {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-pending {
-            background: #fed7aa;
-            color: #92400e;
-        }
-
-        .status-completed {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .status-no_donations {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .popup-button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            background: #667eea;
+        .track-btn {
+            background: #3b82f6;
             color: white;
+            padding: 14px 32px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .track-btn:hover {
+            background: #2563eb;
+        }
+
+        /* Trust Section */
+        .trust-section {
+            padding: 80px 20px;
+            background: #f9fafb;
+        }
+
+        .trust-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .trust-header {
             text-align: center;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            transition: background 0.2s;
+            margin-bottom: 60px;
         }
 
-        .popup-button:hover {
-            background: #5568d3;
+        .trust-header h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1f2937;
         }
 
-        @media (max-width: 1024px) {
-            .map-container {
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .trust-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .trust-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+        }
+
+        .trust-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+        }
+
+        .trust-icon.icon-users {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .trust-icon.icon-chart {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .trust-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .trust-card p {
+            font-size: 15px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero-main {
                 grid-template-columns: 1fr;
             }
 
-            .map-wrapper {
-                height: 500px;
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .barangay-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .trust-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-text h2 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .barangay-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .track-form {
+                flex-direction: column;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-    {{-- Navigation --}}
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <img src="{{ asset('images/logo.png') }}" alt="DonorTrack" class="logo">
-                <span class="brand-name">DonorTrack</span>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#map">Barangay Map</a></li>
-                <li><a href="{{ route('login') }}" class="btn-login">Login</a></li>
-            </ul>
-            <button class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </nav>
 
     {{-- Hero Section --}}
-    <section class="hero" id="home">
-        <div class="hero-overlay"></div>
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">Barangays helping barangays.</h1>
-                <p class="hero-subtitle">Connecting communities through transparent aid, shared resources, and trust.</p>
-                <div class="hero-buttons">
-                    <a href="{{ route('donation.track') }}" class="btn btn-primary">
-                        <span class="icon">🔍</span> Track Your Donation
-                    </a>
-                    <a href="#map" class="btn btn-secondary">
-                        <span class="icon">🗺️</span> View Barangay Map
-                    </a>
+    <section class="hero-section">
+        <div class="hero-header">
+            <div class="hero-logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">
+                    <h1>BayanihanCebu</h1>
+                    <p>Philippines Disaster Relief</p>
+                </div>
+            </div>
+            <a href="{{ route('login') }}" class="sign-in-btn">Sign In</a>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-main">
+                <div class="hero-text">
+                    <h2>Transparent Disaster Relief for Cebu</h2>
+                    <p>Every donation is tracked on the blockchain. Every peso reaches those in need. Join us in building a more transparent and efficient disaster relief system.</p>
+                    <div class="hero-buttons">
+                        <a href="#donate" class="btn btn-donate">
+                            ❤️ Donate Now
+                        </a>
+                        <a href="#track" class="btn btn-track">
+                            🔍 Track Donation
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&h=400&fit=crop" alt="Helping Hands">
+                    <div class="blockchain-badge">
+                        ✓ Blockchain Verified
+                    </div>
                 </div>
             </div>
 
-            {{-- Statistics Cards --}}
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number" id="heroTotalDonations">-</div>
-                    <div class="stat-label">Donations Tracked</div>
+                    <div class="stat-number">₱480,632</div>
+                    <div class="stat-label">Total Donations</div>
+                    <div class="verified-badge">✓ Verified</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="heroTotalBarangays">-</div>
-                    <div class="stat-label">Barangays Served</div>
+                    <div class="stat-number">475</div>
+                    <div class="stat-label">Families Affected</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="heroTotalAmount">-</div>
-                    <div class="stat-label">Total Impact</div>
+                    <div class="stat-number">13</div>
+                    <div class="stat-label">Verified Transactions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Active Fundraisers</div>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- Barangay Map Section --}}
-    <section class="barangay-section" id="map">
-        <div class="container">
-            <h2 class="section-title">Cebu City Barangays</h2>
-            <p class="section-subtitle">Click on any barangay to view detailed donation tracking and distribution information</p>
+    {{-- Map Section --}}
+    <section class="map-section" id="map">
+        <div class="section-header">
+            <h2>Live Disaster Map of Cebu</h2>
+            <p>Real-time status of barangays across Cebu City</p>
+        </div>
 
-            <div class="map-container">
-                <div class="map-wrapper">
-                    <div id="barangayMap"></div>
-                    <div class="map-legend">
-                        <div class="legend-title">Status Legend</div>
-                        <div class="legend-item">
-                            <span class="marker marker-green"></span> Active Distribution
-                        </div>
-                        <div class="legend-item">
-                            <span class="marker marker-orange"></span> Pending Source
-                        </div>
-                        <div class="legend-item">
-                            <span class="marker marker-gray"></span> Completed
-                        </div>
-                        <div class="legend-item">
-                            <span class="marker marker-light"></span> No Donations
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Sidebar with Recent Activity --}}
-                <div class="map-sidebar">
-                    <div class="sidebar-section">
-                        <h3 class="sidebar-title">
-                            <span class="icon">📊</span> Recent Activity
-                        </h3>
-                        <ul class="activity-list" id="recentActivity">
-                            <li style="text-align: center; color: #9ca3af; padding: 20px;">
-                                Loading...
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <h3 class="sidebar-title">
-                            <span class="icon">📈</span> Impact Overview
-                        </h3>
-                        <div class="impact-stats">
-                            <div class="impact-item">
-                                <div class="impact-number" id="familiesServed">-</div>
-                                <div class="impact-label">Families Served</div>
-                            </div>
-                            <div class="impact-item">
-                                <div class="impact-number" id="totalDonations">-</div>
-                                <div class="impact-label">Total Donations</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="status-legend">
+            <div class="legend-item">
+                <span class="legend-dot safe"></span>
+                Safe
             </div>
+            <div class="legend-item">
+                <span class="legend-dot warning"></span>
+                Warning
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot critical"></span>
+                Critical
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot emergency"></span>
+                Emergency
+            </div>
+        </div>
+
+        {{-- Barangay Cards --}}
+        <div class="barangay-cards">
+            {{-- Apas - Safe --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Apas</div>
+                    <div class="status-badge safe">Safe</div>
+                </div>
+                <div class="barangay-info">All clear - no active disasters</div>
+            </div>
+
+            {{-- Basak Pardo - Safe --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Basak Pardo</div>
+                    <div class="status-badge safe">Safe</div>
+                </div>
+                <div class="barangay-info">All clear - no active disasters</div>
+            </div>
+
+            {{-- Basak San Nicolas - Warning --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Basak San Nicolas</div>
+                    <div class="status-badge warning">Warning</div>
+                </div>
+                <div class="barangay-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Affected Families</div>
+                        <div class="stat-item-value">30</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Donations Received</div>
+                        <div class="stat-item-value">₱32,000</div>
+                    </div>
+                </div>
+                <div class="urgent-needs">
+                    <div class="urgent-needs-label">Urgent Needs:</div>
+                    <div class="needs-tags">
+                        <span class="need-tag">Food</span>
+                    </div>
+                </div>
+                <button class="donate-btn">Donate to Basak San Nicolas</button>
+            </div>
+
+            {{-- Busay - Safe --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Busay</div>
+                    <div class="status-badge safe">Safe</div>
+                </div>
+                <div class="barangay-info">All clear - no active disasters</div>
+            </div>
+
+            {{-- Capitol Site - Safe --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Capitol Site</div>
+                    <div class="status-badge safe">Safe</div>
+                </div>
+                <div class="barangay-info">All clear - no active disasters</div>
+            </div>
+
+            {{-- Mabolo - Safe --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Mabolo</div>
+                    <div class="status-badge safe">Safe</div>
+                </div>
+                <div class="barangay-info">All clear - no active disasters</div>
+            </div>
+
+            {{-- Tisa - Safe --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Tisa</div>
+                    <div class="status-badge safe">Safe</div>
+                </div>
+                <div class="barangay-info">All clear - no active disasters</div>
+            </div>
+
+            {{-- Banilad - Warning --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Banilad</div>
+                    <div class="status-badge warning">Warning</div>
+                </div>
+                <div class="barangay-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Affected Families</div>
+                        <div class="stat-item-value">45</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Donations Received</div>
+                        <div class="stat-item-value">₱126,135</div>
+                    </div>
+                </div>
+                <div class="urgent-needs">
+                    <div class="urgent-needs-label">Urgent Needs:</div>
+                    <div class="needs-tags">
+                        <span class="need-tag">Food</span>
+                        <span class="need-tag">Water</span>
+                    </div>
+                </div>
+                <button class="donate-btn">Donate to Banilad</button>
+            </div>
+
+            {{-- Talamban - Warning --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Talamban</div>
+                    <div class="status-badge warning">Warning</div>
+                </div>
+                <div class="barangay-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Affected Families</div>
+                        <div class="stat-item-value">30</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Donations Received</div>
+                        <div class="stat-item-value">₱40,000</div>
+                    </div>
+                </div>
+                <div class="urgent-needs">
+                    <div class="urgent-needs-label">Urgent Needs:</div>
+                    <div class="needs-tags">
+                        <span class="need-tag">Food</span>
+                    </div>
+                </div>
+                <button class="donate-btn">Donate to Talamban</button>
+            </div>
+
+            {{-- Lahug - Critical --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Lahug</div>
+                    <div class="status-badge critical">Critical</div>
+                </div>
+                <div class="barangay-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Affected Families</div>
+                        <div class="stat-item-value">120</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Donations Received</div>
+                        <div class="stat-item-value">₱90,500</div>
+                    </div>
+                </div>
+                <div class="urgent-needs">
+                    <div class="urgent-needs-label">Urgent Needs:</div>
+                    <div class="needs-tags">
+                        <span class="need-tag">Medical</span>
+                        <span class="need-tag">Shelter</span>
+                    </div>
+                </div>
+                <button class="donate-btn">Donate to Lahug</button>
+            </div>
+
+            {{-- Guadalupe - Emergency --}}
+            <div class="barangay-card">
+                <div class="barangay-header">
+                    <div class="barangay-name">📍 Guadalupe</div>
+                    <div class="status-badge emergency">Emergency</div>
+                </div>
+                <div class="barangay-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Affected Families</div>
+                        <div class="stat-item-value">250</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Donations Received</div>
+                        <div class="stat-item-value">₱335,000</div>
+                    </div>
+                </div>
+                <div class="urgent-needs">
+                    <div class="urgent-needs-label">Urgent Needs:</div>
+                    <div class="needs-tags">
+                        <span class="need-tag">Food</span>
+                        <span class="need-tag">Water</span>
+                        <span class="need-tag">Medical</span>
+                    </div>
+                </div>
+                <button class="donate-btn">Donate to Guadalupe</button>
+            </div>
+        </div>
+
+        {{-- Map Container (PRESERVED FROM YOUR CODE) --}}
+        <div class="map-container">
+            <div id="barangayMap"></div>
         </div>
     </section>
 
-<!-- Live Disaster Map Section -->
-<div class="container mx-auto px-4 py-8 max-w-7xl">
-    
-    <!-- Header Section -->
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-2">Live Disaster Map of Cebu</h2>
-        <p class="text-gray-600">Real-time status of barangays across Cebu City</p>
-        
-        <!-- Legend -->
-        <div class="flex justify-center items-center gap-4 mt-4 flex-wrap">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                <span class="text-sm text-gray-700">Safe</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
-                <span class="text-sm text-gray-700">Warning</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-                <span class="text-sm text-gray-700">Critical</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                <span class="text-sm text-gray-700">Emergency</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success/Error Messages -->
-    @if(session('success'))
-        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
-    @endif
-
-    <!-- Disaster Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        
-        @foreach($barangays as $barangay)
-            @php
-                $disaster = $barangay->currentDisaster;
-                $statusColors = [
-                    'safe' => 'green',
-                    'warning' => 'yellow',
-                    'critical' => 'orange',
-                    'emergency' => 'red',
-                ];
-                $color = $statusColors[$barangay->status] ?? 'gray';
-            @endphp
-
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                <div class="p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            {{ $barangay->name }}
-                        </h3>
-                        <span class="px-3 py-1 bg-{{ $color }}-100 text-{{ $color }}-800 text-xs font-semibold rounded-full">
-                            {{ ucfirst($barangay->status) }}
-                        </span>
-                    </div>
-
-                    @if($disaster)
-                        <!-- Disaster Information -->
-                        <div class="space-y-2 mb-4">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Affected Families:</span>
-                                <span class="font-semibold text-gray-800">{{ number_format($disaster->affected_families) }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Donations Received:</span>
-                                <span class="font-semibold text-green-600">₱{{ number_format($disaster->total_donations, 2) }}</span>
-                            </div>
-                        </div>
-
-                        @if($disaster->urgentNeeds->count() > 0)
-                            <div class="mb-4">
-                                <p class="text-xs text-gray-500 mb-2">Urgent Needs:</p>
-                                <div class="flex gap-2 flex-wrap">
-                                    @foreach($disaster->urgentNeeds as $need)
-                                        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                                            {{ ucfirst($need->type) }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        <a href="{{ route('disaster.donate', $disaster->id) }}" class="block w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors text-center">
-                            Donate to {{ $barangay->name }}
-                        </a>
-                    @else
-                        <!-- Safe Status -->
-                        <p class="text-gray-600 text-sm mb-4">All clear - no active disasters</p>
-                    @endif
-                </div>
-            </div>
-        @endforeach
-
-    </div>
-
-    <!-- Track Your Donation Section -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-8 mb-12">
-        <div class="text-center max-w-2xl mx-auto">
-            <h3 class="text-2xl font-bold text-gray-800 mb-2">Track Your Donation</h3>
-            <p class="text-gray-600 mb-6">Enter your tracking code to see the status and distribution details of your donation</p>
-            
-            <form action="{{ route('donation.track') }}" method="POST" class="flex gap-3 max-w-md mx-auto">
-                @csrf
+    {{-- Track Donation Section --}}
+    <section class="track-section" id="track">
+        <div class="track-container">
+            <h2>Track Your Donation</h2>
+            <p>Enter your transaction ID to see blockchain verification and how your donation is being used</p>
+            <form class="track-form" action="{{ route('donation.track') }}" method="GET">
                 <input 
                     type="text" 
-                    name="tracking_code"
-                    placeholder="Enter Tracking Code (e.g., 1015-1430-48231)" 
-                    class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    name="transaction_id" 
+                    class="track-input" 
+                    placeholder="Enter Transaction ID (e.g., DQXt-1234689100)"
                     required
                 >
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
-                    Track
+                <button type="submit" class="track-btn">
+                    🔍 Track
                 </button>
             </form>
         </div>
-    </div>
+    </section>
 
-    <!-- Why Trust BayanihanCebu Section -->
-    <div class="text-center mb-8">
-        <h3 class="text-2xl font-bold text-gray-800 mb-8">Why Trust BayanihanCebu?</h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <!-- Blockchain Verified -->
-            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
-                <div class="flex justify-center mb-4">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
-                    </div>
-                </div>
-                <h4 class="text-xl font-semibold text-gray-800 mb-3">Blockchain Verified</h4>
-                <p class="text-gray-600">Every transaction is recorded on the Lisk Blockchain for complete transparency</p>
+    {{-- Trust Section --}}
+    <section class="trust-section">
+        <div class="trust-container">
+            <div class="trust-header">
+                <h2>Why Trust BayanihanCebu?</h2>
             </div>
-
-            <!-- Direct to Barangays -->
-            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
-                <div class="flex justify-center mb-4">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
+            <div class="trust-grid">
+                <div class="trust-card">
+                    <div class="trust-icon">
+                        🛡️
                     </div>
+                    <h3>Blockchain Verified</h3>
+                    <p>Every transaction is recorded on the Lisk blockchain for complete transparency</p>
                 </div>
-                <h4 class="text-xl font-semibold text-gray-800 mb-3">Direct to Barangays</h4>
-                <p class="text-gray-600">Donations go directly to affected communities, managed by local BDRMC officers</p>
-            </div>
-
-            <!-- Real-Time Tracking -->
-            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
-                <div class="flex justify-center mb-4">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                        </svg>
+                <div class="trust-card">
+                    <div class="trust-icon icon-users">
+                        👥
                     </div>
+                    <h3>Direct to Barangays</h3>
+                    <p>Donations go directly to affected communities, managed by local BDRRMC officers</p>
                 </div>
-                <h4 class="text-xl font-semibold text-gray-800 mb-3">Real-Time Tracking</h4>
-                <p class="text-gray-600">See exactly how your donation is being used with live updates and receipts</p>
+                <div class="trust-card">
+                    <div class="trust-icon icon-chart">
+                        📊
+                    </div>
+                    <h3>Real-Time Tracking</h3>
+                    <p>See exactly how your donation is being used with live updates and receipts</p>
+                </div>
             </div>
-
         </div>
-    </div>
+    </section>
 
-</div>
-
-<style>
-/* Optional: Add smooth hover animations */
-.hover\:shadow-lg {
-    transition: box-shadow 0.3s ease-in-out;
-}
-
-/* Optional: Add pulse animation for emergency cards */
-@keyframes pulse-emergency {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.8;
-    }
-}
-
-/* You can add this class to emergency status badges if you want them to pulse */
-.pulse-emergency {
-    animation: pulse-emergency 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-</style>
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
+    
     <script>
-        // Initialize map centered on Cebu City
+        // Initialize map centered on Cebu City (PRESERVED FROM YOUR CODE)
         const map = L.map('barangayMap').setView([10.3157, 123.8854], 12);
 
         // Add OpenStreetMap tile layer
@@ -647,10 +963,10 @@
         // Custom marker icon function
         function createCustomIcon(status) {
             const colors = {
-                active: '#10b981',
-                pending: '#f59e0b',
-                completed: '#6b7280',
-                no_donations: '#d1d5db'
+                safe: '#10b981',
+                warning: '#f59e0b',
+                critical: '#f97316',
+                emergency: '#ef4444'
             };
 
             return L.divIcon({
@@ -678,16 +994,6 @@
             });
         }
 
-        // Format large numbers
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return '₱' + (num / 1000000).toFixed(1) + 'M';
-            } else if (num >= 1000) {
-                return '₱' + (num / 1000).toFixed(1) + 'K';
-            }
-            return formatCurrency(num);
-        }
-
         // Fetch and display map data
         fetch('/api/barangay-map-data')
             .then(response => response.json())
@@ -700,63 +1006,30 @@
 
                     // Create popup content
                     const popupContent = `
-                        <div class="popup-header">
-                            <div class="popup-title">${barangay.name}</div>
-                            <div class="popup-subtitle">${barangay.city}</div>
-                        </div>
-                        <div class="popup-body">
-                            <div class="popup-stat">
-                                <span class="popup-label">Status:</span>
-                                <span class="status-badge status-${barangay.status}">
-                                    ${barangay.status.replace('_', ' ')}
-                                </span>
+                        <div style="padding: 15px;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">${barangay.name}</h3>
+                            <p style="margin: 0 0 10px 0; color: #6b7280;">${barangay.city}</p>
+                            <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
+                                <strong>Status:</strong> ${barangay.status}
                             </div>
-                            <div class="popup-stat">
-                                <span class="popup-label">Donations:</span>
-                                <span class="popup-value">${barangay.donations}</span>
-                            </div>
-                            <div class="popup-stat">
-                                <span class="popup-label">Total Amount:</span>
-                                <span class="popup-value">${formatCurrency(barangay.total_amount)}</span>
-                            </div>
-                            <a href="/barangay/${barangay.barangay_id}" class="popup-button">
-                                View Details →
-                            </a>
+                            ${barangay.affected_families ? `
+                                <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
+                                    <strong>Affected Families:</strong> ${barangay.affected_families}
+                                </div>
+                            ` : ''}
+                            ${barangay.total_received ? `
+                                <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
+                                    <strong>Donations:</strong> ${formatCurrency(barangay.total_received)}
+                                </div>
+                            ` : ''}
                         </div>
                     `;
 
-                    marker.bindPopup(popupContent, {
-                        maxWidth: 300,
-                        className: 'custom-popup'
-                    });
+                    marker.bindPopup(popupContent);
                 });
-
-                // Update recent activity
-                const activityList = document.getElementById('recentActivity');
-                if (data.recent_activity.length > 0) {
-                    activityList.innerHTML = data.recent_activity.map(activity => `
-                        <li class="activity-item">
-                            <span>${activity.name}</span>
-                            <span class="badge badge-blue">${activity.donation_count}</span>
-                        </li>
-                    `).join('');
-                } else {
-                    activityList.innerHTML = '<li style="text-align: center; color: #9ca3af; padding: 20px;">No recent activity</li>';
-                }
-
-                // Update statistics in sidebar
-                document.getElementById('totalDonations').textContent = data.stats.total_donations;
-                document.getElementById('familiesServed').textContent = data.stats.families_served || '0';
-
-                // Update hero statistics
-                document.getElementById('heroTotalDonations').textContent = data.stats.total_donations.toLocaleString();
-                document.getElementById('heroTotalBarangays').textContent = data.stats.total_barangays;
-                document.getElementById('heroTotalAmount').textContent = formatNumber(data.stats.total_amount);
             })
             .catch(error => {
                 console.error('Error loading map data:', error);
-                document.getElementById('recentActivity').innerHTML =
-                    '<li style="text-align: center; color: #ef4444; padding: 20px;">Error loading data</li>';
             });
 
         // Smooth scroll for anchor links
@@ -773,8 +1046,6 @@
             });
         });
     </script>
-    @include('partials.footer')
-
-    <script src="{{ asset('js/app.js') }}"></script>
+@include('partials.footer')
 </body>
 </html>
