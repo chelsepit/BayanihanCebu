@@ -59,6 +59,14 @@ Route::middleware(['auth.check'])->group(function () {
 // ==================== LDRRMO ROUTES ====================
 Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/city/dashboard', [CityDashboardController::class, 'index'])->name('city.dashboard');
+    Route::get('/api/ldrrmo/overview', [CityDashboardController::class, 'getCityOverview']);
+    Route::get('/api/ldrrmo/barangays-map', [CityDashboardController::class, 'getBarangaysMapData']);
+    Route::get('/api/ldrrmo/analytics', [CityDashboardController::class, 'getAnalyticsData']);
+    Route::get('/api/ldrrmo/barangays-comparison', [CityDashboardController::class, 'getBarangaysComparison']);
+    Route::get('/api/ldrrmo/fundraisers', [CityDashboardController::class, 'getActiveFundraisers']);
+    Route::get('/api/ldrrmo/barangays/{barangayId}', [CityDashboardController::class, 'getBarangayDetails']);
+    Route::patch('/api/ldrrmo/barangays/{barangayId}/status', [CityDashboardController::class, 'updateBarangayStatus']);
+    Route::get('/api/ldrrmo/recent-activity', [CityDashboardController::class, 'getRecentActivity']);
 });
 
 // ==================== BDRRMC ROUTES ====================

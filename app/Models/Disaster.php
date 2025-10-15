@@ -32,8 +32,8 @@ class Disaster extends Model
 
     public function barangay()
     {
-        return $this->belongsTo(Barangay::class);
-    }
+    return $this->belongsTo(Barangay::class, 'barangay_id', 'barangay_id');
+    } 
 
     public function urgentNeeds()
     {
