@@ -25,7 +25,28 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password_hash',
+        'remember_token',
     ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    /**
+     * Get the password for authentication.
+     */
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
+
+    /**
+     * Get the name of the password field.
+     */
+    public function getAuthPasswordName()
+    {
+        return 'password_hash';
+    }
 
     public function barangay()
     {

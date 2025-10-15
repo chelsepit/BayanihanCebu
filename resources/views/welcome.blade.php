@@ -631,44 +631,6 @@
 }
 </style>
 
-
-
-    {{-- Footer --}}
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>About</h4>
-                    <p>DonorTrack is a blockchain-based transparent donation platform, ensuring accountability and impact.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Quick Links</h4>
-                    <ul>
-                       <li><a href="#map">Barangay Map</a></li>
-                        <li><a href="{{ route('donation.track') }}">Track Donation</a></li>
-                        <li><a href="{{ route('fundraisers') }}">Fundraisers</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Connect</h4>
-                    <p>Email: info@donortrack.ph</p>
-                    <p>Phone: +63 32 123 4567</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 DonorTrack. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 

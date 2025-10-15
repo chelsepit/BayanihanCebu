@@ -12,10 +12,8 @@ use App\Http\Controllers\DisasterMapController;
 
 // ==================== PUBLIC ROUTES ====================
 
-// Home page
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+// Home page - Disaster Map
+Route::get('/', [DisasterMapController::class, 'index'])->name('home');
 
 // Authentication routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -32,24 +30,68 @@ Route::get('/api/barangay/{barangayId}', [BarangayMapController::class, 'getBara
 // Donation tracking page
 Route::get('/donation/track', function () {
     return view('donation.track');
-})->name('donation.track');
+})->name('donation.track.page');
+
+// Track donation (POST)
+Route::post('/donation/track', [DisasterMapController::class, 'trackDonation'])->name('donation.track');
+
+// Donation Routes
+Route::get('/donate/{disaster}', [DisasterMapController::class, 'showDonateForm'])->name('disaster.donate');
+Route::post('/donate/{disaster}', [DisasterMapController::class, 'processDonation'])->name('donation.process');
+Route::get('/donation/success/{trackingCode}', [DisasterMapController::class, 'donationSuccess'])->name('donation.success');
 
 // Fundraisers page
 Route::get('/fundraisers', function () {
     return view('fundraisers.index');
 })->name('fundraisers');
 
-
-
-// Disaster Map Routes
-Route::get('/', [DisasterMapController::class, 'index'])->name('home');
-
-// Donation Routes
-Route::post('/track-donation', [DisasterMapController::class, 'trackDonation'])->name('donation.track');
-Route::get('/donate/{disaster}', [DisasterMapController::class, 'showDonateForm'])->name('disaster.donate');
-Route::post('/donate/{disaster}', [DisasterMapController::class, 'processDonation'])->name('donation.process');
-Route::get('/donation/success/{trackingCode}', [DisasterMapController::class, 'donationSuccess'])->name('donation.success');
-
 // Statistics API
 Route::get('/api/statistics', [DisasterMapController::class, 'statistics'])->name('api.statistics');
 Route::get('/api/barangays', [DisasterMapController::class, 'apiBarangays'])->name('api.barangays');
+
+// ==================== PROTECTED ROUTES ====================
+
+// Get current user info (all authenticated users)
+Route::middleware(['auth.check'])->group(function () {
+    Route::get('/api/user', [LoginController::class, 'getCurrentUser']);
+});
+
+// ==================== LDRRMO ROUTES ====================
+Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
+    Route::get('/city/dashboard', [CityDashboardController::class, 'index'])->name('city.dashboard');
+});
+
+// ==================== BDRRMC ROUTES ====================
+Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
+    // Dashboard view
+    Route::get('/barangay/dashboard', [BarangayDashboardController::class, 'index'])->name('barangay.dashboard');
+
+    // Resource Needs APIs
+    Route::get('/api/bdrrmc/needs', [BarangayDashboardController::class, 'getNeeds']);
+    Route::post('/api/bdrrmc/needs', [BarangayDashboardController::class, 'createNeed']);
+    Route::patch('/api/bdrrmc/needs/{id}', [BarangayDashboardController::class, 'updateNeed']);
+    Route::delete('/api/bdrrmc/needs/{id}', [BarangayDashboardController::class, 'deleteNeed']);
+
+    // Physical Donations APIs
+    Route::get('/api/bdrrmc/physical-donations', [BarangayDashboardController::class, 'getPhysicalDonations']);
+    Route::post('/api/bdrrmc/physical-donations', [BarangayDashboardController::class, 'recordDonation']);
+    Route::get('/api/bdrrmc/physical-donations/{id}', [BarangayDashboardController::class, 'getDonationDetails']);
+    Route::post('/api/bdrrmc/physical-donations/{id}/distribute', [BarangayDashboardController::class, 'recordDistribution']);
+
+    // Online Donations (Read-only)
+    Route::get('/api/bdrrmc/online-donations', [BarangayDashboardController::class, 'getOnlineDonations']);
+
+    // Barangay Info
+    Route::get('/api/bdrrmc/my-barangay', [BarangayDashboardController::class, 'getBarangayInfo']);
+    Route::patch('/api/bdrrmc/my-barangay', [BarangayDashboardController::class, 'updateBarangayInfo']);
+});
+
+// ==================== RESIDENT ROUTES ====================
+Route::middleware(['auth.check', 'role:resident'])->group(function () {
+    Route::get('/resident/dashboard', [ResidentDashboardController::class, 'index'])->name('resident.dashboard');
+});
+
+// ==================== ADMIN ROUTES ====================
+Route::middleware(['auth.check', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+});
