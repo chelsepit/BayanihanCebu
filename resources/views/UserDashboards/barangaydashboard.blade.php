@@ -1,3 +1,14 @@
+@php
+function getStatusBadgeClass($status) {
+    return match($status) {
+        'safe' => 'bg-green-100 text-green-700',
+        'warning' => 'bg-yellow-100 text-yellow-700',
+        'critical' => 'bg-orange-100 text-orange-700',
+        'emergency' => 'bg-red-100 text-red-700',
+        default => 'bg-gray-100 text-gray-700'
+    };
+}
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,13 +93,14 @@
             <div class="flex justify-between items-center mb-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800">Barangay Status</h2>
-                    <span class="inline-block mt-2 px-3 py-1 bg-orange-100 text-orange-700 text-sm font-medium rounded">
-                        CRITICAL
+                    <span class="inline-block mt-2 px-3 py-1 text-sm font-medium rounded {{ getStatusBadgeClass($barangay->disaster_status ?? 'safe') }}">
+                        {{ strtoupper(str_replace('-', ' ', $barangay->disaster_status ?? 'SAFE')) }}
                     </span>
                 </div>
                 <button onclick="openEditStatusModal()" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
                     <i class="fas fa-edit"></i> Edit Status
                 </button>
+                
             </div>
 
             <!-- Statistics Grid -->
@@ -135,6 +147,77 @@
             </div>
         </div>
 
+        <!-- MODAL: Edit Barangay Status -->
+    <div id="editStatusModal" class="modal">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800">Edit Barangay Status</h3>
+                    <p class="text-sm text-gray-500 mt-1">Update your barangay's disaster status and needs</p>
+                </div>
+                <button type="button" onclick="closeEditStatusModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="editStatusForm" class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Disaster Status *
+                        <span class="text-xs text-gray-500 ml-2">(This affects what LDRRMO sees on the map)</span>
+                    </label>
+                    <select id="editDisasterStatus" name="disaster_status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="safe">✅ Safe - No active disasters</option>
+                        <option value="warning">⚠️ Warning - Potential risk or minor impact</option>
+                        <option value="critical">🔶 Critical - Significant impact, needs support</option>
+                        <option value="emergency">🚨 Emergency - Severe disaster, urgent help needed</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <strong>Safe:</strong> No disasters | 
+                        <strong>Warning:</strong> Minor issues | 
+                        <strong>Critical:</strong> Active disaster | 
+                        <strong>Emergency:</strong> Severe situation
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Affected Families
+                        <span class="text-xs text-gray-500 ml-2">(Leave as 0 if status is Safe)</span>
+                    </label>
+                    <input type="number" id="editAffectedFamilies" name="affected_families" min="0" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Number of families affected">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Needs Summary
+                        <span class="text-xs text-gray-500 ml-2">(Brief description of situation and needs)</span>
+                    </label>
+                    <textarea id="editNeedsSummary" name="needs_summary" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Describe the current situation and what assistance is needed..."></textarea>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <p class="text-sm font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-1"></i> Preview
+                    </p>
+                    <p class="text-sm text-blue-800">
+                        This information will be visible to LDRRMO and will appear on the city-wide disaster map.
+                    </p>
+                </div>
+
+                <div class="flex gap-3 justify-end border-t pt-4">
+                    <button type="button" onclick="closeEditStatusModal()" class="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-[#0D47A1] text-white rounded hover:bg-[#0D47A1]/90 transition">
+                        <i class="fas fa-save mr-2"></i> Update Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
         <!-- Tabs Navigation -->
         <div class="bg-white rounded-t-lg shadow-sm border-b">
             <div class="flex gap-2 px-6">
@@ -145,7 +228,7 @@
             </div>
         </div>
 
-        <!-- TAB 1: Resource Requests -->
+  <!-- TAB 1: Resource Requests -->
         <div id="needs-tab" class="tab-content active bg-white rounded-b-lg shadow-sm p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold">Resource Requests for Your Barangay</h2>
@@ -156,6 +239,21 @@
                     <button onclick="openNeedModal()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-2">
                         <i class="fas fa-plus"></i> Create Request
                     </button>
+                </div>
+            </div>
+
+            <!-- Bulk Actions Bar (shows when there are needs) -->
+            <div id="bulkActionsBar" class="hidden mb-4 flex gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <button onclick="markAllAsFulfilled()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center gap-2 text-sm">
+                    <i class="fas fa-check-double"></i> Mark All as Fulfilled
+                </button>
+                <button onclick="removeAllFulfilled()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition flex items-center gap-2 text-sm">
+                    <i class="fas fa-trash-alt"></i> Remove All Fulfilled
+                </button>
+                <div class="ml-auto flex items-center gap-2 text-sm text-gray-600">
+                    <span id="needsCount">0</span> requests
+                    <span class="text-gray-400">|</span>
+                    <span id="fulfilledCount" class="text-green-600">0 fulfilled</span>
                 </div>
             </div>
 
@@ -645,8 +743,7 @@
             }
         }
 
-        // ==================== LOAD RESOURCE NEEDS ====================
-       // ==================== LOAD RESOURCE NEEDS (UPDATED) ====================
+ // ==================== LOAD RESOURCE NEEDS (UPDATED WITH BULK ACTIONS) ====================
         async function loadResourceNeeds() {
             const container = document.getElementById('needsList');
             container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i></div>';
@@ -660,15 +757,25 @@
                         <div class="text-center py-12 text-gray-500">
                             <i class="fas fa-clipboard-list text-5xl mb-4 text-gray-300"></i>
                             <p class="text-lg">No resource requests yet.</p>
+                            <p class="text-sm mt-2">Click "Create Request" to add your first resource need.</p>
                         </div>
                     `;
+                    document.getElementById('bulkActionsBar').classList.add('hidden');
                     return;
                 }
                 
-                document.getElementById('activeRequestsCount').textContent = needs.filter(n => n.status === 'pending').length;
+                // Show bulk actions bar
+                document.getElementById('bulkActionsBar').classList.remove('hidden');
+                
+                // Update counts
+                const pendingCount = needs.filter(n => n.status !== 'fulfilled').length;
+                const fulfilledCount = needs.filter(n => n.status === 'fulfilled').length;
+                document.getElementById('activeRequestsCount').textContent = pendingCount;
+                document.getElementById('needsCount').textContent = needs.length;
+                document.getElementById('fulfilledCount').textContent = fulfilledCount;
                 
                 container.innerHTML = needs.map(need => `
-                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition">
+                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition ${need.status === 'fulfilled' ? 'bg-green-50 opacity-75' : ''}">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-3">
@@ -701,14 +808,15 @@
                                     <button onclick="markNeedAsFulfilled(${need.id})" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition text-sm flex items-center gap-2">
                                         <i class="fas fa-check"></i> Mark as Fulfilled
                                     </button>
-                                ` : ''}
-                                ${need.status === 'fulfilled' ? `
-                                    <button onclick="removeNeed(${need.id})" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm flex items-center gap-2">
-                                        <i class="fas fa-trash"></i> Remove from List
-                                    </button>
-                                ` : `
                                     <button onclick="updateNeedStatus(${need.id})" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm flex items-center gap-2">
                                         <i class="fas fa-edit"></i> Update Status
+                                    </button>
+                                ` : `
+                                    <button onclick="removeNeed(${need.id})" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm flex items-center gap-2">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                    <button onclick="markNeedAsPending(${need.id})" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition text-sm flex items-center gap-2">
+                                        <i class="fas fa-undo"></i> Reopen
                                     </button>
                                 `}
                             </div>
@@ -727,6 +835,176 @@
             }
         }
 
+        // ==================== BULK ACTIONS FOR RESOURCE NEEDS ====================
+        
+        async function markAllAsFulfilled() {
+            if (!confirm('⚠️ Mark ALL pending resource requests as fulfilled?\n\nThis will mark all pending and partially fulfilled requests as completed.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/bdrrmc/needs');
+                const needs = await response.json();
+                
+                const pendingNeeds = needs.filter(n => n.status !== 'fulfilled');
+                
+                if (pendingNeeds.length === 0) {
+                    alert('ℹ️ No pending requests to mark as fulfilled.');
+                    return;
+                }
+                
+                // Show progress
+                const progressMsg = `Marking ${pendingNeeds.length} requests as fulfilled...`;
+                console.log(progressMsg);
+                
+                // Mark each as fulfilled
+                let successCount = 0;
+                for (const need of pendingNeeds) {
+                    try {
+                        const res = await fetch(`/api/bdrrmc/needs/${need.id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({ status: 'fulfilled' })
+                        });
+                        
+                        if (res.ok) successCount++;
+                    } catch (err) {
+                        console.error(`Failed to mark need ${need.id}:`, err);
+                    }
+                }
+                
+                alert(`✅ Successfully marked ${successCount} of ${pendingNeeds.length} requests as fulfilled!`);
+                loadResourceNeeds();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error marking requests as fulfilled.');
+            }
+        }
+
+        async function removeAllFulfilled() {
+            try {
+                const response = await fetch('/api/bdrrmc/needs');
+                const needs = await response.json();
+                
+                const fulfilledNeeds = needs.filter(n => n.status === 'fulfilled');
+                
+                if (fulfilledNeeds.length === 0) {
+                    alert('ℹ️ No fulfilled requests to remove.');
+                    return;
+                }
+                
+                if (!confirm(`⚠️ PERMANENTLY DELETE ${fulfilledNeeds.length} fulfilled resource requests?\n\n⚡ This action CANNOT be undone!\n\nThe requests will be removed from the database.`)) {
+                    return;
+                }
+                
+                // Double confirmation for safety
+                if (!confirm(`⚠️ Are you ABSOLUTELY SURE?\n\nThis will delete ${fulfilledNeeds.length} requests permanently.`)) {
+                    return;
+                }
+                
+                // Show progress
+                console.log(`Deleting ${fulfilledNeeds.length} fulfilled requests...`);
+                
+                // Delete each fulfilled need
+                let successCount = 0;
+                for (const need of fulfilledNeeds) {
+                    try {
+                        const res = await fetch(`/api/bdrrmc/needs/${need.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken
+                            }
+                        });
+                        
+                        if (res.ok) successCount++;
+                    } catch (err) {
+                        console.error(`Failed to delete need ${need.id}:`, err);
+                    }
+                }
+                
+                alert(`✅ Successfully removed ${successCount} of ${fulfilledNeeds.length} fulfilled requests!`);
+                loadResourceNeeds();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error removing fulfilled requests.');
+            }
+        }
+
+        async function markNeedAsPending(needId) {
+            if (!confirm('Reopen this resource request?\n\nThis will change the status back to "pending".')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/bdrrmc/needs/${needId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({ status: 'pending' })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Resource request reopened successfully!');
+                    loadResourceNeeds();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error reopening resource request.');
+            }
+        }
+
+        // Update the existing updateNeedStatus function
+        async function updateNeedStatus(needId) {
+            const newStatus = prompt(
+                'Update status:\n\n' +
+                '1 = pending (not yet fulfilled)\n' +
+                '2 = partially_fulfilled (some items received)\n' +
+                '3 = fulfilled (completely fulfilled)\n\n' +
+                'Enter 1, 2, or 3:',
+                '1'
+            );
+            
+            const statusMap = {
+                '1': 'pending',
+                '2': 'partially_fulfilled',
+                '3': 'fulfilled'
+            };
+            
+            if (!statusMap[newStatus]) {
+                alert('❌ Invalid selection. Please enter 1, 2, or 3.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/bdrrmc/needs/${needId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({ status: statusMap[newStatus] })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Status updated successfully!');
+                    loadResourceNeeds();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error updating status.');
+            }
+        }
         // ==================== LOAD PHYSICAL DONATIONS ====================
  // ==================== LOAD PHYSICAL DONATIONS (UPDATED BUTTONS) ====================
         async function loadPhysicalDonations() {
@@ -1070,9 +1348,84 @@
             return badges[status] || 'bg-gray-100 text-gray-700';
         }
 
-        function openEditStatusModal() {
-            alert('Edit barangay status feature - Coming soon!');
+      // ==================== EDIT STATUS MODAL ====================
+        async function openEditStatusModal() {
+            try {
+                // Load current barangay info
+                const response = await fetch('/api/bdrrmc/my-barangay');
+                const barangay = await response.json();
+                
+                // Populate form with current values
+                document.getElementById('editDisasterStatus').value = barangay.disaster_status || 'safe';
+                document.getElementById('editAffectedFamilies').value = barangay.affected_families || 0;
+                document.getElementById('editNeedsSummary').value = barangay.needs_summary || '';
+                
+                // Show modal
+                document.getElementById('editStatusModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading barangay info:', error);
+                alert('Error loading barangay information. Please try again.');
+            }
         }
+
+        function closeEditStatusModal() {
+            document.getElementById('editStatusModal').classList.remove('active');
+        }
+
+        // Handle status form submission
+        document.getElementById('editStatusForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                disaster_status: formData.get('disaster_status'),
+                affected_families: parseInt(formData.get('affected_families')) || 0,
+                needs_summary: formData.get('needs_summary')
+            };
+            
+            // If status is safe, reset affected families to 0
+            if (data.disaster_status === 'safe') {
+                data.affected_families = 0;
+            }
+            
+            try {
+                const response = await fetch('/api/bdrrmc/my-barangay', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeEditStatusModal();
+                    
+                    // Show success message
+                    alert('✅ Barangay status updated successfully!\n\nThe changes will be reflected on the LDRRMO city map immediately.');
+                    
+                    // Reload page to show updated status
+                    location.reload();
+                } else {
+                    alert('❌ Error updating barangay status. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error updating barangay status. Please try again.');
+            }
+        });
+
+        // Auto-reset affected families when status is "safe"
+        document.getElementById('editDisasterStatus').addEventListener('change', function(e) {
+            if (e.target.value === 'safe') {
+                document.getElementById('editAffectedFamilies').value = 0;
+                document.getElementById('editAffectedFamilies').disabled = true;
+            } else {
+                document.getElementById('editAffectedFamilies').disabled = false;
+            }
+        });
 
         // ==================== LOAD DATA ON PAGE LOAD ====================
         document.addEventListener('DOMContentLoaded', function() {
