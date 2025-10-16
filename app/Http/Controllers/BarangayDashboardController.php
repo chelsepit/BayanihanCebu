@@ -297,33 +297,53 @@ class BarangayDashboardController extends Controller
     /**
      * Update barangay information
      */
+   /**
+     * Update barangay information
+     */
     public function updateBarangayInfo(Request $request)
     {
-        $barangayId = session('barangay_id');
+        try {
+            $barangayId = session('barangay_id');
 
-        $validated = $request->validate([
-            'disaster_status' => 'required|in:safe,warning,critical,emergency',
-            'disaster_type' => 'nullable|in:flood,fire,earthquake,typhoon,landslide,other',
-            'affected_families' => 'required|integer|min:0',
-            'needs_summary' => 'nullable|string|max:1000',
-            'contact_person' => 'nullable|string|max:100',
-            'contact_phone' => 'nullable|string|max:20',
-        ]);
+            $validated = $request->validate([
+                'disaster_status' => 'required|in:safe,warning,critical,emergency',
+                'disaster_type' => 'nullable|in:flood,fire,earthquake,typhoon,landslide,other',
+                'affected_families' => 'required|integer|min:0',
+                'needs_summary' => 'nullable|string|max:1000',
+                'contact_person' => 'nullable|string|max:100',
+                'contact_phone' => 'nullable|string|max:20',
+            ]);
 
-        $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
+            $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
 
-        // If status is safe, clear disaster_type
-        if ($validated['disaster_status'] === 'safe') {
-            $validated['disaster_type'] = null;
-            $validated['affected_families'] = 0;
-        }
+            // If status is safe, clear disaster_type and affected_families
+            if ($validated['disaster_status'] === 'safe') {
+                $validated['disaster_type'] = null;
+                $validated['affected_families'] = 0;
+                $validated['needs_summary'] = null;
+            }
 
-        $barangay->update($validated);
+            $barangay->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Barangay information updated successfully',
-            'data' => $barangay
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Barangay information updated successfully',
+                'data' => $barangay
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating barangay information',
+                'error' => $e->getMessage()
+            ], 500);
+        }}
+
     }
-}
