@@ -114,16 +114,37 @@ class BarangaySeeder extends Seeder
             'emergency' => ['food', 'water', 'medical'],
         ];
 
-        $needs = $needsData[$barangay->disaster_status] ?? [];
+        $data = $disasterData[$severity][$barangay->name] ?? null;
 
-        foreach ($needs as $category) {
-            ResourceNeed::create([
-                'barangay_id' => $barangay->barangay_id,
-                'category' => $category,
-                'description' => ucfirst($category) . ' needed for disaster response in ' . $barangay->name,
-                'quantity' => rand(50, 200) . ' units',
-                'urgency' => $this->getUrgencyByStatus($barangay->disaster_status),
-                'status' => 'pending',
+        if (!$data) {
+            return;
+        }
+
+        $disaster = Disaster::create([
+            'barangay_id' => $barangay->barangay_id,
+            'title' => ucfirst($data['type']) . ' in ' . $barangay->name,
+            'description' => 'Active ' . $data['type'] . ' disaster affecting the community.',
+            'type' => $data['type'],
+            'severity' => $severity,
+            'affected_families' => $data['affected_families'],
+            'total_donations' => $data['total_donations'],
+            'is_active' => true,
+            'started_at' => now()->subDays(rand(1, 7)),
+        ]);
+
+         // Create some sample donations
+        for ($i = 0; $i < rand(3, 8); $i++) {
+            Donation::create([
+                'disaster_id' => $disaster->id,
+                'tracking_code' => 'DN' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 10)),
+                'amount' => rand(1000, 50000),
+                'donation_type' => 'monetary',
+                'status' => ['confirmed', 'distributed'][rand(0, 1)],
+                'transaction_hash' => '0x' . bin2hex(random_bytes(32)),
+                'donor_name' => $this->getRandomDonorName(),
+                'donor_email' => 'donor' . rand(1000, 9999) . '@example.com',
+                'is_anonymous' => rand(0, 1),
+                'distributed_at' => rand(0, 1) ? now()->subDays(rand(1, 5)) : null,
             ]);
         }
     }
