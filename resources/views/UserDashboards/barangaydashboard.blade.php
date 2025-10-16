@@ -173,11 +173,27 @@ function getStatusBadgeClass($status) {
                         <option value="emergency">🚨 Emergency - Severe disaster, urgent help needed</option>
                     </select>
                     <p class="text-xs text-gray-500 mt-1">
-                        <strong>Safe:</strong> No disasters | 
-                        <strong>Warning:</strong> Minor issues | 
-                        <strong>Critical:</strong> Active disaster | 
+                        <strong>Safe:</strong> No disasters |
+                        <strong>Warning:</strong> Minor issues |
+                        <strong>Critical:</strong> Active disaster |
                         <strong>Emergency:</strong> Severe situation
                     </p>
+                </div>
+
+                <div class="mb-4" id="disasterTypeField" style="display: none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Disaster Type *
+                        <span class="text-xs text-gray-500 ml-2">(Required when status is not Safe)</span>
+                    </label>
+                    <select id="editDisasterType" name="disaster_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select disaster type...</option>
+                        <option value="flood">🌊 Flood</option>
+                        <option value="fire">🔥 Fire</option>
+                        <option value="earthquake">🏚️ Earthquake</option>
+                        <option value="typhoon">🌀 Typhoon</option>
+                        <option value="landslide">⛰️ Landslide</option>
+                        <option value="other">❓ Other</option>
+                    </select>
                 </div>
 
                 <div class="mb-4">
@@ -1354,12 +1370,22 @@ function getStatusBadgeClass($status) {
                 // Load current barangay info
                 const response = await fetch('/api/bdrrmc/my-barangay');
                 const barangay = await response.json();
-                
+
                 // Populate form with current values
                 document.getElementById('editDisasterStatus').value = barangay.disaster_status || 'safe';
+                document.getElementById('editDisasterType').value = barangay.disaster_type || '';
                 document.getElementById('editAffectedFamilies').value = barangay.affected_families || 0;
                 document.getElementById('editNeedsSummary').value = barangay.needs_summary || '';
-                
+
+                // Show/hide disaster_type field based on current status
+                const disasterTypeField = document.getElementById('disasterTypeField');
+                if (barangay.disaster_status === 'safe') {
+                    disasterTypeField.style.display = 'none';
+                    document.getElementById('editDisasterType').value = '';
+                } else {
+                    disasterTypeField.style.display = 'block';
+                }
+
                 // Show modal
                 document.getElementById('editStatusModal').classList.add('active');
             } catch (error) {
@@ -1375,19 +1401,27 @@ function getStatusBadgeClass($status) {
         // Handle status form submission
         document.getElementById('editStatusForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(e.target);
             const data = {
                 disaster_status: formData.get('disaster_status'),
+                disaster_type: formData.get('disaster_type'),
                 affected_families: parseInt(formData.get('affected_families')) || 0,
                 needs_summary: formData.get('needs_summary')
             };
-            
-            // If status is safe, reset affected families to 0
+
+            // If status is safe, reset affected families and disaster_type
             if (data.disaster_status === 'safe') {
                 data.affected_families = 0;
+                data.disaster_type = null;
             }
-            
+
+            // Validate disaster_type is required when status is not safe
+            if (data.disaster_status !== 'safe' && !data.disaster_type) {
+                alert('⚠️ Please select a disaster type when status is not Safe.');
+                return;
+            }
+
             try {
                 const response = await fetch('/api/bdrrmc/my-barangay', {
                     method: 'PATCH',
@@ -1397,15 +1431,15 @@ function getStatusBadgeClass($status) {
                     },
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     closeEditStatusModal();
-                    
+
                     // Show success message
                     alert('✅ Barangay status updated successfully!\n\nThe changes will be reflected on the LDRRMO city map immediately.');
-                    
+
                     // Reload page to show updated status
                     location.reload();
                 } else {
@@ -1417,12 +1451,24 @@ function getStatusBadgeClass($status) {
             }
         });
 
-        // Auto-reset affected families when status is "safe"
+        // Auto-reset affected families and show/hide disaster_type when status changes
         document.getElementById('editDisasterStatus').addEventListener('change', function(e) {
+            const disasterTypeField = document.getElementById('disasterTypeField');
+            const disasterTypeSelect = document.getElementById('editDisasterType');
+
             if (e.target.value === 'safe') {
+                // Hide disaster type and clear it
+                disasterTypeField.style.display = 'none';
+                disasterTypeSelect.value = '';
+
+                // Reset affected families
                 document.getElementById('editAffectedFamilies').value = 0;
                 document.getElementById('editAffectedFamilies').disabled = true;
             } else {
+                // Show disaster type field
+                disasterTypeField.style.display = 'block';
+
+                // Enable affected families
                 document.getElementById('editAffectedFamilies').disabled = false;
             }
         });

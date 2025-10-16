@@ -43,6 +43,7 @@ class Barangay extends Model
         'longitude',
         'status',
         'disaster_status',
+        'disaster_type',
         'description',
         'contact_person',
         'contact_phone',
@@ -81,33 +82,15 @@ class Barangay extends Model
     }
 
     /**
-     * Get all disasters for this barangay
+     * Get donations for this barangay
      */
-    public function disasters()
+    public function donations()
     {
-        return $this->hasMany(Disaster::class, 'barangay_id', 'barangay_id');
+        return $this->hasMany(Donation::class, 'barangay_id', 'barangay_id');
     }
 
     /**
-     * Get active disasters for this barangay
-     */
-    public function activeDisasters()
-    {
-        return $this->hasMany(Disaster::class, 'barangay_id', 'barangay_id')->where('is_active', true);
-    }
-
-    /**
-     * Get the current active disaster (most recent)
-     */
-    public function currentDisaster()
-    {
-        return $this->hasOne(Disaster::class, 'barangay_id', 'barangay_id')
-            ->where('is_active', true)
-            ->latest();
-    }
-
-    /**
-     * Get general resource needs for this barangay (non-disaster specific)
+     * Get general resource needs for this barangay
      */
     public function resourceNeeds()
     {
@@ -123,53 +106,29 @@ class Barangay extends Model
     }
 
     /**
-     * Check if barangay has any active disasters
+     * Get total raised from donations
      */
-    public function hasActiveDisaster()
+    public function getTotalRaisedAttribute()
     {
-        return $this->activeDisasters()->exists();
+        return $this->donations()
+            ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+            ->sum('amount');
     }
 
     /**
-     * Get total affected families across all active disasters
+     * Check if barangay needs help
      */
-    public function getTotalAffectedFamiliesAttribute()
+    public function needsHelp()
     {
-        return $this->activeDisasters()->sum('affected_families');
+        return $this->disaster_status !== 'safe';
     }
 
     /**
-     * Get total donations across all active disasters
+     * Scope to get barangays that need help
      */
-    public function getTotalDonationsAttribute()
+    public function scopeNeedsHelp($query)
     {
-        return $this->activeDisasters()->sum('total_donations');
-    }
-
-    /**
-     * Update barangay status based on active disasters
-     */
-    public function updateStatus()
-    {
-        $activeDisaster = $this->currentDisaster()->first();
-        
-        if (!$activeDisaster) {
-            $this->update(['status' => 'safe', 'disaster_status' => 'safe']);
-            return;
-        }
-
-        $this->update([
-            'status' => $activeDisaster->severity,
-            'disaster_status' => $activeDisaster->severity
-        ]);
-    }
-
-    /**
-     * Scope to get barangays with active disasters
-     */
-    public function scopeWithActiveDisasters($query)
-    {
-        return $query->whereHas('activeDisasters');
+        return $query->where('disaster_status', '!=', 'safe');
     }
 
     /**

@@ -8,12 +8,12 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CityDashboardController;
 use App\Http\Controllers\BarangayDashboardController;
 use App\Http\Controllers\ResidentDashboardController;
-use App\Http\Controllers\DisasterMapController;
+use App\Http\Controllers\PublicMapController;
 
 // ==================== PUBLIC ROUTES ====================
 
-// Home page - Disaster Map
-Route::get('/', [DisasterMapController::class, 'index'])->name('home');
+// Home page - Public Map
+Route::get('/', [PublicMapController::class, 'index'])->name('home');
 
 // Authentication routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -33,12 +33,12 @@ Route::get('/donation/track', function () {
 })->name('donation.track.page');
 
 // Track donation (POST)
-Route::post('/donation/track', [DisasterMapController::class, 'trackDonation'])->name('donation.track');
+Route::post('/donation/track', [PublicMapController::class, 'trackDonation'])->name('donation.track');
 
 // Donation Routes
-Route::get('/donate/{disaster}', [DisasterMapController::class, 'showDonateForm'])->name('disaster.donate');
-Route::post('/donate/{disaster}', [DisasterMapController::class, 'processDonation'])->name('donation.process');
-Route::get('/donation/success/{trackingCode}', [DisasterMapController::class, 'donationSuccess'])->name('donation.success');
+Route::get('/donate/{barangay:barangay_id}', [PublicMapController::class, 'showDonateForm'])->name('barangay.donate');
+Route::post('/donate/{barangay:barangay_id}', [PublicMapController::class, 'processDonation'])->name('donation.process');
+Route::get('/donation/success/{trackingCode}', [PublicMapController::class, 'donationSuccess'])->name('donation.success');
 
 // Fundraisers page
 Route::get('/fundraisers', function () {
@@ -46,8 +46,8 @@ Route::get('/fundraisers', function () {
 })->name('fundraisers');
 
 // Statistics API
-Route::get('/api/statistics', [DisasterMapController::class, 'statistics'])->name('api.statistics');
-Route::get('/api/barangays', [DisasterMapController::class, 'apiBarangays'])->name('api.barangays');
+Route::get('/api/statistics', [PublicMapController::class, 'statistics'])->name('api.statistics');
+Route::get('/api/barangays', [PublicMapController::class, 'apiBarangays'])->name('api.barangays');
 
 // ==================== PROTECTED ROUTES ====================
 
