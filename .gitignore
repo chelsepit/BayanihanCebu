@@ -43,3 +43,17 @@ Homestead.yaml
 
 # History Files
 .history/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# NPM Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Hardhat build artifacts (redundant safety)
+blockchain-services/artifacts/
+blockchain-services/cache/
