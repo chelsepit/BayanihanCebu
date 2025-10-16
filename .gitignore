@@ -1,24 +1,45 @@
-*.log
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
-/node_modules
+# Laravel / PHP Dependencies
+/vendor
+node_modules/
+
+# Laravel Build & Storage Assets
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
-/vendor
+
+# Secrets & Environment Files (NEVER commit these!)
+.env
+.env.backup
+.env.production
+/blockchain-services/.env
+auth.json
+
+# IDE & Editor-specific files
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Caching and Log Files
+*.log
+.phpactor.json
+.phpunit.result.cache
+/.phpunit.cache
+
+# Blockchain / Hardhat Artifacts
+cache/
+artifacts/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Homestead Configuration
 Homestead.json
 Homestead.yaml
-Thumbs.db
+
+# History Files
+.history/
