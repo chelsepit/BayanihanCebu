@@ -4,23 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>BDRRMC Dashboard - {{ $barangay->name ?? 'Barangay' }}</title>
+    <title>BayanihanCebu - Resident Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ asset('js/web3Helper.js') }}"></script>
+
     <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-btn.active { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-in { animation: slideIn 0.3s ease-out; }
-        
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -34,43 +23,51 @@
             justify-content: center;
         }
         .modal.active { display: flex; }
-        
-        /* Print styles */
-        @media print {
-            body * { visibility: hidden; }
-            #printReceipt, #printReceipt * { visibility: visible; }
-            #printReceipt { position: absolute; left: 0; top: 0; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .animate-slide-in { animation: slideIn 0.3s ease-out; }
     </style>
 </head>
 <body class="bg-gray-50">
 
-    <!-- Top Navigation -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-blue-700 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-hands-helping text-white text-lg"></i>
-                    </div>
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-white hover:text-blue-200">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-800">BDRRMC Dashboard</h1>
-                        <p class="text-sm text-gray-500">{{ $barangay->name ?? 'Barangay' }}, {{ $barangay->city ?? 'City' }}</p>
+                        <h1 class="text-xl font-bold">BayanihanCebu</h1>
+                        <p class="text-xs text-blue-200">Resident Dashboard</p>
                     </div>
                 </div>
-                
+
+                <!-- Wallet Connection & User Info -->
                 <div class="flex items-center gap-4">
-                    <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span class="text-sm font-medium text-green-700">Status: {{ ucfirst($barangay->disaster_status ?? 'safe') }}</span>
-                    </div>
-                    
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm text-gray-600">{{ session('user_name') }}</span>
+                    <!-- Connect Wallet Button -->
+                    <button id="connectWalletBtn" class="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition">
+                        <i class="fas fa-wallet"></i>
+                        <span id="walletStatus">Connect Wallet</span>
+                    </button>
+                    <span id="walletAddress" class="text-sm text-blue-200 hidden md:block"></span>
+                    <span id="walletBalance" class="text-sm font-semibold hidden md:block"></span>
+
+                    <!-- User Menu -->
+                    <div class="flex items-center gap-3 border-l border-blue-600 pl-4">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm">Welcome,</p>
+                            <p class="text-sm font-semibold">{{ session('user_name') ?? 'resident@test.com' }}</p>
+                        </div>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm">
-                                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                            <button type="submit" class="px-4 py-2 bg-white text-blue-700 rounded-lg hover:bg-blue-50 transition text-sm font-medium">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Sign Out
                             </button>
                         </form>
                     </div>
@@ -80,413 +77,190 @@
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
+        <!-- Alert Banner -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle text-blue-500 text-xl mt-1 mr-3"></i>
+                <div>
+                    <h3 class="text-blue-900 font-semibold text-lg mb-1">Help Disaster-Affected Barangays</h3>
+                    <p class="text-blue-800 text-sm">View what barangays need and donate to help affected families. All donations are verified on the blockchain for transparency.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-blue-100 text-sm mb-1">Affected Families</p>
-                        <h3 class="text-3xl font-bold">{{ $stats['affected_families'] ?? 0 }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Active Needs Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
                     </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-2xl"></i>
+                    <div>
+                        <p class="text-gray-600 text-sm">Active Needs</p>
+                        <h3 class="text-3xl font-bold text-gray-900" id="activeNeedsCount">5</h3>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-green-100 text-sm mb-1">Total Donations</p>
-                        <h3 class="text-3xl font-bold" id="totalDonationsCount">{{ $stats['total_donations'] ?? 0 }}</h3>
+            <!-- Affected Barangays Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-map-marker-alt text-orange-600 text-2xl"></i>
                     </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-box text-2xl"></i>
+                    <div>
+                        <p class="text-gray-600 text-sm">Affected Barangays</p>
+                        <h3 class="text-3xl font-bold text-gray-900" id="affectedBarangaysCount">5</h3>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-                <div class="flex justify-between items-start">
+            <!-- Your Impact Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heart text-green-600 text-2xl"></i>
+                    </div>
                     <div>
-                        <p class="text-orange-100 text-sm mb-1">Active Requests</p>
-                        <h3 class="text-3xl font-bold" id="activeRequestsCount">{{ $stats['active_requests'] ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-exclamation-circle text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-purple-100 text-sm mb-1">Verified Donations</p>
-                        <h3 class="text-3xl font-bold">{{ $stats['verified_donations'] ?? 0 }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-check-circle text-2xl"></i>
+                        <p class="text-gray-600 text-sm">Your Impact</p>
+                        <h3 class="text-xl font-bold text-green-600">Help Now</h3>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tab Navigation -->
-        <div class="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
-            <div class="flex border-b overflow-x-auto">
-                <button onclick="switchTab('physical')" class="tab-btn active px-6 py-4 font-medium transition flex-1 min-w-max">
-                    <i class="fas fa-box mr-2"></i> Physical Donations
-                </button>
-                <button onclick="switchTab('needs')" class="tab-btn px-6 py-4 font-medium transition flex-1 min-w-max">
-                    <i class="fas fa-clipboard-list mr-2"></i> Resource Needs
-                </button>
-                <button onclick="switchTab('online')" class="tab-btn px-6 py-4 font-medium transition flex-1 min-w-max">
-                    <i class="fas fa-globe mr-2"></i> Online Donations
-                </button>
-                <button onclick="switchTab('barangay')" class="tab-btn px-6 py-4 font-medium transition flex-1 min-w-max">
-                    <i class="fas fa-info-circle mr-2"></i> Barangay Info
-                </button>
+        <!-- Filter Section -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-filter text-gray-600"></i>
+                <h3 class="font-semibold text-gray-800">Filter Needs</h3>
             </div>
-        </div>
 
-        <!-- TAB 1: Physical Donations -->
-        <div id="physical-tab" class="tab-content active">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        <i class="fas fa-box text-blue-500 mr-2"></i> Physical Donations Received
-                    </h2>
-                    <button onclick="openRecordModal()" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
-                        <i class="fas fa-plus mr-2"></i> Record New Donation
-                    </button>
-                </div>
-
-                <!-- Donations List -->
-                <div id="donationsList" class="space-y-4">
-                    <!-- Will be populated by JavaScript -->
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                        <p>Loading donations...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 2: Resource Needs -->
-        <div id="needs-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        <i class="fas fa-clipboard-list text-orange-500 mr-2"></i> Resource Needs
-                    </h2>
-                    <button onclick="openNeedModal()" class="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:shadow-lg transition">
-                        <i class="fas fa-plus mr-2"></i> Add New Need
-                    </button>
-                </div>
-
-                <!-- Needs List -->
-                <div id="needsList" class="space-y-4">
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                        <p>Loading needs...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 3: Online Donations -->
-        <div id="online-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                    <i class="fas fa-globe text-green-500 mr-2"></i> Online Donations (Verified)
-                </h2>
-
-                <div id="onlineDonationsList" class="space-y-4">
-                    <div class="text-center py-12 text-gray-500">
-                        <i class="fas fa-info-circle text-4xl mb-3"></i>
-                        <p class="text-lg">Online donations will appear here once Carl's system is integrated.</p>
-                        <p class="text-sm mt-2">This is a read-only view of blockchain-verified donations.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 4: Barangay Info -->
-        <div id="barangay-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                    <i class="fas fa-info-circle text-purple-500 mr-2"></i> Barangay Information
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Barangay Name</label>
-                        <input type="text" value="{{ $barangay->name ?? '' }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">City/Municipality</label>
-                        <input type="text" value="{{ $barangay->city ?? '' }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Disaster Status</label>
-                        <select id="disasterStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="safe" {{ ($barangay->disaster_status ?? '') == 'safe' ? 'selected' : '' }}>Safe</option>
-                            <option value="at-risk" {{ ($barangay->disaster_status ?? '') == 'at-risk' ? 'selected' : '' }}>At Risk</option>
-                            <option value="affected" {{ ($barangay->disaster_status ?? '') == 'affected' ? 'selected' : '' }}>Affected</option>
-                            <option value="recovering" {{ ($barangay->disaster_status ?? '') == 'recovering' ? 'selected' : '' }}>Recovering</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Barangay ID</label>
-                        <input type="text" value="{{ $barangay->barangay_id ?? '' }}" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Needs Summary</label>
-                        <textarea id="needsSummary" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Brief summary of current needs...">{{ $barangay->needs_summary ?? '' }}</textarea>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <button onclick="updateBarangayInfo()" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
-                            <i class="fas fa-save mr-2"></i> Update Information
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-   <!-- MODAL 1: Record Donation Modal -->
-    <div id="recordModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-2xl font-bold">
-                        <i class="fas fa-box mr-2"></i> Record Physical Donation
-                    </h3>
-                    <button onclick="closeRecordModal()" class="text-white hover:text-gray-200">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <form id="recordDonationForm" class="p-6">
-                <!-- Donor Information -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-user text-blue-500 mr-2"></i> Donor Information
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                            <input type="text" name="donor_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Juan Dela Cruz">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number *</label>
-                            <input type="text" name="donor_contact" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="09171234567">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email (Optional)</label>
-                            <input type="email" name="donor_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="email@example.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
-                            <input type="text" name="donor_address" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Complete address">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Donation Details -->
-                <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-boxes text-green-500 mr-2"></i> Donation Details
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                            <select name="category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select category...</option>
-                                <option value="food">Food</option>
-                                <option value="water">Water</option>
-                                <option value="medical">Medical</option>
-                                <option value="shelter">Shelter</option>
-                                <option value="clothing">Clothing</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Value (₱)</label>
-                            <input type="number" name="estimated_value" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="5000.00">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Items Description *</label>
-                            <textarea name="items_description" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Detailed description of donated items..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
-                            <input type="text" name="quantity" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 10 sacks, 50 pieces">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Intended Recipients *</label>
-                            <input type="text" name="intended_recipients" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Flood victims">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
-                            <textarea name="notes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Any additional information..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="flex gap-3">
-                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition font-medium">
-                        <i class="fas fa-save mr-2"></i> Record Donation
-                    </button>
-                    <button type="button" onclick="closeRecordModal()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 animate-slide-in">
-            <div class="p-8 text-center">
-                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-check-circle text-green-500 text-4xl"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Donation Recorded!</h3>
-                <p class="text-gray-600 mb-6">The donation has been successfully recorded in the system.</p>
-                
-                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
-                    <p class="text-sm text-gray-600 mb-2">Tracking Code</p>
-                    <p id="generatedTrackingCode" class="text-2xl font-bold text-blue-600">---</p>
-                </div>
-
-                <div class="flex gap-3">
-                    <button onclick="printReceipt()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                        <i class="fas fa-print mr-2"></i> Print Receipt
-                    </button>
-                    <button onclick="closeSuccessModal()" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
-                        Done
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: Distribution Modal -->
-    <div id="distributeModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4">
-            <div class="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6 rounded-t-xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-2xl font-bold">
-                        <i class="fas fa-hands-helping mr-2"></i> Record Distribution
-                    </h3>
-                    <button onclick="closeDistributeModal()" class="text-white hover:text-gray-200">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <form id="distributeForm" class="p-6">
-                <input type="hidden" id="distributeDonationId">
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Distributed To *</label>
-                    <input type="text" name="distributed_to" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., 20 families in Sitio 1">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity Distributed *</label>
-                    <input type="text" name="quantity_distributed" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., 5 sacks of rice">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Distribution Status *</label>
-                    <select name="distribution_status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                        <option value="partially_distributed">Partially Distributed</option>
-                        <option value="fully_distributed">Fully Distributed</option>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Urgency Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
+                    <select id="urgencyFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Urgencies</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
                     </select>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                    <textarea name="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Additional details about the distribution..."></textarea>
-                </div>
-
-                <div class="flex gap-3">
-                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition font-medium">
-                        <i class="fas fa-check mr-2"></i> Record Distribution
-                    </button>
-                    <button type="button" onclick="closeDistributeModal()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: Add Resource Need Modal -->
-    <div id="needModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4">
-            <div class="bg-gradient-to-r from-orange-500 to-red-600 text-white p-6 rounded-t-xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-2xl font-bold">
-                        <i class="fas fa-clipboard-list mr-2"></i> Add Resource Need
-                    </h3>
-                    <button onclick="closeNeedModal()" class="text-white hover:text-gray-200">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <form id="needForm" class="p-6">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                    <select name="category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
-                        <option value="">Select category...</option>
+                <!-- Category Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Categories</option>
                         <option value="food">Food</option>
                         <option value="water">Water</option>
                         <option value="medical">Medical</option>
                         <option value="shelter">Shelter</option>
                         <option value="clothing">Clothing</option>
-                        <option value="other">Other</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                    <textarea name="description" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="Detailed description of what is needed..."></textarea>
+                <!-- Search -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" id="searchFilter" placeholder="Search barangay or description..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
+            </div>
+        </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity Needed *</label>
-                    <input type="text" name="quantity" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="e.g., 50 sacks, 100 pieces">
+        <!-- Barangay Needs Section -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Barangay Needs</h2>
+
+            <!-- Needs Grid -->
+            <div id="needsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Loading State -->
+                <div class="col-span-2 text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600">Loading barangay needs...</p>
                 </div>
+            </div>
+        </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level *</label>
-                    <select name="urgency" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="critical">Critical</option>
-                    </select>
-                </div>
+    </div>
 
-                <div class="flex gap-3">
-                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:shadow-lg transition font-medium">
-                        <i class="fas fa-plus mr-2"></i> Add Need
+    <!-- Donation Modal -->
+    <div id="donationModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold">Make a Donation</h3>
+                        <p class="text-blue-100 text-sm mt-1">Help disaster-affected families</p>
+                    </div>
+                    <button onclick="closeDonationModal()" class="text-white hover:text-gray-200 transition">
+                        <i class="fas fa-times text-2xl"></i>
                     </button>
-                    <button type="button" onclick="closeNeedModal()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium">
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="donationForm" class="p-6">
+                <input type="hidden" id="selectedBarangayId">
+                <input type="hidden" id="selectedBarangayName">
+
+                <!-- Barangay Info Display -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <p class="text-sm text-blue-800 mb-1">Donating to:</p>
+                    <p class="text-lg font-bold text-blue-900" id="modalBarangayName">-</p>
+                    <p class="text-sm text-blue-700" id="modalNeedCategory">-</p>
+                </div>
+
+                <!-- Donation Amount -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Amount (PHP) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" id="donationAmount" required min="100" step="0.01"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                           placeholder="Enter amount">
+
+                    <!-- Quick Amount Buttons -->
+                    <div class="flex gap-2 mt-3">
+                        <button type="button" onclick="setAmount(500)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱500</button>
+                        <button type="button" onclick="setAmount(1000)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱1,000</button>
+                        <button type="button" onclick="setAmount(2500)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱2,500</button>
+                        <button type="button" onclick="setAmount(5000)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱5,000</button>
+                    </div>
+                </div>
+
+                <!-- Your Name -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Your Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="donorName" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter your name"
+                           value="{{ session('user_name') }}">
+                </div>
+
+                <!-- Your Email (Optional) -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Your Email (Optional)
+                    </label>
+                    <input type="email" id="donorEmail"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="email@example.com">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition font-semibold">
+                        <i class="fas fa-heart mr-2"></i> Donate Now
+                    </button>
+                    <button type="button" onclick="closeDonationModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
                         Cancel
                     </button>
                 </div>
@@ -494,13 +268,333 @@
         </div>
     </div>
 
-    <!-- Hidden Print Receipt Template -->
-    <div id="printReceipt" style="display: none;">
-        <!-- Will be populated when printing -->
+    <!-- Processing Modal -->
+    <div id="processingModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center">
+            <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Processing Transaction...</h3>
+            <p class="text-gray-600 text-sm">Please wait for blockchain confirmation</p>
+            <p class="text-xs text-gray-500 mt-4">This may take 10-30 seconds</p>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center animate-slide-in">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check-circle text-green-500 text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Donation Successful!</h3>
+            <p class="text-gray-600 mb-6">Thank you for helping disaster-affected families</p>
+
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-gray-600 mb-1">Blockchain Transaction Hash</p>
+                <p id="successTxHash" class="font-mono text-xs text-blue-600 break-all mb-3">---</p>
+                <button onclick="copyTxHash()" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    <i class="fas fa-copy mr-1"></i> Copy Hash
+                </button>
+            </div>
+
+            <div class="flex gap-3">
+                <a id="explorerLink" href="#" target="_blank"
+                   class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
+                    <i class="fas fa-external-link-alt mr-2"></i> View on Explorer
+                </a>
+                <button onclick="closeSuccessModal()" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
+                    Done
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // JavaScript code coming next...
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        let connectedAddress = null;
+        let allNeeds = [];
+
+        // Connect Wallet on Page Load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllNeeds();
+
+            // Connect Wallet Button
+            const connectBtn = document.getElementById('connectWalletBtn');
+            if (connectBtn) {
+                connectBtn.addEventListener('click', async () => {
+                    const result = await connectWallet();
+
+                    if (result.success) {
+                        connectedAddress = result.address;
+                        document.getElementById('walletStatus').textContent = 'Connected';
+                        document.getElementById('walletAddress').textContent = formatAddress(result.address);
+                        document.getElementById('walletAddress').classList.remove('hidden');
+
+                        const balance = await getBalance(result.address);
+                        if (balance.success) {
+                            document.getElementById('walletBalance').textContent = balance.balance + ' ETH';
+                            document.getElementById('walletBalance').classList.remove('hidden');
+                        }
+
+                        alert('✅ Wallet connected successfully!');
+                    } else {
+                        alert('❌ ' + result.error);
+                    }
+                });
+            }
+
+            // Filter listeners
+            document.getElementById('urgencyFilter').addEventListener('change', filterNeeds);
+            document.getElementById('categoryFilter').addEventListener('change', filterNeeds);
+            document.getElementById('searchFilter').addEventListener('input', filterNeeds);
+        });
+
+        // Load All Needs from API
+        async function loadAllNeeds() {
+            try {
+                // Get all resource needs from all barangays
+                const response = await fetch('/api/ldrrmo/barangays-map');
+                const barangays = await response.json();
+
+                allNeeds = [];
+                let activeCount = 0;
+                let affectedCount = 0;
+
+                for (const barangay of barangays) {
+                    if (barangay.urgent_needs && barangay.urgent_needs.length > 0) {
+                        affectedCount++;
+                        barangay.urgent_needs.forEach(need => {
+                            allNeeds.push({
+                                barangay_id: barangay.barangay_id,
+                                barangay_name: barangay.name,
+                                category: need,
+                                urgency: barangay.status === 'emergency' ? 'critical' : barangay.status === 'critical' ? 'high' : 'medium',
+                                affected_families: barangay.affected_families,
+                                status: barangay.status
+                            });
+                            activeCount++;
+                        });
+                    }
+                }
+
+                document.getElementById('activeNeedsCount').textContent = activeCount;
+                document.getElementById('affectedBarangaysCount').textContent = affectedCount;
+
+                displayNeeds(allNeeds);
+            } catch (error) {
+                console.error('Error loading needs:', error);
+                document.getElementById('needsGrid').innerHTML = `
+                    <div class="col-span-2 text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+                        <p>Error loading needs. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display Needs in Grid
+        function displayNeeds(needs) {
+            const grid = document.getElementById('needsGrid');
+
+            if (needs.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-2 text-center py-12 text-gray-500">
+                        <i class="fas fa-check-circle text-5xl mb-4 text-green-500"></i>
+                        <p class="text-lg font-semibold">No active needs at the moment</p>
+                        <p class="text-sm mt-2">All barangays are safe or needs are fulfilled</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = needs.map(need => {
+                const urgencyColor = {
+                    'critical': 'bg-red-100 text-red-800',
+                    'high': 'bg-orange-100 text-orange-800',
+                    'medium': 'bg-yellow-100 text-yellow-800',
+                    'low': 'bg-blue-100 text-blue-800'
+                };
+
+                const statusColor = {
+                    'emergency': 'bg-red-500',
+                    'critical': 'bg-orange-500',
+                    'warning': 'bg-yellow-500',
+                    'safe': 'bg-green-500'
+                };
+
+                return `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-map-marker-alt text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">${need.barangay_name}</h3>
+                                    <span class="px-3 py-1 ${urgencyColor[need.urgency]} text-xs font-semibold rounded-full uppercase">
+                                        ${need.urgency}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="w-3 h-3 ${statusColor[need.status]} rounded-full" title="${need.status}"></div>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-box text-gray-400"></i>
+                                <span class="font-medium">Category:</span>
+                                <span class="capitalize">${need.category}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-exclamation-circle text-gray-400"></i>
+                                <span class="font-medium">Quantity:</span>
+                                <span>Urgently needed</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-users text-gray-400"></i>
+                                <span class="font-medium">Affected Families:</span>
+                                <span>${need.affected_families || 0}</span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <p class="text-gray-600 text-sm mb-4">
+                            Urgent need for ${need.category} supplies for ${need.affected_families || 0} affected families in ${need.barangay_name}.
+                        </p>
+
+                        <!-- Donate Button -->
+                        <button onclick='openDonationModal("${need.barangay_id}", "${need.barangay_name}", "${need.category}")'
+                                class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-semibold flex items-center justify-center gap-2">
+                            <i class="fas fa-heart"></i>
+                            Donate to ${need.barangay_name}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Filter Needs
+        function filterNeeds() {
+            const urgency = document.getElementById('urgencyFilter').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value.toLowerCase();
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+
+            const filtered = allNeeds.filter(need => {
+                const matchUrgency = !urgency || need.urgency === urgency;
+                const matchCategory = !category || need.category === category;
+                const matchSearch = !search ||
+                    need.barangay_name.toLowerCase().includes(search) ||
+                    need.category.toLowerCase().includes(search);
+
+                return matchUrgency && matchCategory && matchSearch;
+            });
+
+            displayNeeds(filtered);
+        }
+
+        // Open Donation Modal
+        function openDonationModal(barangayId, barangayName, category) {
+            if (!connectedAddress) {
+                alert('⚠️ Please connect your MetaMask wallet first!');
+                document.getElementById('connectWalletBtn').click();
+                return;
+            }
+
+            document.getElementById('selectedBarangayId').value = barangayId;
+            document.getElementById('selectedBarangayName').value = barangayName;
+            document.getElementById('modalBarangayName').textContent = barangayName;
+            document.getElementById('modalNeedCategory').textContent = `Need: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+            document.getElementById('donationModal').classList.add('active');
+            document.getElementById('donationForm').reset();
+            document.getElementById('donorName').value = '{{ session("user_name") }}';
+        }
+
+        function closeDonationModal() {
+            document.getElementById('donationModal').classList.remove('active');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+            loadAllNeeds(); // Reload needs
+        }
+
+        function setAmount(value) {
+            document.getElementById('donationAmount').value = value;
+        }
+
+        function copyTxHash() {
+            const txHash = document.getElementById('successTxHash').textContent;
+            navigator.clipboard.writeText(txHash);
+            alert('✅ Transaction hash copied to clipboard!');
+        }
+
+        // Handle Donation Form Submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const donationForm = document.getElementById('donationForm');
+            if (donationForm) {
+                donationForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const barangayId = document.getElementById('selectedBarangayId').value;
+                    const barangayName = document.getElementById('selectedBarangayName').value;
+                    const amount = parseFloat(document.getElementById('donationAmount').value);
+                    const donorName = document.getElementById('donorName').value;
+                    const donorEmail = document.getElementById('donorEmail').value;
+
+                    if (amount < 100) {
+                        alert('⚠️ Minimum donation amount is ₱100');
+                        return;
+                    }
+
+                    closeDonationModal();
+                    document.getElementById('processingModal').classList.add('active');
+
+                    try {
+                        const txResult = await sendDonation(amount, barangayName);
+
+                        document.getElementById('processingModal').classList.remove('active');
+
+                        if (txResult.success) {
+                            const response = await fetch('/api/donations', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                },
+                                body: JSON.stringify({
+                                    donor_name: donorName,
+                                    donor_email: donorEmail || null,
+                                    target_barangay_id: barangayId,
+                                    amount: amount,
+                                    payment_method: 'metamask',
+                                    tx_hash: txResult.txHash,
+                                    wallet_address: txResult.donorAddress,
+                                    blockchain_status: 'confirmed',
+                                    explorer_url: txResult.explorerUrl
+                                })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                document.getElementById('successTxHash').textContent = txResult.txHash;
+                                document.getElementById('explorerLink').href = txResult.explorerUrl;
+                                document.getElementById('successModal').classList.add('active');
+                            } else {
+                                alert('❌ Failed to save donation: ' + (result.message || 'Unknown error'));
+                            }
+                        } else {
+                            alert('❌ Transaction failed: ' + txResult.error);
+                        }
+
+                    } catch (error) {
+                        document.getElementById('processingModal').classList.remove('active');
+                        alert('❌ Error: ' + error.message);
+                        console.error('Donation error:', error);
+                    }
+                });
+            }
+        });
     </script>
 
 </body>
