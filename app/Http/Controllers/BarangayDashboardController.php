@@ -263,17 +263,18 @@ class BarangayDashboardController extends Controller
     // ==================== ONLINE DONATIONS (READ-ONLY) ====================
 
     /**
-     * Get online donations for the barangay (from Carl's system)
+     * Get online donations for the barangay
      */
     public function getOnlineDonations()
     {
         $barangayId = session('barangay_id');
 
-        // TODO: When Carl builds his table, query it here
-        // For now, return empty array
-        $onlineDonations = [];
+        $donations = \App\Models\Donation::where('barangay_id', $barangayId)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return response()->json($onlineDonations);
+        return response()->json($donations);
     }
 
     // ==================== BARANGAY INFO ====================
@@ -300,18 +301,21 @@ class BarangayDashboardController extends Controller
     {
         $barangayId = session('barangay_id');
 
-        $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
-
         $validated = $request->validate([
             'disaster_status' => 'required|in:safe,warning,critical,emergency',
-            'affected_families' => 'sometimes|integer|min:0',
+            'disaster_type' => 'nullable|in:flood,fire,earthquake,typhoon,landslide,other',
+            'affected_families' => 'required|integer|min:0',
             'needs_summary' => 'nullable|string|max:1000',
+            'contact_person' => 'nullable|string|max:100',
+            'contact_phone' => 'nullable|string|max:20',
         ]);
 
-        // If status is safe, reset affected families to 0
+        $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
+
+        // If status is safe, clear disaster_type
         if ($validated['disaster_status'] === 'safe') {
+            $validated['disaster_type'] = null;
             $validated['affected_families'] = 0;
-            $validated['needs_summary'] = null; // Clear needs summary for safe status
         }
 
         $barangay->update($validated);

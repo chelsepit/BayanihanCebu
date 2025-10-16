@@ -704,188 +704,66 @@
 
         {{-- Barangay Cards --}}
         <div class="barangay-cards">
-            {{-- Apas - Safe --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Apas</div>
-                    <div class="status-badge safe">Safe</div>
-                </div>
-                <div class="barangay-info">All clear - no active disasters</div>
-            </div>
+            @foreach($barangays as $barangay)
+                <div class="barangay-card">
+                    <div class="barangay-header">
+                        <div class="barangay-name">📍 {{ $barangay->name }}</div>
+                        <div class="status-badge {{ $barangay->disaster_status }}">
+                            {{ ucfirst($barangay->disaster_status) }}
+                        </div>
+                    </div>
 
-            {{-- Basak Pardo - Safe --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Basak Pardo</div>
-                    <div class="status-badge safe">Safe</div>
-                </div>
-                <div class="barangay-info">All clear - no active disasters</div>
-            </div>
+                    @if($barangay->disaster_status === 'safe')
+                        <div class="barangay-info">All clear - no active disasters</div>
+                    @else
+                        {{-- Disaster Type --}}
+                        @if($barangay->disaster_type)
+                            <div class="barangay-info" style="margin-bottom: 12px;">
+                                <strong>Type:</strong>
+                                @php
+                                    $disasterIcons = [
+                                        'flood' => '🌊',
+                                        'fire' => '🔥',
+                                        'earthquake' => '🏚️',
+                                        'typhoon' => '🌀',
+                                        'landslide' => '⛰️',
+                                        'other' => '❓'
+                                    ];
+                                @endphp
+                                {{ $disasterIcons[$barangay->disaster_type] ?? '' }} {{ ucfirst($barangay->disaster_type) }}
+                            </div>
+                        @endif
 
-            {{-- Basak San Nicolas - Warning --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Basak San Nicolas</div>
-                    <div class="status-badge warning">Warning</div>
-                </div>
-                <div class="barangay-stats">
-                    <div class="stat-item">
-                        <div class="stat-item-label">Affected Families</div>
-                        <div class="stat-item-value">30</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-item-label">Donations Received</div>
-                        <div class="stat-item-value">₱32,000</div>
-                    </div>
-                </div>
-                <div class="urgent-needs">
-                    <div class="urgent-needs-label">Urgent Needs:</div>
-                    <div class="needs-tags">
-                        <span class="need-tag">Food</span>
-                    </div>
-                </div>
-                <button class="donate-btn">Donate to Basak San Nicolas</button>
-            </div>
+                        {{-- Stats --}}
+                        <div class="barangay-stats">
+                            <div class="stat-item">
+                                <div class="stat-item-label">Affected Families</div>
+                                <div class="stat-item-value">{{ $barangay->affected_families }}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-item-label">Donations Received</div>
+                                <div class="stat-item-value">₱{{ number_format($barangay->total_raised, 0) }}</div>
+                            </div>
+                        </div>
 
-            {{-- Busay - Safe --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Busay</div>
-                    <div class="status-badge safe">Safe</div>
-                </div>
-                <div class="barangay-info">All clear - no active disasters</div>
-            </div>
+                        {{-- Resource Needs --}}
+                        @if($barangay->resourceNeeds->where('status', '!=', 'fulfilled')->count() > 0)
+                            <div class="urgent-needs">
+                                <div class="urgent-needs-label">Urgent Needs:</div>
+                                <div class="needs-tags">
+                                    @foreach($barangay->resourceNeeds->where('status', '!=', 'fulfilled')->unique('category') as $need)
+                                        <span class="need-tag">{{ ucfirst($need->category) }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
-            {{-- Capitol Site - Safe --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Capitol Site</div>
-                    <div class="status-badge safe">Safe</div>
+                        <button class="donate-btn" onclick="window.location.href='/donate/{{ $barangay->barangay_id }}'">
+                            Donate to {{ $barangay->name }}
+                        </button>
+                    @endif
                 </div>
-                <div class="barangay-info">All clear - no active disasters</div>
-            </div>
-
-            {{-- Mabolo - Safe --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Mabolo</div>
-                    <div class="status-badge safe">Safe</div>
-                </div>
-                <div class="barangay-info">All clear - no active disasters</div>
-            </div>
-
-            {{-- Tisa - Safe --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Tisa</div>
-                    <div class="status-badge safe">Safe</div>
-                </div>
-                <div class="barangay-info">All clear - no active disasters</div>
-            </div>
-
-            {{-- Banilad - Warning --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Banilad</div>
-                    <div class="status-badge warning">Warning</div>
-                </div>
-                <div class="barangay-stats">
-                    <div class="stat-item">
-                        <div class="stat-item-label">Affected Families</div>
-                        <div class="stat-item-value">45</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-item-label">Donations Received</div>
-                        <div class="stat-item-value">₱126,135</div>
-                    </div>
-                </div>
-                <div class="urgent-needs">
-                    <div class="urgent-needs-label">Urgent Needs:</div>
-                    <div class="needs-tags">
-                        <span class="need-tag">Food</span>
-                        <span class="need-tag">Water</span>
-                    </div>
-                </div>
-                <button class="donate-btn">Donate to Banilad</button>
-            </div>
-
-            {{-- Talamban - Warning --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Talamban</div>
-                    <div class="status-badge warning">Warning</div>
-                </div>
-                <div class="barangay-stats">
-                    <div class="stat-item">
-                        <div class="stat-item-label">Affected Families</div>
-                        <div class="stat-item-value">30</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-item-label">Donations Received</div>
-                        <div class="stat-item-value">₱40,000</div>
-                    </div>
-                </div>
-                <div class="urgent-needs">
-                    <div class="urgent-needs-label">Urgent Needs:</div>
-                    <div class="needs-tags">
-                        <span class="need-tag">Food</span>
-                    </div>
-                </div>
-                <button class="donate-btn">Donate to Talamban</button>
-            </div>
-
-            {{-- Lahug - Critical --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Lahug</div>
-                    <div class="status-badge critical">Critical</div>
-                </div>
-                <div class="barangay-stats">
-                    <div class="stat-item">
-                        <div class="stat-item-label">Affected Families</div>
-                        <div class="stat-item-value">120</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-item-label">Donations Received</div>
-                        <div class="stat-item-value">₱90,500</div>
-                    </div>
-                </div>
-                <div class="urgent-needs">
-                    <div class="urgent-needs-label">Urgent Needs:</div>
-                    <div class="needs-tags">
-                        <span class="need-tag">Medical</span>
-                        <span class="need-tag">Shelter</span>
-                    </div>
-                </div>
-                <button class="donate-btn">Donate to Lahug</button>
-            </div>
-
-            {{-- Guadalupe - Emergency --}}
-            <div class="barangay-card">
-                <div class="barangay-header">
-                    <div class="barangay-name">📍 Guadalupe</div>
-                    <div class="status-badge emergency">Emergency</div>
-                </div>
-                <div class="barangay-stats">
-                    <div class="stat-item">
-                        <div class="stat-item-label">Affected Families</div>
-                        <div class="stat-item-value">250</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-item-label">Donations Received</div>
-                        <div class="stat-item-value">₱335,000</div>
-                    </div>
-                </div>
-                <div class="urgent-needs">
-                    <div class="urgent-needs-label">Urgent Needs:</div>
-                    <div class="needs-tags">
-                        <span class="need-tag">Food</span>
-                        <span class="need-tag">Water</span>
-                        <span class="need-tag">Medical</span>
-                    </div>
-                </div>
-                <button class="donate-btn">Donate to Guadalupe</button>
-            </div>
+            @endforeach
         </div>
 
         {{-- Map Container (PRESERVED FROM YOUR CODE) --}}
@@ -1001,25 +879,39 @@
                 // Add markers for each barangay
                 data.barangays.forEach(barangay => {
                     const marker = L.marker([barangay.lat, barangay.lng], {
-                        icon: createCustomIcon(barangay.status)
+                        icon: createCustomIcon(barangay.disaster_status)
                     }).addTo(map);
 
                     // Create popup content
+                    const disasterIcons = {
+                        'flood': '🌊',
+                        'fire': '🔥',
+                        'earthquake': '🏚️',
+                        'typhoon': '🌀',
+                        'landslide': '⛰️',
+                        'other': '❓'
+                    };
+
                     const popupContent = `
                         <div style="padding: 15px;">
                             <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">${barangay.name}</h3>
                             <p style="margin: 0 0 10px 0; color: #6b7280;">${barangay.city}</p>
                             <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
-                                <strong>Status:</strong> ${barangay.status}
+                                <strong>Status:</strong> ${barangay.disaster_status}
                             </div>
+                            ${barangay.disaster_type ? `
+                                <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
+                                    <strong>Type:</strong> ${disasterIcons[barangay.disaster_type] || ''} ${barangay.disaster_type.charAt(0).toUpperCase() + barangay.disaster_type.slice(1)}
+                                </div>
+                            ` : ''}
                             ${barangay.affected_families ? `
                                 <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
                                     <strong>Affected Families:</strong> ${barangay.affected_families}
                                 </div>
                             ` : ''}
-                            ${barangay.total_received ? `
+                            ${barangay.total_amount ? `
                                 <div style="padding: 8px 0; border-top: 1px solid #e5e7eb;">
-                                    <strong>Donations:</strong> ${formatCurrency(barangay.total_received)}
+                                    <strong>Donations:</strong> ${formatCurrency(barangay.total_amount)}
                                 </div>
                             ` : ''}
                         </div>

@@ -11,7 +11,7 @@ class Donation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'disaster_id',
+        'barangay_id',
         'user_id',
         'tracking_code',
         'amount',
@@ -54,9 +54,9 @@ class Donation extends Model
         return $code;
     }
 
-    public function disaster()
+    public function barangay()
     {
-        return $this->belongsTo(Disaster::class);
+        return $this->belongsTo(Barangay::class, 'barangay_id', 'barangay_id');
     }
 
     public function user()
@@ -91,7 +91,7 @@ class Donation extends Model
             'transaction_hash' => $transactionHash,
         ]);
 
-        $this->disaster->addDonation($this->amount);
+        // No need to update disaster - donations are counted via relationship
     }
 
     public function markAsDistributed($notes = null)

@@ -6,18 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('barangays', function (Blueprint $table) {
-            $table->decimal('latitude', 9, 6)->nullable()->after('city');
-            $table->decimal('longitude', 9, 6)->nullable()->after('latitude');
+            $table->string('slug')->unique()->nullable()->after('name');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('barangays', function (Blueprint $table) {
-            $table->dropColumn(['latitude', 'longitude']);
+            $table->dropColumn('slug');
         });
     }
 };

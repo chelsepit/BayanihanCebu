@@ -25,6 +25,8 @@ class BarangayMapController extends Controller
                 'barangays.latitude',
                 'barangays.longitude',
                 'barangays.disaster_status',
+                'barangays.disaster_type',
+                'barangays.affected_families',
                 DB::raw('COUNT(donations.donation_id) as donation_count'),
                 DB::raw('COALESCE(SUM(donations.amount), 0) as total_amount')
             )
@@ -34,7 +36,9 @@ class BarangayMapController extends Controller
                 'barangays.city',
                 'barangays.latitude',
                 'barangays.longitude',
-                'barangays.disaster_status'
+                'barangays.disaster_status',
+                'barangays.disaster_type',
+                'barangays.affected_families'
             )
             ->get()
             ->map(function ($barangay) {
@@ -45,12 +49,12 @@ class BarangayMapController extends Controller
                         ->where('barangay_id', $barangay->barangay_id)
                         ->where('distribution_status', 'active')
                         ->exists();
-                    
+
                     $hasPending = DB::table('donations')
                         ->where('barangay_id', $barangay->barangay_id)
                         ->where('distribution_status', 'pending')
                         ->exists();
-                    
+
                     if ($hasActive) {
                         $status = 'active';
                     } elseif ($hasPending) {
@@ -69,6 +73,8 @@ class BarangayMapController extends Controller
                     'lat' => (float) $barangay->latitude,
                     'lng' => (float) $barangay->longitude,
                     'disaster_status' => $barangay->disaster_status,
+                    'disaster_type' => $barangay->disaster_type,
+                    'affected_families' => (int) $barangay->affected_families,
                     'status' => $status,
                     'donations' => (int) $barangay->donation_count,
                     'total_amount' => (float) $barangay->total_amount,

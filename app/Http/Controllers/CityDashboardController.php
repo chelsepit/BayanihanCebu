@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Barangay;
-use App\Models\Disaster;
 use App\Models\Donation;
 use App\Models\PhysicalDonation;
 use App\Models\ResourceNeed;
-use App\Models\UrgentNeed;
 
 class CityDashboardController extends Controller
 {
@@ -45,7 +43,7 @@ class CityDashboardController extends Controller
 
         $affectedBarangays = Barangay::where('disaster_status', '!=', 'safe')->count();
 
-        $activeFundraisers = Disaster::where('is_active', true)->count();
+        $activeFundraisers = Barangay::where('disaster_status', '!=', 'safe')->count();
 
         $criticalBarangays = Barangay::whereIn('disaster_status', ['critical', 'emergency'])->count();
 
@@ -72,25 +70,13 @@ class CityDashboardController extends Controller
     public function getBarangaysMapData()
     {
         $barangays = Barangay::all()->map(function ($barangay) {
-            $disaster = Disaster::where('barangay_id', $barangay->barangay_id)
-                ->where('is_active', true)
-                ->first();
-
-            // ⭐ PRIORITY: Get needs from resource_needs table (BDRRMC)
-            $urgentNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
+            // Get resource needs for this barangay
+            $resourceNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
                 ->where('status', '!=', 'fulfilled')
                 ->pluck('category')
                 ->unique()
                 ->toArray();
 
-            // Fallback: If no resource needs, check urgent needs from disasters
-            if (empty($urgentNeeds) && $disaster) {
-                $urgentNeeds = UrgentNeed::where('disaster_id', $disaster->id)
-                    ->where('is_fulfilled', false)
-                    ->pluck('type')
-                    ->toArray();
-            }
-            
             return [
                 'barangay_id' => $barangay->barangay_id,
                 'name' => $barangay->name,
@@ -98,10 +84,10 @@ class CityDashboardController extends Controller
                 'lat' => isset($barangay->latitude) ? (float) $barangay->latitude : 10.3157,
                 'lng' => isset($barangay->longitude) ? (float) $barangay->longitude : 123.8854,
                 'status' => $barangay->disaster_status,
+                'disaster_type' => $barangay->disaster_type,
                 'affected_families' => $barangay->affected_families,
-                'has_disaster' => $disaster ? true : false,
-                'disaster_type' => $disaster ? $disaster->type : null,
-                'urgent_needs' => $urgentNeeds
+                'needs_help' => $barangay->needsHelp(),
+                'resource_needs' => $resourceNeeds
             ];
         });
 
@@ -153,50 +139,35 @@ class CityDashboardController extends Controller
     }
 
     /**
-     * Get barangays comparison - UPDATED TO USE RESOURCE_NEEDS
+     * Get barangays comparison
      */
     public function getBarangaysComparison()
     {
         $barangays = Barangay::all()->map(function ($barangay) {
-            $disaster = Disaster::where('barangay_id', $barangay->barangay_id)
-                ->where('is_active', true)
-                ->first();
-
-            $onlineDonations = 0;
-            if ($disaster) {
-                $onlineDonations = Donation::where('disaster_id', $disaster->id)
-                    ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                    ->sum('amount');
-            }
+            $onlineDonations = Donation::where('barangay_id', $barangay->barangay_id)
+                ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+                ->sum('amount');
 
             $physicalDonations = PhysicalDonation::where('barangay_id', $barangay->barangay_id)
                 ->sum('estimated_value');
 
-            // ⭐ PRIORITY: Get needs from resource_needs (BDRRMC posted needs)
-            $urgentNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
+            $resourceNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
                 ->whereIn('status', ['pending', 'partially_fulfilled'])
                 ->pluck('category')
                 ->unique()
                 ->toArray();
 
-            // Fallback: If no resource needs, check disaster urgent needs
-            if (empty($urgentNeeds) && $disaster) {
-                $urgentNeeds = UrgentNeed::where('disaster_id', $disaster->id)
-                    ->where('is_fulfilled', false)
-                    ->pluck('type')
-                    ->toArray();
-            }
-
             return [
                 'barangay_id' => $barangay->barangay_id,
                 'name' => $barangay->name,
                 'status' => $barangay->disaster_status,
+                'disaster_type' => $barangay->disaster_type,
                 'affected_families' => $barangay->affected_families,
                 'donations_received' => $onlineDonations + $physicalDonations,
                 'online_donations' => $onlineDonations,
                 'physical_donations' => $physicalDonations,
-                'urgent_needs' => array_unique($urgentNeeds),
-                'has_active_disaster' => $disaster ? true : false
+                'resource_needs' => $resourceNeeds,
+                'needs_help' => $barangay->needsHelp()
             ];
         });
 
@@ -204,70 +175,55 @@ class CityDashboardController extends Controller
     }
 
     /**
-     * Get active fundraisers - UPDATED TO SHOW RESOURCE_NEEDS
+     * Get active fundraisers - barangays that need help
      */
     public function getActiveFundraisers()
     {
-        $fundraisers = Disaster::with(['barangay'])
-            ->where('is_active', true)
+        $fundraisers = Barangay::where('disaster_status', '!=', 'safe')
+            ->with('resourceNeeds')
             ->get()
-            ->map(function ($disaster) {
-                $totalDonations = Donation::where('disaster_id', $disaster->id)
+            ->map(function ($barangay) {
+                $totalDonations = Donation::where('barangay_id', $barangay->barangay_id)
                     ->whereIn('status', ['confirmed', 'distributed', 'completed'])
                     ->sum('amount');
 
-                $goal = $disaster->affected_families * 10000;
+                $goal = $barangay->affected_families * 10000;
                 $progress = $goal > 0 ? min(100, ($totalDonations / $goal) * 100) : 0;
 
-                $donorsCount = Donation::where('disaster_id', $disaster->id)
+                $donorsCount = Donation::where('barangay_id', $barangay->barangay_id)
                     ->whereIn('status', ['confirmed', 'distributed', 'completed'])
                     ->distinct('donor_email')
                     ->count();
 
-                // ⭐ Get resource needs for this barangay (BDRRMC needs)
-                $resourceNeeds = ResourceNeed::where('barangay_id', $disaster->barangay_id)
+                // Get resource needs for this barangay
+                $resourceNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
                     ->whereIn('status', ['pending', 'partially_fulfilled'])
                     ->get()
                     ->map(function ($need) {
                         return [
-                            'type' => $need->category,
-                            'quantity_needed' => $need->quantity,
+                            'category' => $need->category,
+                            'quantity' => $need->quantity,
                             'urgency' => $need->urgency,
                             'status' => $need->status,
                             'description' => $need->description
                         ];
                     });
 
-                // If no resource needs, fallback to urgent needs
-                if ($resourceNeeds->isEmpty()) {
-                    $resourceNeeds = UrgentNeed::where('disaster_id', $disaster->id)
-                        ->get()
-                        ->map(function ($need) {
-                            return [
-                                'type' => $need->type,
-                                'quantity_needed' => $need->quantity_needed,
-                                'unit' => $need->unit,
-                                'quantity_fulfilled' => $need->quantity_fulfilled,
-                                'is_fulfilled' => $need->is_fulfilled
-                            ];
-                        });
-                }
-
                 return [
-                    'id' => $disaster->id,
-                    'title' => $disaster->title,
-                    'barangay' => $disaster->barangay->name,
-                    'type' => $disaster->type,
-                    'severity' => $disaster->severity,
-                    'description' => $disaster->description,
-                    'affected_families' => $disaster->affected_families,
+                    'id' => $barangay->barangay_id,
+                    'title' => $barangay->disaster_type
+                        ? ucfirst($barangay->disaster_type) . ' Relief - ' . $barangay->name
+                        : 'Emergency Relief - ' . $barangay->name,
+                    'barangay' => $barangay->name,
+                    'disaster_type' => $barangay->disaster_type,
+                    'status' => $barangay->disaster_status,
+                    'description' => $barangay->needs_summary,
+                    'affected_families' => $barangay->affected_families,
                     'goal' => $goal,
                     'raised' => $totalDonations,
                     'progress' => round($progress, 2),
                     'donors_count' => $donorsCount,
-                    'urgent_needs' => $resourceNeeds,
-                    'started_at' => $disaster->started_at->format('Y-m-d'),
-                    'days_active' => $disaster->started_at->diffInDays(now())
+                    'resource_needs' => $resourceNeeds,
                 ];
             });
 
@@ -275,72 +231,47 @@ class CityDashboardController extends Controller
     }
 
     /**
-     * Get detailed barangay information - UPDATED TO USE RESOURCE_NEEDS
+     * Get detailed barangay information
      */
     public function getBarangayDetails($barangayId)
     {
         $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
 
-        $disaster = Disaster::where('barangay_id', $barangayId)
-            ->where('is_active', true)
-            ->first();
-
-        $recentDonations = [];
-        if ($disaster) {
-            $recentDonations = Donation::where('disaster_id', $disaster->id)
-                ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                ->orderBy('created_at', 'desc')
-                ->limit(10)
-                ->get();
-        }
+        $recentDonations = Donation::where('barangay_id', $barangayId)
+            ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
 
         $physicalDonations = PhysicalDonation::where('barangay_id', $barangayId)
             ->orderBy('recorded_at', 'desc')
             ->limit(10)
             ->get();
 
-        // ⭐ Get resource needs (from BDRRMC)
         $resourceNeeds = ResourceNeed::where('barangay_id', $barangayId)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $totalOnlineDonations = $disaster ? 
-            Donation::where('disaster_id', $disaster->id)
-                ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                ->sum('amount') : 0;
+        $totalOnlineDonations = Donation::where('barangay_id', $barangayId)
+            ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+            ->sum('amount');
 
         $totalPhysicalDonations = PhysicalDonation::where('barangay_id', $barangayId)
             ->sum('estimated_value');
 
-        $totalDonors = $disaster ?
-            Donation::where('disaster_id', $disaster->id)
-                ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                ->distinct('donor_email')
-                ->count() : 0;
+        $totalDonors = Donation::where('barangay_id', $barangayId)
+            ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+            ->distinct('donor_email')
+            ->count();
 
         return response()->json([
-            'barangay' => [
-                'barangay_id' => $barangay->barangay_id,
-                'name' => $barangay->name,
-                'city' => $barangay->city,
-                'district' => $barangay->district,
+            'barangay' => $barangay,
+            'current_situation' => [
                 'status' => $barangay->disaster_status,
+                'disaster_type' => $barangay->disaster_type,
+                'description' => $barangay->needs_summary,
                 'affected_families' => $barangay->affected_families,
-                'latitude' => $barangay->latitude,
-                'longitude' => $barangay->longitude,
-                'contact_person' => $barangay->contact_person,
-                'contact_phone' => $barangay->contact_phone,
-                'contact_email' => $barangay->contact_email,
-                'needs_summary' => $barangay->needs_summary,
             ],
-            'disaster' => $disaster ? [
-                'id' => $disaster->id,
-                'title' => $disaster->title,
-                'type' => $disaster->type,
-                'severity' => $disaster->severity,
-                'description' => $disaster->description,
-                'started_at' => $disaster->started_at->format('Y-m-d H:i:s'),
-            ] : null,
             'statistics' => [
                 'total_donations' => $totalOnlineDonations + $totalPhysicalDonations,
                 'online_donations' => $totalOnlineDonations,
@@ -350,7 +281,7 @@ class CityDashboardController extends Controller
             ],
             'recent_online_donations' => $recentDonations,
             'recent_physical_donations' => $physicalDonations,
-            'resource_needs' => $resourceNeeds // ⭐ From BDRRMC
+            'resource_needs' => $resourceNeeds
         ]);
     }
 
@@ -376,13 +307,13 @@ class CityDashboardController extends Controller
     }
 
     /**
-     * Get recent activity - UPDATED TO SHOW RESOURCE_NEEDS
+     * Get recent activity
      */
     public function getRecentActivity()
     {
         $activities = collect();
 
-        $recentDonations = Donation::with(['disaster.barangay'])
+        $recentDonations = Donation::with('barangay')
             ->whereIn('status', ['confirmed', 'distributed', 'completed'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -390,31 +321,12 @@ class CityDashboardController extends Controller
             ->map(function ($donation) {
                 return [
                     'type' => 'donation',
-                    'barangay' => $donation->disaster->barangay->name ?? 'Unknown',
-                    'amount' => $donation->amount,
-                    'donor' => $donation->donor_display_name,
-                    'timestamp' => $donation->created_at->diffForHumans(),
-                    'created_at' => $donation->created_at
+                    'barangay' => $donation->barangay->name ?? 'Unknown',
+                    'message' => '₱' . number_format($donation->amount, 2) . ' donation received',
+                    'timestamp' => $donation->created_at,
                 ];
             });
 
-        $recentPhysical = PhysicalDonation::with('barangay')
-            ->orderBy('recorded_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($donation) {
-                return [
-                    'type' => 'physical_donation',
-                    'barangay' => $donation->barangay->name,
-                    'donor' => $donation->donor_name,
-                    'category' => $donation->category,
-                    'quantity' => $donation->quantity,
-                    'timestamp' => $donation->recorded_at->diffForHumans(),
-                    'created_at' => $donation->recorded_at
-                ];
-            });
-
-        // ⭐ Show resource needs in activity
         $recentNeeds = ResourceNeed::with('barangay')
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -422,21 +334,15 @@ class CityDashboardController extends Controller
             ->map(function ($need) {
                 return [
                     'type' => 'resource_need',
-                    'barangay' => $need->barangay->name,
-                    'category' => $need->category,
-                    'urgency' => $need->urgency,
-                    'quantity' => $need->quantity,
-                    'status' => $need->status,
-                    'timestamp' => $need->created_at->diffForHumans(),
-                    'created_at' => $need->created_at
+                    'barangay' => $need->barangay->name ?? 'Unknown',
+                    'message' => ucfirst($need->category) . ' needed - ' . $need->urgency . ' urgency',
+                    'timestamp' => $need->created_at,
                 ];
             });
 
-        $activities = $recentDonations
-            ->merge($recentPhysical)
-            ->merge($recentNeeds)
-            ->sortByDesc('created_at')
-            ->take(20)
+        $activities = $recentDonations->merge($recentNeeds)
+            ->sortByDesc('timestamp')
+            ->take(15)
             ->values();
 
         return response()->json($activities);
