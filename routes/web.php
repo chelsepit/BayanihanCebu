@@ -103,3 +103,9 @@ Route::middleware(['auth.check', 'role:resident'])->group(function () {
 Route::middleware(['auth.check', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 });
+
+
+// ==================== DONATION ROUTES FOR LISK ==================== //
+Route::post('/api/donations', [DonationController::class, 'store']);
+Route::get('/api/donations', [DonationController::class, 'index']);
+Route::get('/api/donations/barangay/{id}', [DonationController::class, 'getByBarangay']);
