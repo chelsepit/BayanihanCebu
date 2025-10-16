@@ -96,19 +96,7 @@ class BarangaySeeder extends Seeder
             'started_at' => now()->subDays(rand(1, 7)),
         ]);
 
-        // Create urgent needs
-        foreach ($data['needs'] as $need) {
-            UrgentNeed::create([
-                'disaster_id' => $disaster->id,
-                'type' => $need,
-                'quantity_needed' => rand(50, 200),
-                'unit' => $this->getUnitForNeedType($need),
-                'quantity_fulfilled' => rand(10, 50),
-                'is_fulfilled' => false,
-            ]);
-        }
-
-        // Create some sample donations
+         // Create some sample donations
         for ($i = 0; $i < rand(3, 8); $i++) {
             Donation::create([
                 'disaster_id' => $disaster->id,
