@@ -293,6 +293,9 @@ class BarangayDashboardController extends Controller
     /**
      * Update barangay information
      */
+    /**
+     * Update barangay information
+     */
     public function updateBarangayInfo(Request $request)
     {
         $barangayId = session('barangay_id');
@@ -300,9 +303,16 @@ class BarangayDashboardController extends Controller
         $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
 
         $validated = $request->validate([
-            'disaster_status' => 'sometimes|in:safe,at-risk,affected,recovering',
+            'disaster_status' => 'required|in:safe,warning,critical,emergency',
+            'affected_families' => 'sometimes|integer|min:0',
             'needs_summary' => 'nullable|string|max:1000',
         ]);
+
+        // If status is safe, reset affected families to 0
+        if ($validated['disaster_status'] === 'safe') {
+            $validated['affected_families'] = 0;
+            $validated['needs_summary'] = null; // Clear needs summary for safe status
+        }
 
         $barangay->update($validated);
 
