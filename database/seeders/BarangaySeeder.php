@@ -53,6 +53,7 @@ class BarangaySeeder extends Seeder
                 'affected_families' => 0,
             ],
             [
+                'barangay_id' => 'CC006',
                 'name' => 'Mabolo',
                 'city' => 'Cebu City',
                 'disaster_status' => 'safe',
@@ -60,6 +61,7 @@ class BarangaySeeder extends Seeder
                 'affected_families' => 0,
             ],
             [
+                'barangay_id' => 'CC007',
                 'name' => 'Tisa',
                 'city' => 'Cebu City',
                 'disaster_status' => 'safe',
@@ -67,6 +69,7 @@ class BarangaySeeder extends Seeder
                 'affected_families' => 0,
             ],
             [
+                'barangay_id' => 'CC008',
                 'name' => 'Guadalupe',
                 'city' => 'Cebu City',
                 'disaster_status' => 'emergency',
@@ -74,6 +77,7 @@ class BarangaySeeder extends Seeder
                 'affected_families' => 250,
             ],
             [
+                'barangay_id' => 'CC009',
                 'name' => 'Bambad',
                 'city' => 'Cebu City',
                 'disaster_status' => 'warning',
@@ -81,6 +85,7 @@ class BarangaySeeder extends Seeder
                 'affected_families' => 45,
             ],
             [
+                'barangay_id' => 'CC010',
                 'name' => 'Talamban',
                 'city' => 'Cebu City',
                 'disaster_status' => 'warning',
@@ -88,6 +93,7 @@ class BarangaySeeder extends Seeder
                 'affected_families' => 32,
             ],
             [
+                'barangay_id' => 'CC011',
                 'name' => 'Lahug',
                 'city' => 'Cebu City',
                 'disaster_status' => 'critical',
@@ -109,42 +115,33 @@ class BarangaySeeder extends Seeder
     private function createResourceNeedsForBarangay($barangay)
     {
         $needsData = [
-            'warning' => ['food'],
-            'critical' => ['medical', 'shelter'],
-            'emergency' => ['food', 'water', 'medical'],
+            'warning' => [
+                ['category' => 'food', 'quantity' => '100 packs', 'description' => 'Rice, canned goods, and noodles'],
+                ['category' => 'water', 'quantity' => '50 gallons', 'description' => 'Purified drinking water'],
+            ],
+            'critical' => [
+                ['category' => 'medical', 'quantity' => '200 kits', 'description' => 'First aid kits and medicines'],
+                ['category' => 'shelter', 'quantity' => '50 tents', 'description' => 'Emergency tents and tarpaulins'],
+                ['category' => 'food', 'quantity' => '300 packs', 'description' => 'Food supplies for affected families'],
+            ],
+            'emergency' => [
+                ['category' => 'food', 'quantity' => '500 packs', 'description' => 'Emergency food rations'],
+                ['category' => 'water', 'quantity' => '200 gallons', 'description' => 'Potable water for distribution'],
+                ['category' => 'medical', 'quantity' => '150 kits', 'description' => 'Medical supplies and first aid'],
+                ['category' => 'shelter', 'quantity' => '100 tents', 'description' => 'Temporary shelters for displaced families'],
+            ],
         ];
 
-        $data = $disasterData[$severity][$barangay->name] ?? null;
+        $needs = $needsData[$barangay->disaster_status] ?? [];
 
-        if (!$data) {
-            return;
-        }
-
-        $disaster = Disaster::create([
-            'barangay_id' => $barangay->barangay_id,
-            'title' => ucfirst($data['type']) . ' in ' . $barangay->name,
-            'description' => 'Active ' . $data['type'] . ' disaster affecting the community.',
-            'type' => $data['type'],
-            'severity' => $severity,
-            'affected_families' => $data['affected_families'],
-            'total_donations' => $data['total_donations'],
-            'is_active' => true,
-            'started_at' => now()->subDays(rand(1, 7)),
-        ]);
-
-         // Create some sample donations
-        for ($i = 0; $i < rand(3, 8); $i++) {
-            Donation::create([
-                'disaster_id' => $disaster->id,
-                'tracking_code' => 'DN' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 10)),
-                'amount' => rand(1000, 50000),
-                'donation_type' => 'monetary',
-                'status' => ['confirmed', 'distributed'][rand(0, 1)],
-                'transaction_hash' => '0x' . bin2hex(random_bytes(32)),
-                'donor_name' => $this->getRandomDonorName(),
-                'donor_email' => 'donor' . rand(1000, 9999) . '@example.com',
-                'is_anonymous' => rand(0, 1),
-                'distributed_at' => rand(0, 1) ? now()->subDays(rand(1, 5)) : null,
+        foreach ($needs as $need) {
+            ResourceNeed::create([
+                'barangay_id' => $barangay->barangay_id, // Use barangay_id string, not id
+                'category' => $need['category'],
+                'description' => $need['description'] . ' needed for ' . $barangay->disaster_type . ' relief',
+                'quantity' => $need['quantity'],
+                'urgency' => $this->getUrgencyByStatus($barangay->disaster_status),
+                'status' => 'pending',
             ]);
         }
     }

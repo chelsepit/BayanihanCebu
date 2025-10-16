@@ -16,12 +16,22 @@ return new class extends Migration
             $table->string('quantity', 100);
             $table->enum('urgency', ['low', 'medium', 'high', 'critical']);
             $table->enum('status', ['pending', 'partially_fulfilled', 'fulfilled'])->default('pending');
+
+            // ✅ BLOCKCHAIN FIELDS
+            $table->string('blockchain_tx_hash', 66)->nullable();
+            $table->enum('blockchain_status', ['pending', 'confirmed', 'failed'])->default('pending');
+            $table->timestamp('blockchain_recorded_at')->nullable();
+
             $table->timestamps();
 
             $table->foreign('barangay_id')
                   ->references('barangay_id')
                   ->on('barangays')
                   ->onDelete('cascade');
+
+            // Indexes
+            $table->index('blockchain_status');
+            $table->index('status');
         });
     }
 

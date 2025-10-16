@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             ResourceNeedSeeder::class,
             PhysicalDonationSeeder::class,
             DistributionLogSeeder::class,
+            SystemWalletSeeder::class,
         ]);
     }
 }
