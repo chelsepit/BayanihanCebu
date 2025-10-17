@@ -33,7 +33,7 @@ Email: ldrrmo@cebu.gov.ph
 Password: ldrrmo123
 BDRRMC Accounts:
 
-Emails: bdrrmc.B001@bayanihancebu.com (through B005)
+Emails: bdrrmc.CC001@bayanihancebu.com (through B005)
 Password: bdrrmc123
 Resident Accounts:
 

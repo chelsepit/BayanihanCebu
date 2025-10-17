@@ -8,6 +8,7 @@ use App\Models\ResourceNeed;
 use App\Models\PhysicalDonation;
 use App\Models\DistributionLog;
 use App\Models\Barangay;
+use App\Models\OnlineDonation;
 
 class BarangayDashboardController extends Controller
 {
@@ -22,17 +23,42 @@ class BarangayDashboardController extends Controller
         // Get barangay info
         $barangay = Barangay::where('barangay_id', $barangayId)->first();
 
-        // Get statistics
-        $stats = [
-            'affected_families' => 120, // TODO: Calculate from actual data
-            'total_donations' => PhysicalDonation::where('barangay_id', $barangayId)->count(),
-            'active_requests' => ResourceNeed::where('barangay_id', $barangayId)
-                ->where('status', 'pending')
-                ->count(),
-            'verified_donations' => 11, // TODO: Get from online donations
-        ];
+        // Get updated statistics including online donations
+        $stats = $this->calculateStats($barangayId);
 
         return view('UserDashboards.barangaydashboard', compact('barangay', 'stats'));
+    }
+
+    /**
+     * Calculate statistics for the dashboard
+     */
+    private function calculateStats($barangayId)
+    {
+        $physicalCount = PhysicalDonation::where('barangay_id', $barangayId)->count();
+        $physicalValue = PhysicalDonation::where('barangay_id', $barangayId)->sum('estimated_value');
+
+        $onlineCount = OnlineDonation::where('target_barangay_id', $barangayId)
+            ->where('verification_status', 'verified')->count();
+        $onlineValue = OnlineDonation::where('target_barangay_id', $barangayId)
+            ->where('verification_status', 'verified')->sum('amount');
+
+        $activeRequests = ResourceNeed::where('barangay_id', $barangayId)
+            ->where('status', 'pending')->count();
+
+        $verifiedDonations = OnlineDonation::where('target_barangay_id', $barangayId)
+            ->where('blockchain_status', 'confirmed')->count();
+
+        $barangay = Barangay::where('barangay_id', $barangayId)->first();
+
+        return [
+            'affected_families' => $barangay->affected_families ?? 0,
+            'total_donations' => $physicalCount + $onlineCount,
+            'total_value' => $physicalValue + $onlineValue,
+            'active_requests' => $activeRequests,
+            'verified_donations' => $verifiedDonations,
+            'physical_donations' => $physicalCount,
+            'online_donations' => $onlineCount,
+        ];
     }
 
     // ==================== RESOURCE NEEDS APIs ====================
@@ -213,9 +239,6 @@ class BarangayDashboardController extends Controller
     /**
      * Record distribution of a donation
      */
-/**
-     * Record distribution of a donation
-     */
     public function recordDistribution(Request $request, $id)
     {
         $barangayId = session('barangay_id');
@@ -230,8 +253,8 @@ class BarangayDashboardController extends Controller
             'quantity_distributed' => 'required|string|max:100',
             'notes' => 'nullable|string|max:500',
             'distribution_status' => 'required|in:partially_distributed,fully_distributed',
-            'photo_urls' => 'required|array|min:5|max:5', // REQUIRE 5 photos
-            'photo_urls.*' => 'required|string', // Each photo must be a base64 string
+            'photo_urls' => 'required|array|min:5|max:5',
+            'photo_urls.*' => 'required|string',
         ]);
 
         // Create distribution log
@@ -242,7 +265,7 @@ class BarangayDashboardController extends Controller
             'distributed_by' => $userId,
             'distributed_at' => now(),
             'notes' => $validated['notes'],
-            'photo_urls' => $validated['photo_urls'], // Save photos as JSON
+            'photo_urls' => $validated['photo_urls'],
         ]);
 
         // Update donation status
@@ -260,21 +283,63 @@ class BarangayDashboardController extends Controller
         ]);
     }
 
-    // ==================== ONLINE DONATIONS (READ-ONLY) ====================
+    // ==================== ONLINE DONATIONS (READ-ONLY FOR BDRRMC) ====================
 
     /**
-     * Get online donations for the barangay
+     * Get online donations for the barangay (READ-ONLY for BDRRMC)
      */
     public function getOnlineDonations()
     {
         $barangayId = session('barangay_id');
 
-        $donations = \App\Models\Donation::where('barangay_id', $barangayId)
-            ->with('user')
+        $donations = OnlineDonation::where('target_barangay_id', $barangayId)
+            ->with(['verifier'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function($donation) {
+                return [
+                    'id' => $donation->id,
+                    'tracking_code' => $donation->tracking_code,
+                    'donor_name' => $donation->getDonorDisplayName(),
+                    'donor_email' => $donation->is_anonymous ? null : $donation->donor_email,
+                    'amount' => $donation->amount,
+                    'payment_method' => $donation->payment_method,
+                    'verification_status' => $donation->verification_status,
+                    'verified_at' => $donation->verified_at ? $donation->verified_at->format('M d, Y') : null,
+                    'blockchain_status' => $donation->blockchain_status,
+                    'blockchain_verified' => $donation->blockchain_status === 'confirmed',
+                    'tx_hash' => $donation->tx_hash,
+                    'blockchain_tx_hash' => $donation->blockchain_tx_hash,
+                    'explorer_url' => $donation->explorer_url,
+                    'created_at' => $donation->created_at->format('M d, Y H:i'),
+                ];
+            });
 
-        return response()->json($donations);
+        // Calculate statistics
+        $stats = [
+            'total_online_donations' => $donations->sum('amount'),
+            'total_count' => $donations->count(),
+            'verified_count' => $donations->where('verification_status', 'verified')->count(),
+            'blockchain_verified_count' => $donations->where('blockchain_verified', true)->count(),
+            'pending_count' => $donations->where('verification_status', 'pending')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'donations' => $donations,
+            'statistics' => $stats,
+        ]);
+    }
+
+    /**
+     * Get updated statistics including online donations
+     */
+    public function getUpdatedStats()
+    {
+        $barangayId = session('barangay_id');
+        $stats = $this->calculateStats($barangayId);
+
+        return response()->json($stats);
     }
 
     // ==================== BARANGAY INFO ====================
@@ -292,12 +357,6 @@ class BarangayDashboardController extends Controller
     }
 
     /**
-     * Update barangay information
-     */
-    /**
-     * Update barangay information
-     */
-   /**
      * Update barangay information
      */
     public function updateBarangayInfo(Request $request)
@@ -344,6 +403,6 @@ class BarangayDashboardController extends Controller
                 'message' => 'Error updating barangay information',
                 'error' => $e->getMessage()
             ], 500);
-        }}
-
+        }
     }
+}
