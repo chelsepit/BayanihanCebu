@@ -9,6 +9,7 @@ use App\Http\Controllers\CityDashboardController;
 use App\Http\Controllers\BarangayDashboardController;
 use App\Http\Controllers\ResidentDashboardController;
 use App\Http\Controllers\PublicMapController;
+use App\Http\Controllers\DonationController;
 
 // ==================== PUBLIC ROUTES ====================
 
@@ -109,3 +110,32 @@ Route::middleware(['auth.check', 'role:admin'])->group(function () {
 Route::post('/api/donations', [DonationController::class, 'store']);
 Route::get('/api/donations', [DonationController::class, 'index']);
 Route::get('/api/donations/barangay/{id}', [DonationController::class, 'getByBarangay']);
+
+
+// Public routes (no login required)
+Route::post('/api/donations/track', [DonationController::class, 'track']);
+Route::get('/api/donations/urgent-needs', [DonationController::class, 'getUrgentNeeds']);
+// Protected routes (require login)
+Route::middleware(['auth.check'])->group(function () {
+
+    // Resident routes
+    Route::middleware(['role:resident'])->group(function () {
+        Route::post('/api/donations', [DonationController::class, 'store']);
+        Route::get('/api/donations/my-donations', [DonationController::class, 'myDonations']);
+        Route::get('/api/donations/my-stats', [DonationController::class, 'getResidentStats']);
+    });
+
+    // BDRRMC routes
+    Route::middleware(['role:bdrrmc'])->group(function () {
+        Route::get('/api/donations/barangay/{id}', [DonationController::class, 'getByBarangay']);
+        Route::get('/api/donations/pending-verifications', [DonationController::class, 'getPendingVerifications']);
+        Route::post('/api/donations/{id}/verify', [DonationController::class, 'verify']);
+    });
+
+    // LDRRMO/Admin routes
+    Route::middleware(['role:ldrrmo,admin'])->group(function () {
+        Route::get('/api/donations', [DonationController::class, 'index']);
+        Route::get('/api/donations/all-pending-verifications', [DonationController::class, 'getPendingVerifications']);
+        Route::post('/api/donations/{id}/verify', [DonationController::class, 'verify']);
+    });
+    });

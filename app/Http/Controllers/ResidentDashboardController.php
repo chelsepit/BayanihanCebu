@@ -4,58 +4,141 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Barangay;
+use App\Models\ResourceNeed;
+use App\Models\Disaster;
 
 /**
  * Resident Dashboard Controller
  */
 class ResidentDashboardController extends Controller
 {
-  /*  public function index()
-    {
-        $userId = session('user_id');
-        $barangayId = session('barangay_id');
-
-        // Get user details
-        $user = DB::table('users')
-            ->where('user_id', $userId)
-            ->first();
-
-        // Get barangay info
-        $barangay = DB::table('barangays')
-            ->where('barangay_id', $barangayId)
-            ->first();
-
-        // Get user's donation history
-        $donations = DB::table('donations')
-            ->where('donor_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
-
-        // Get barangay statistics
-        $barangayStats = DB::table('donations')
-            ->where('barangay_id', $barangayId)
-            ->select(
-                DB::raw('COUNT(*) as total_donations'),
-                DB::raw('SUM(amount) as total_amount')
-            )
-            ->first();
-
-        return view('UserDashboards.residentdashboard', [
-            'user' => $user,
-            'barangay' => $barangay,
-            'donations' => $donations,
-            'barangayStats' => $barangayStats
-        ]);
-    }
-}
-    */
-
-/**
- * BDRRMC (Barangay) Dashboard Controller
- */
+    /**
+     * Display Resident Dashboard
+     */
     public function index()
     {
         return view('UserDashboards.residentdashboard');
+    }
+
+    /**
+     * Get all urgent needs for residents to view and donate
+     */
+    public function getUrgentNeeds()
+    {
+        try {
+            $needs = ResourceNeed::with(['barangay'])
+                ->whereIn('status', ['pending', 'partially_fulfilled'])
+                ->orderByRaw("FIELD(urgency, 'critical', 'high', 'medium', 'low')")
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($need) {
+                    return [
+                        'id' => $need->id,
+                        'barangay_id' => $need->barangay_id,
+                        'barangay_name' => $need->barangay->name,
+                        'category' => $need->category,
+                        'description' => $need->description,
+                        'quantity' => $need->quantity,
+                        'urgency' => $need->urgency,
+                        'status' => $need->status,
+                        'affected_families' => $need->barangay->affected_families ?? 0,
+                        'disaster_status' => $need->barangay->disaster_status ?? 'safe',
+                        'created_at' => $need->created_at->format('Y-m-d H:i:s'),
+                    ];
+                });
+
+            // Calculate statistics
+            $activeNeedsCount = $needs->whereIn('status', ['pending', 'partially_fulfilled'])->count();
+            $affectedBarangays = $needs->pluck('barangay_id')->unique()->count();
+
+            return response()->json([
+                'success' => true,
+                'needs' => $needs,
+                'statistics' => [
+                    'active_needs' => $activeNeedsCount,
+                    'affected_barangays' => $affectedBarangays,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading needs',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get barangays map data (for map view)
+     */
+    public function getBarangaysMap()
+    {
+        try {
+            $barangays = Barangay::all()->map(function ($barangay) {
+                // Get urgent needs for this barangay
+                $urgentNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
+                    ->whereIn('status', ['pending', 'partially_fulfilled'])
+                    ->pluck('category')
+                    ->unique()
+                    ->toArray();
+
+                return [
+                    'barangay_id' => $barangay->barangay_id,
+                    'name' => $barangay->name,
+                    'lat' => $barangay->latitude ?? 10.3157, // Default Cebu City coords
+                    'lng' => $barangay->longitude ?? 123.8854,
+                    'status' => $barangay->disaster_status ?? 'safe',
+                    'affected_families' => $barangay->affected_families ?? 0,
+                    'urgent_needs' => $urgentNeeds,
+                ];
+            });
+
+            return response()->json($barangays);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading barangays',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get statistics for resident dashboard
+     */
+    public function getStatistics()
+    {
+        try {
+            $activeNeeds = ResourceNeed::whereIn('status', ['pending', 'partially_fulfilled'])->count();
+
+            $affectedBarangays = Barangay::where('disaster_status', '!=', 'safe')->count();
+
+            // If user is logged in, get their donation stats
+            $userEmail = session('user_email');
+            $userImpact = 0;
+
+            if ($userEmail) {
+                $userImpact = \App\Models\OnlineDonation::where('donor_email', $userEmail)
+                    ->where('verification_status', 'verified')
+                    ->sum('amount');
+            }
+
+            return response()->json([
+                'success' => true,
+                'active_needs' => $activeNeeds,
+                'affected_barangays' => $affectedBarangays,
+                'user_impact' => $userImpact,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
