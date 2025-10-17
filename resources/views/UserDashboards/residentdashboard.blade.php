@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="{{ asset('js/web3Helper.js') }}"></script>
+     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
         .modal {
@@ -18,19 +20,33 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             align-items: center;
             justify-content: center;
         }
-        .modal.active { display: flex; }
+
+        .modal.active {
+            display: flex;
+        }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .animate-slide-in { animation: slideIn 0.3s ease-out; }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
 
     <!-- Top Navigation Bar -->
@@ -51,7 +67,8 @@
                 <!-- Wallet Connection & User Info -->
                 <div class="flex items-center gap-4">
                     <!-- Connect Wallet Button -->
-                    <button id="connectWalletBtn" class="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition">
+                    <button id="connectWalletBtn"
+                        class="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition">
                         <i class="fas fa-wallet"></i>
                         <span id="walletStatus">Connect Wallet</span>
                     </button>
@@ -66,7 +83,8 @@
                         </div>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="px-4 py-2 bg-white text-blue-700 rounded-lg hover:bg-blue-50 transition text-sm font-medium">
+                            <button type="submit"
+                                class="px-4 py-2 bg-white text-blue-700 rounded-lg hover:bg-blue-50 transition text-sm font-medium">
                                 <i class="fas fa-sign-out-alt mr-1"></i> Sign Out
                             </button>
                         </form>
@@ -84,7 +102,8 @@
                 <i class="fas fa-exclamation-triangle text-blue-500 text-xl mt-1 mr-3"></i>
                 <div>
                     <h3 class="text-blue-900 font-semibold text-lg mb-1">Help Disaster-Affected Barangays</h3>
-                    <p class="text-blue-800 text-sm">View what barangays need and donate to help affected families. All donations are verified on the blockchain for transparency.</p>
+                    <p class="text-blue-800 text-sm">View what barangays need and donate to help affected families. All
+                        donations are verified on the blockchain for transparency.</p>
                 </div>
             </div>
         </div>
@@ -142,7 +161,8 @@
                 <!-- Urgency Filter -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
-                    <select id="urgencyFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="urgencyFilter"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Urgencies</option>
                         <option value="critical">Critical</option>
                         <option value="high">High</option>
@@ -154,7 +174,8 @@
                 <!-- Category Filter -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                    <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="categoryFilter"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Categories</option>
                         <option value="food">Food</option>
                         <option value="water">Water</option>
@@ -167,7 +188,8 @@
                 <!-- Search -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                    <input type="text" id="searchFilter" placeholder="Search barangay or description..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" id="searchFilter" placeholder="Search barangay or description..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
         </div>
@@ -222,15 +244,19 @@
                         Amount (PHP) <span class="text-red-500">*</span>
                     </label>
                     <input type="number" id="donationAmount" required min="100" step="0.01"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                           placeholder="Enter amount">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                        placeholder="Enter amount">
 
                     <!-- Quick Amount Buttons -->
                     <div class="flex gap-2 mt-3">
-                        <button type="button" onclick="setAmount(500)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱500</button>
-                        <button type="button" onclick="setAmount(1000)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱1,000</button>
-                        <button type="button" onclick="setAmount(2500)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱2,500</button>
-                        <button type="button" onclick="setAmount(5000)" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱5,000</button>
+                        <button type="button" onclick="setAmount(500)"
+                            class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱500</button>
+                        <button type="button" onclick="setAmount(1000)"
+                            class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱1,000</button>
+                        <button type="button" onclick="setAmount(2500)"
+                            class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱2,500</button>
+                        <button type="button" onclick="setAmount(5000)"
+                            class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">₱5,000</button>
                     </div>
                 </div>
 
@@ -240,9 +266,8 @@
                         Your Name <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="donorName" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Enter your name"
-                           value="{{ session('user_name') }}">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter your name" value="{{ session('user_name') }}">
                 </div>
 
                 <!-- Your Email (Optional) -->
@@ -251,16 +276,18 @@
                         Your Email (Optional)
                     </label>
                     <input type="email" id="donorEmail"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="email@example.com">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="email@example.com">
                 </div>
 
                 <!-- Submit Button -->
                 <div class="flex gap-3">
-                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition font-semibold">
+                    <button type="submit"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition font-semibold">
                         <i class="fas fa-heart mr-2"></i> Donate Now
                     </button>
-                    <button type="button" onclick="closeDonationModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
+                    <button type="button" onclick="closeDonationModal()"
+                        class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
                         Cancel
                     </button>
                 </div>
@@ -271,7 +298,8 @@
     <!-- Processing Modal -->
     <div id="processingModal" class="modal">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center">
-            <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4">
+            </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">Processing Transaction...</h3>
             <p class="text-gray-600 text-sm">Please wait for blockchain confirmation</p>
             <p class="text-xs text-gray-500 mt-4">This may take 10-30 seconds</p>
@@ -297,10 +325,11 @@
 
             <div class="flex gap-3">
                 <a id="explorerLink" href="#" target="_blank"
-                   class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
+                    class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
                     <i class="fas fa-external-link-alt mr-2"></i> View on Explorer
                 </a>
-                <button onclick="closeSuccessModal()" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
+                <button onclick="closeSuccessModal()"
+                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
                     Done
                 </button>
             </div>
@@ -313,7 +342,7 @@
         let allNeeds = [];
 
         // Connect Wallet on Page Load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadAllNeeds();
 
             // Connect Wallet Button
@@ -350,58 +379,67 @@
         // Load All Needs from API
         async function loadAllNeeds() {
             try {
-                // Get all resource needs from all barangays
-                const response = await fetch('/api/ldrrmo/barangays-map');
-                const barangays = await response.json();
-
-                allNeeds = [];
-                let activeCount = 0;
-                let affectedCount = 0;
-
-                for (const barangay of barangays) {
-                    if (barangay.urgent_needs && barangay.urgent_needs.length > 0) {
-                        affectedCount++;
-                        barangay.urgent_needs.forEach(need => {
-                            allNeeds.push({
-                                barangay_id: barangay.barangay_id,
-                                barangay_name: barangay.name,
-                                category: need,
-                                urgency: barangay.status === 'emergency' ? 'critical' : barangay.status === 'critical' ? 'high' : 'medium',
-                                affected_families: barangay.affected_families,
-                                status: barangay.status
-                            });
-                            activeCount++;
-                        });
-                    }
-                }
-
-                document.getElementById('activeNeedsCount').textContent = activeCount;
-                document.getElementById('affectedBarangaysCount').textContent = affectedCount;
-
-                displayNeeds(allNeeds);
-            } catch (error) {
-                console.error('Error loading needs:', error);
+                // Show loading state
                 document.getElementById('needsGrid').innerHTML = `
-                    <div class="col-span-2 text-center py-12 text-red-600">
-                        <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
-                        <p>Error loading needs. Please refresh the page.</p>
+                    <div class="col-span-2 text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Loading barangay needs...</p>
                     </div>
                 `;
-            }
-        }
 
-        // Display Needs in Grid
+                // Use the correct resident API endpoint
+                const response = await fetch('/api/resident/urgent-needs', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to load needs');
+                }
+
+                allNeeds = data.needs || [];
+
+                // Update statistics
+                if (data.statistics) {
+                    document.getElementById('activeNeedsCount').textContent = data.statistics.active_needs || 0;
+                    document.getElementById('affectedBarangaysCount').textContent = data.statistics.affected_barangays || 0;
+                }
+
+                displayNeeds(allNeeds);
+
+            } catch (error) {
+                console.error('Error loading needs:', error);
+                const errorMessage = error.message || 'An error occurred while loading needs';
+                document.getElementById('needsGrid').innerHTML =
+                    '<div class="col-span-2 text-center py-12">' +
+                    '<div class="text-red-600 mb-4"><i class="fas fa-exclamation-circle text-4xl"></i></div>' +
+                    '<p class="text-lg font-semibold text-gray-800">Error Loading Needs</p>' +
+                    '<p class="text-sm text-gray-600 mt-2">' + errorMessage.replace(/[<>]/g, '') + '</p>' +
+                    '<button onclick="loadAllNeeds()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">' +
+                    '<i class="fas fa-redo mr-2"></i>Try Again' +
+                    '</button>' +
+                    '</div>';
+            }        // Display Needs in Grid
         function displayNeeds(needs) {
             const grid = document.getElementById('needsGrid');
 
             if (needs.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-2 text-center py-12 text-gray-500">
-                        <i class="fas fa-check-circle text-5xl mb-4 text-green-500"></i>
-                        <p class="text-lg font-semibold">No active needs at the moment</p>
-                        <p class="text-sm mt-2">All barangays are safe or needs are fulfilled</p>
-                    </div>
-                `;
+            <div class="col-span-2 text-center py-12 text-gray-500">
+                <i class="fas fa-check-circle text-5xl mb-4 text-green-500"></i>
+                <p class="text-lg font-semibold">No active needs at the moment</p>
+                <p class="text-sm mt-2">All barangays are safe or needs are fulfilled</p>
+            </div>
+        `;
                 return;
             }
 
@@ -421,55 +459,55 @@
                 };
 
                 return `
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
-                        <!-- Header -->
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-map-marker-alt text-blue-600 text-xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-gray-900">${need.barangay_name}</h3>
-                                    <span class="px-3 py-1 ${urgencyColor[need.urgency]} text-xs font-semibold rounded-full uppercase">
-                                        ${need.urgency}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="w-3 h-3 ${statusColor[need.status]} rounded-full" title="${need.status}"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
+                <!-- Header -->
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-map-marker-alt text-blue-600 text-xl"></i>
                         </div>
-
-                        <!-- Info -->
-                        <div class="space-y-2 mb-4">
-                            <div class="flex items-center gap-2 text-gray-700">
-                                <i class="fas fa-box text-gray-400"></i>
-                                <span class="font-medium">Category:</span>
-                                <span class="capitalize">${need.category}</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-gray-700">
-                                <i class="fas fa-exclamation-circle text-gray-400"></i>
-                                <span class="font-medium">Quantity:</span>
-                                <span>Urgently needed</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-gray-700">
-                                <i class="fas fa-users text-gray-400"></i>
-                                <span class="font-medium">Affected Families:</span>
-                                <span>${need.affected_families || 0}</span>
-                            </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${need.barangay_name}</h3>
+                            <span class="px-3 py-1 ${urgencyColor[need.urgency]} text-xs font-semibold rounded-full uppercase">
+                                ${need.urgency}
+                            </span>
                         </div>
-
-                        <!-- Description -->
-                        <p class="text-gray-600 text-sm mb-4">
-                            Urgent need for ${need.category} supplies for ${need.affected_families || 0} affected families in ${need.barangay_name}.
-                        </p>
-
-                        <!-- Donate Button -->
-                        <button onclick='openDonationModal("${need.barangay_id}", "${need.barangay_name}", "${need.category}")'
-                                class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-semibold flex items-center justify-center gap-2">
-                            <i class="fas fa-heart"></i>
-                            Donate to ${need.barangay_name}
-                        </button>
                     </div>
-                `;
+                    <div class="w-3 h-3 ${statusColor[need.disaster_status]} rounded-full" title="${need.disaster_status}"></div>
+                </div>
+
+                <!-- Info -->
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fas fa-box text-gray-400"></i>
+                        <span class="font-medium">Category:</span>
+                        <span class="capitalize">${need.category}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fas fa-exclamation-circle text-gray-400"></i>
+                        <span class="font-medium">Quantity:</span>
+                        <span>${need.quantity}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fas fa-users text-gray-400"></i>
+                        <span class="font-medium">Affected Families:</span>
+                        <span>${need.affected_families || 0}</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <p class="text-gray-600 text-sm mb-4">
+                    ${need.description || `Urgent need for ${need.category} supplies for ${need.affected_families || 0} affected families in ${need.barangay_name}.`}
+                </p>
+
+                <!-- Donate Button -->
+                <button onclick='openDonationModal("${need.barangay_id}", "${need.barangay_name}", "${need.category}")'
+                        class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-semibold flex items-center justify-center gap-2">
+                    <i class="fas fa-heart"></i>
+                    Donate to ${need.barangay_name}
+                </button>
+            </div>
+        `;
             }).join('');
         }
 
@@ -529,7 +567,7 @@
         }
 
         // Handle Donation Form Submission
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const donationForm = document.getElementById('donationForm');
             if (donationForm) {
                 donationForm.addEventListener('submit', async (e) => {
@@ -596,6 +634,7 @@
             }
         });
     </script>
-
+    @include('partials.footer')
 </body>
+
 </html>
