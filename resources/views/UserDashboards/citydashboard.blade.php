@@ -137,6 +137,9 @@
                 <button onclick="switchTab('map', event)" class="tab-btn active px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-map mr-2"></i> Map View
                 </button>
+                <button onclick="switchTab('resources', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
+                    <i class="fas fa-handshake mr-2"></i> Resource Needs
+                </button>
                 <button onclick="switchTab('analytics', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-chart-bar mr-2"></i> Analytics
                 </button>
@@ -173,7 +176,24 @@
             </div>
         </div>
 
-        <!-- TAB 2: Analytics -->
+        <!-- TAB 2: Resource Needs -->
+        <div id="resources-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold">City-Wide Resource Needs</h2>
+                    <p class="text-gray-600 text-sm">Coordinate and match resource requests across all barangays</p>
+                </div>
+            </div>
+
+            <div id="resourceNeedsList" class="space-y-4">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                    <p>Loading resource needs...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Analytics -->
         <div id="analytics-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
             <h2 class="text-2xl font-bold mb-6">Analytics</h2>
 
@@ -200,7 +220,7 @@
             </div>
         </div>
 
-        <!-- TAB 3: Fundraisers -->
+        <!-- TAB 4: Fundraisers -->
         <div id="fundraisers-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Active Fundraisers</h2>
@@ -217,7 +237,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: Barangays Comparison -->
+        <!-- TAB 5: Barangays Comparison -->
         <div id="barangays-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
             <h2 class="text-2xl font-bold mb-6">Barangay Comparison</h2>
 
@@ -249,6 +269,30 @@
 
     </div>
 
+    <!-- Suggested Matches Modal -->
+    <div id="suggestedMatchesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-star"></i>
+                    Suggested Matches
+                </h3>
+                <button onclick="closeMatchModal()" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div id="matchesModalBody" class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <div class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
+                    <p class="text-gray-600">Finding available donations that match this resource need</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
@@ -258,7 +302,6 @@
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-        // HTML escape to prevent XSS
         function escapeHtml(text) {
             if (text == null) return '';
             const div = document.createElement('div');
@@ -266,17 +309,14 @@
             return div.innerHTML;
         }
 
-        // Safe number formatting
         function formatCurrency(amount) {
             return '₱' + (Number(amount) || 0).toLocaleString();
         }
 
-        // Safe number formatting without currency
         function formatNumber(num) {
             return (Number(num) || 0).toLocaleString();
         }
 
-        // Show error message in container
         function showError(containerId, message) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -294,7 +334,6 @@
             `;
         }
 
-        // API fetch with error handling
         async function fetchAPI(url, options = {}) {
             try {
                 const response = await fetch(url, {
@@ -326,34 +365,42 @@
         let statusChart = null;
         let familiesChart = null;
         let paymentMethodChart = null;
-        let loadedTabs = { map: false, analytics: false, fundraisers: false, barangays: false };
+        let loadedTabs = { map: false, resources: false, analytics: false, fundraisers: false, barangays: false };
 
         // ============================================
         // TAB SWITCHING
         // ============================================
 
         function switchTab(tabName, event) {
-            if (!event) return;
-
-            // Update UI
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
             const targetTab = document.getElementById(tabName + '-tab');
-            const targetBtn = event.currentTarget;
+            let targetBtn = null;
+            
+            if (event && event.currentTarget) {
+                targetBtn = event.currentTarget;
+            } else {
+                targetBtn = document.querySelector(`button[onclick*="switchTab('${tabName}'"]`);
+            }
 
-            if (targetTab && targetBtn) {
+            if (targetTab) {
                 targetTab.classList.add('active');
+            }
+            
+            if (targetBtn) {
                 targetBtn.classList.add('active');
             }
 
-            // Load data for the tab (only once)
             if (!loadedTabs[tabName]) {
                 loadedTabs[tabName] = true;
 
                 switch(tabName) {
                     case 'map':
                         loadMapData();
+                        break;
+                    case 'resources':
+                        loadResourceNeeds();
                         break;
                     case 'analytics':
                         loadAnalytics();
@@ -383,14 +430,9 @@
                 document.getElementById('activeFundraisers').textContent = formatNumber(stats.active_fundraisers);
                 document.getElementById('criticalBarangays').textContent = formatNumber(stats.critical_barangays);
                 document.getElementById('totalDonors').textContent = formatNumber(stats.total_donors);
-                document.getElementById('blockchainVerified').textContent = formatNumber(stats.blockchain_verified) + ' blockchain verified';
+                document.getElementById('blockchainVerified').textContent = '0 blockchain verified';
             } catch (error) {
                 console.error('Error loading overview:', error);
-                // Show error indicator but don't block the page
-                document.querySelectorAll('[id$="Donations"], [id$="Families"], [id$="Fundraisers"]').forEach(el => {
-                    el.textContent = 'Error';
-                    el.classList.add('text-red-500');
-                });
             }
         }
 
@@ -471,17 +513,262 @@
         }
 
         // ============================================
+        // RESOURCE NEEDS & MATCHING
+        // ============================================
+
+        async function loadResourceNeeds() {
+            const container = document.getElementById('resourceNeedsList');
+            container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-2 text-gray-600">Loading resource needs...</p></div>';
+
+            try {
+                const response = await fetchAPI('/api/ldrrmo/resource-needs');
+                
+                if (!response || response.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">All Needs Fulfilled</h3>
+                            <p class="text-gray-600">No active resource needs at this time</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = response.map(need => {
+                    const urgencyColors = {
+                        'critical': 'bg-red-100 text-red-800 border-red-300',
+                        'high': 'bg-orange-100 text-orange-800 border-orange-300',
+                        'medium': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                        'low': 'bg-blue-100 text-blue-800 border-blue-300'
+                    };
+
+                    const urgencyClass = urgencyColors[need.urgency] || urgencyColors['low'];
+
+                    return `
+                        <div class="border-2 ${urgencyClass} rounded-xl p-6 hover:shadow-lg transition-all">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <h3 class="text-xl font-bold text-gray-900">${escapeHtml(need.barangay_name)}</h3>
+                                        <span class="px-3 py-1 ${urgencyClass} text-xs font-bold rounded-full uppercase border">
+                                            ${escapeHtml(need.urgency)}
+                                        </span>
+                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                                            ${escapeHtml(need.category)}
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="text-gray-700 mb-4">${escapeHtml(need.description)}</p>
+                                    
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-gray-600">Quantity:</span>
+                                            <strong class="ml-2 text-gray-900">${escapeHtml(need.quantity)}</strong>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Affected Families:</span>
+                                            <strong class="ml-2 text-gray-900">${escapeHtml(need.affected_families)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col items-end gap-3">
+                                    <span class="px-4 py-2 bg-red-100 text-red-700 text-sm font-semibold rounded-lg">
+                                        ACTIVE
+                                    </span>
+                                    <button onclick="findMatches(${need.id})" 
+                                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md hover:shadow-lg">
+                                        <i class="fas fa-search"></i>
+                                        Look for Match
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading resource needs:', error);
+                showError('resourceNeedsList', 'Failed to load resource needs. Please try again.');
+            }
+        }
+
+        async function findMatches(needId) {
+            document.getElementById('suggestedMatchesModal').classList.remove('hidden');
+            const modalBody = document.getElementById('matchesModalBody');
+            
+            modalBody.innerHTML = `
+                <div class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
+                    <p class="text-gray-600">Searching for available donations...</p>
+                </div>
+            `;
+
+            try {
+                const data = await fetchAPI(`/api/ldrrmo/find-matches/${needId}`, { method: 'POST' });
+                
+                if (data.success) {
+                    displayMatches(data.need, data.matches);
+                } else {
+                    modalBody.innerHTML = `
+                        <div class="text-center py-8">
+                            <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                            <p class="text-red-600 font-semibold">Error finding matches</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error finding matches:', error);
+                modalBody.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                        <p class="text-red-600 font-semibold">Failed to load matches. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayMatches(need, matches) {
+            const modalBody = document.getElementById('matchesModalBody');
+            
+            let html = `
+                <!-- Need Summary -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-home text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-gray-900 mb-3">
+                                <i class="fas fa-search text-blue-600 mr-2"></i>Looking for: ${escapeHtml(need.item_name)}
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Barangay:</span>
+                                    <strong class="ml-2 text-gray-900">${escapeHtml(need.barangay.name)}</strong>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Quantity Needed:</span>
+                                    <strong class="ml-2 text-gray-900">${escapeHtml(need.quantity)} units</strong>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Urgency:</span>
+                                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded uppercase">
+                                        ${escapeHtml(need.urgency)}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Affected Families:</span>
+                                    <strong class="ml-2 text-gray-900">${escapeHtml(need.affected_families)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-6 border-dashed border-2 border-gray-300">
+            `;
+
+            if (matches.length === 0) {
+                html += `
+                    <div class="text-center py-12">
+                        <i class="fas fa-box-open text-8xl text-gray-300 mb-6"></i>
+                        <h4 class="text-2xl font-bold text-gray-800 mb-2">No Current Matches Available</h4>
+                        <p class="text-gray-600">No barangays currently have "${escapeHtml(need.item_name)}" available for donation</p>
+                    </div>
+                `;
+            } else {
+                html += matches.map(match => {
+                    const score = Math.round(match.match_score);
+                    const scoreColor = score >= 70 ? 'text-green-600 border-green-500' : 
+                                    score >= 50 ? 'text-yellow-600 border-yellow-500' : 
+                                    'text-red-600 border-red-500';
+
+                    return `
+                        <div class="border-2 ${scoreColor} rounded-xl p-5 mb-4 hover:shadow-xl transition-all">
+                            <div class="flex items-center gap-6">
+                                <!-- Match Score -->
+                                <div class="text-center flex-shrink-0">
+                                    <div class="text-5xl font-black ${scoreColor}">${score}%</div>
+                                    <div class="text-xs text-gray-500 font-semibold mt-1">MATCH</div>
+                                </div>
+
+                                <!-- Match Details -->
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-gray-900 mb-2">
+                                        <i class="fas fa-building text-blue-600 mr-2"></i>
+                                        ${escapeHtml(match.barangay.name)}
+                                    </h5>
+                                    <p class="text-gray-700 mb-2">
+                                        <strong>Available:</strong> ${escapeHtml(match.donation.item_name)}
+                                        <span class="ml-2 px-2 py-1 bg-gray-200 text-gray-800 text-xs font-semibold rounded">
+                                            ${escapeHtml(match.donation.quantity)} units
+                                        </span>
+                                    </p>
+                                    ${match.can_fulfill ? 
+                                        '<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full"><i class="fas fa-check-circle"></i> Can fully fulfill request</span>' :
+                                        '<span class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full"><i class="fas fa-exclamation-triangle"></i> Partial fulfillment only</span>'
+                                    }
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex flex-col gap-2 flex-shrink-0">
+                                    <button onclick="viewMatchDetails(${need.id}, ${match.donation.id})" 
+                                            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-semibold">
+                                        <i class="fas fa-info-circle mr-1"></i> View Details
+                                    </button>
+                                    <button onclick="contactBarangay(${match.barangay.id}, '${escapeHtml(match.barangay.name)}')" 
+                                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-semibold">
+                                        <i class="fas fa-phone mr-1"></i> Contact
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            modalBody.innerHTML = html;
+        }
+
+        function closeMatchModal() {
+            document.getElementById('suggestedMatchesModal').classList.add('hidden');
+        }
+
+        function viewMatchDetails(needId, donationId) {
+            alert('📋 Detailed Match Information\n\nThis would display:\n• Transfer logistics\n• Distance between barangays\n• Detailed item comparison\n• Confirmation and tracking options');
+        }
+
+        async function contactBarangay(barangayId, barangayName) {
+            try {
+                const data = await fetchAPI(`/api/ldrrmo/barangay-contact/${barangayId}`);
+                
+                if (data.success) {
+                    const contact = data.contact_info;
+                    alert(`📞 Contact Information\n\nBarangay: ${contact.name}\nContact Person: ${contact.contact_person}\nPhone: ${contact.phone}\nEmail: ${contact.email}`);
+                }
+            } catch (error) {
+                alert('Unable to retrieve contact information. Please try again.');
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('suggestedMatchesModal');
+            if (e.target === modal) {
+                closeMatchModal();
+            }
+        });
+
+        // ============================================
         // ANALYTICS CHARTS
         // ============================================
 
         async function loadAnalytics() {
-            // Small delay to ensure canvas elements are rendered
             await new Promise(resolve => setTimeout(resolve, 100));
 
             try {
                 const data = await fetchAPI('/api/ldrrmo/analytics');
 
-                // Donations Chart
                 const donationsCtx = document.getElementById('donationsChart');
                 if (donationsCtx) {
                     if (donationsChart) {
@@ -509,7 +796,6 @@
                     });
                 }
 
-                // Status Distribution Chart
                 const statusCtx = document.getElementById('statusChart');
                 if (statusCtx) {
                     if (statusChart) {
@@ -534,7 +820,6 @@
                     });
                 }
 
-                // Payment Method Distribution Chart
                 const paymentCtx = document.getElementById('paymentMethodChart');
                 if (paymentCtx && data.payment_method_distribution) {
                     if (paymentMethodChart) {
@@ -563,7 +848,6 @@
                     });
                 }
 
-                // Families Chart
                 const familiesCtx = document.getElementById('familiesChart');
                 if (familiesCtx) {
                     if (familiesChart) {
@@ -687,7 +971,8 @@
                 }
 
                 tbody.innerHTML = barangays.map(b => {
-                    const urgentNeeds = Array.isArray(b.urgent_needs) ? b.urgent_needs : [];
+                    const urgentNeeds = Array.isArray(b.urgent_needs) ? b.urgent_needs : 
+                                       Array.isArray(b.resource_needs) ? b.resource_needs : [];
                     const blockchainRate = Number(b.blockchain_verification_rate) || 0;
 
                     return `
@@ -720,7 +1005,13 @@
                 }).join('');
             } catch (error) {
                 console.error('Error loading barangays:', error);
-                showError('barangaysTableBody', 'Failed to load barangay data. Please try again.');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-red-500">
+                            Failed to load barangay data. Please refresh the page.
+                        </td>
+                    </tr>
+                `;
             }
         }
 
@@ -741,16 +1032,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('LDRRMO Dashboard initializing...');
 
-            // Load overview stats immediately
             loadOverview();
 
-            // Initialize map (visible on load)
             if (initMap()) {
                 loadMapData();
                 loadedTabs.map = true;
             }
 
-            // Set up periodic refresh for overview stats (every 5 minutes)
             setInterval(loadOverview, 5 * 60 * 1000);
 
             console.log('LDRRMO Dashboard initialized successfully');
@@ -767,3 +1055,6 @@
         window.addEventListener('unhandledrejection', function(event) {
             console.error('Unhandled promise rejection:', event.reason);
         });
+    </script>
+</body>
+</html>
