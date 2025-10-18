@@ -70,6 +70,9 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/api/ldrrmo/recent-activity', [CityDashboardController::class, 'getRecentActivity']);
 });
 
+// LDRRMO Resource Matching Routes
+
+
 // ==================== BDRRMC ROUTES ====================
 Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // Dashboard view

@@ -38,8 +38,11 @@ Route::prefix('ldrrmo')->group(function () {
     Route::get('/overview', [CityDashboardController::class, 'getCityOverview']);
     Route::get('/barangays-comparison', [CityDashboardController::class, 'getBarangaysComparison']);
     Route::get('/analytics', [CityDashboardController::class, 'getAnalyticsData']);
-    Route::get('/barangays-map', [CityDashboardController::class, 'getBarangaysMap']);
-    Route::get('/fundraisers', [CityDashboardController::class, 'getFundraisers']);
+    Route::get('/barangays-map', [CityDashboardController::class, 'getBarangaysMapData']); // FIXED
+    Route::get('/fundraisers', [CityDashboardController::class, 'getActiveFundraisers']); // FIXED
+    Route::get('/ldrrmo/resource-needs', [CityDashboardController::class, 'getResourceNeeds']);
+    Route::post('/find-matches/{needId}', [CityDashboardController::class, 'findMatches']);
+    Route::get('/barangay-contact/{barangayId}', [CityDashboardController::class, 'getBarangayContact']);
 });
 
 // ==================== BDRRMC ROUTES ====================
