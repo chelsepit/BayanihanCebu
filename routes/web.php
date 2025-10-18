@@ -68,9 +68,11 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/api/ldrrmo/barangays/{barangayId}', [CityDashboardController::class, 'getBarangayDetails']);
     Route::patch('/api/ldrrmo/barangays/{barangayId}/status', [CityDashboardController::class, 'updateBarangayStatus']);
     Route::get('/api/ldrrmo/recent-activity', [CityDashboardController::class, 'getRecentActivity']);
-});
 
-// LDRRMO Resource Matching Routes
+    Route::get('/api/ldrrmo/resource-needs', [CityDashboardController::class, 'getResourceNeeds']);
+    Route::post('/api/ldrrmo/find-matches/{needId}', [CityDashboardController::class, 'findMatches']);
+    Route::get('/api/ldrrmo/barangay-contact/{barangayId}', [CityDashboardController::class, 'getBarangayContact']);
+});
 
 
 // ==================== BDRRMC ROUTES ====================

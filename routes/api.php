@@ -40,7 +40,7 @@ Route::prefix('ldrrmo')->group(function () {
     Route::get('/analytics', [CityDashboardController::class, 'getAnalyticsData']);
     Route::get('/barangays-map', [CityDashboardController::class, 'getBarangaysMapData']); // FIXED
     Route::get('/fundraisers', [CityDashboardController::class, 'getActiveFundraisers']); // FIXED
-    Route::get('/ldrrmo/resource-needs', [CityDashboardController::class, 'getResourceNeeds']);
+    Route::get('/resource-needs', [CityDashboardController::class, 'getResourceNeeds']);
     Route::post('/find-matches/{needId}', [CityDashboardController::class, 'findMatches']);
     Route::get('/barangay-contact/{barangayId}', [CityDashboardController::class, 'getBarangayContact']);
 });
