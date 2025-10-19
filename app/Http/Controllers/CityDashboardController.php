@@ -502,7 +502,7 @@ class CityDashboardController extends Controller
 
             // Search for matching donations using distribution_status
             $matches = PhysicalDonation::with('barangay')
-                ->where('distribution_status', 'available')
+                ->where('distribution_status', 'pending_distribution')
                 ->where('barangay_id', '!=', $need->barangay_id)
                 ->get()
                 ->filter(function($donation) use ($need) {
@@ -523,7 +523,7 @@ class CityDashboardController extends Controller
                             'id' => $donation->id,
                             'item_name' => $donation->items_description ?? $donation->category ?? 'Unknown',
                             'quantity' => $donation->quantity ?? 0,
-                            'status' => $donation->distribution_status ?? 'available',
+                            'status' => $donation->distribution_status ?? 'pending_distribution',
                             'category' => $donation->category ?? 'general',
                         ],
                         'barangay' => [
