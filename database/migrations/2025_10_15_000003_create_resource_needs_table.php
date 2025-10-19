@@ -11,13 +11,13 @@ return new class extends Migration
         Schema::create('resource_needs', function (Blueprint $table) {
             $table->id();
             $table->string('barangay_id', 10);
-            $table->enum('category', ['food', 'water', 'medical', 'shelter', 'clothing', 'other']);
+            $table->string('category', 100); // Changed to string from the start (consolidates documents 18 & 19)
             $table->text('description');
             $table->string('quantity', 100);
             $table->enum('urgency', ['low', 'medium', 'high', 'critical']);
             $table->enum('status', ['pending', 'partially_fulfilled', 'fulfilled'])->default('pending');
 
-            // ✅ BLOCKCHAIN FIELDS
+            // Blockchain fields
             $table->string('blockchain_tx_hash', 66)->nullable();
             $table->enum('blockchain_status', ['pending', 'confirmed', 'failed'])->default('pending');
             $table->timestamp('blockchain_recorded_at')->nullable();
