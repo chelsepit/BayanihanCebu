@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barangay;
-use App\Models\Donation;
+use App\Models\OnlineDonation;
+use App\Models\PhysicalDonation;
 use App\Models\ResourceNeed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ class PublicMapController extends Controller
 
     /**
      * Track a donation by tracking code
+     * ✅ NOW SUPPORTS BOTH ONLINE AND PHYSICAL DONATIONS
      */
     public function trackDonation(Request $request)
     {
@@ -31,15 +33,34 @@ class PublicMapController extends Controller
             'tracking_code' => 'required|string',
         ]);
 
-        $donation = Donation::with(['barangay', 'user'])
-            ->where('tracking_code', $request->tracking_code)
+        $trackingCode = $request->tracking_code;
+
+        // Try online donations first
+        $onlineDonation = OnlineDonation::where('tracking_code', $trackingCode)
+            ->with(['barangay', 'disaster', 'verifier'])
             ->first();
 
-        if (!$donation) {
-            return back()->with('error', 'Tracking code not found. Please check and try again.');
+        if ($onlineDonation) {
+            return view('donations.track', [
+                'donation' => $onlineDonation,
+                'donation_type' => 'online',
+            ]);
         }
 
-        return view('donations.track', compact('donation'));
+        // Try physical donations
+        $physicalDonation = PhysicalDonation::where('tracking_code', $trackingCode)
+            ->with(['barangay', 'recorder', 'distributions.distributor'])
+            ->first();
+
+        if ($physicalDonation) {
+            return view('donations.track', [
+                'donation' => $physicalDonation,
+                'donation_type' => 'physical',
+            ]);
+        }
+
+        // Not found
+        return back()->with('error', 'Tracking code not found. Please check and try again.');
     }
 
     /**
@@ -53,34 +74,36 @@ class PublicMapController extends Controller
     }
 
     /**
-     * Process donation
+     * Process online donation from public
      */
     public function processDonation(Request $request, Barangay $barangay)
     {
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:10',
+            'amount' => 'required|numeric|min:100',
             'donor_name' => 'required_without:is_anonymous|string|max:255',
             'donor_email' => 'required_without:is_anonymous|email|max:255',
             'donor_phone' => 'nullable|string|max:20',
             'is_anonymous' => 'boolean',
-            'donation_type' => 'required|in:monetary,in-kind',
+            'payment_method' => 'required|in:gcash,paymaya,bank_transfer,metamask,crypto',
+            'payment_reference' => 'nullable|string|max:100',
+            'tx_hash' => 'nullable|string|max:66',
+            'wallet_address' => 'nullable|string|max:42',
         ]);
 
-        $donation = Donation::create([
-            'barangay_id' => $barangay->barangay_id,
-            'user_id' => Auth::check() ? Auth::user()->user_id : null,
-            'amount' => $validated['amount'],
-            'donation_type' => $validated['donation_type'],
-            'donor_name' => $validated['is_anonymous'] ?? false ? null : $validated['donor_name'],
+        $donation = OnlineDonation::create([
+            'target_barangay_id' => $barangay->barangay_id,
+            'donor_name' => $validated['is_anonymous'] ?? false ? 'Anonymous' : $validated['donor_name'],
             'donor_email' => $validated['is_anonymous'] ?? false ? null : $validated['donor_email'],
             'donor_phone' => $validated['donor_phone'] ?? null,
+            'amount' => $validated['amount'],
+            'payment_method' => $validated['payment_method'],
             'is_anonymous' => $validated['is_anonymous'] ?? false,
-            'status' => 'pending',
+            'payment_reference' => $validated['payment_reference'] ?? null,
+            'tx_hash' => $validated['tx_hash'] ?? null,
+            'wallet_address' => $validated['wallet_address'] ?? null,
+            'verification_status' => 'pending',
+            'blockchain_status' => 'pending',
         ]);
-
-        // Here you would integrate with payment gateway
-        // For now, we'll just confirm the donation
-        $donation->confirm('0x' . bin2hex(random_bytes(32)));
 
         return redirect()
             ->route('donation.success', $donation->tracking_code)
@@ -92,24 +115,46 @@ class PublicMapController extends Controller
      */
     public function donationSuccess($trackingCode)
     {
-        $donation = Donation::with('barangay')
-            ->where('tracking_code', $trackingCode)
-            ->firstOrFail();
+        // Try online donations first
+        $onlineDonation = OnlineDonation::where('tracking_code', $trackingCode)
+            ->with(['barangay', 'disaster'])
+            ->first();
 
-        return view('donations.success', compact('donation'));
+        if ($onlineDonation) {
+            return view('donations.success', [
+                'donation' => $onlineDonation,
+                'donation_type' => 'online',
+            ]);
+        }
+
+        // Try physical donations
+        $physicalDonation = PhysicalDonation::where('tracking_code', $trackingCode)
+            ->with(['barangay', 'recorder'])
+            ->first();
+
+        if ($physicalDonation) {
+            return view('donations.success-physical', [
+                'donation' => $physicalDonation,
+                'donation_type' => 'physical',
+            ]);
+        }
+
+        // Not found
+        abort(404, 'Donation not found');
     }
 
     /**
-     * Get disaster statistics
+     * Get statistics for the map
      */
     public function statistics()
     {
         $stats = [
-            'total_barangays_needing_help' => Barangay::needsHelp()->count(),
-            'total_affected_families' => Barangay::needsHelp()->sum('affected_families'),
-            'total_donations' => Donation::whereIn('status', ['confirmed', 'distributed', 'completed'])->sum('amount'),
-            'total_donors' => Donation::whereIn('status', ['confirmed', 'distributed', 'completed'])->distinct('donor_email')->count(),
-            'barangays_affected' => Barangay::needsHelp()->count(),
+            'total_barangays' => Barangay::count(),
+            'affected_barangays' => Barangay::where('disaster_status', '!=', 'safe')->count(),
+            'total_online_donations' => OnlineDonation::where('verification_status', 'verified')->sum('amount'),
+            'total_physical_donations' => PhysicalDonation::sum('estimated_value'),
+            'total_donors' => OnlineDonation::distinct('donor_email')->count() + PhysicalDonation::distinct('donor_email')->count(),
+            'urgent_needs' => ResourceNeed::whereIn('urgency', ['critical', 'high'])->count(),
         ];
 
         return response()->json($stats);
@@ -128,20 +173,17 @@ class PublicMapController extends Controller
                     'id' => $barangay->barangay_id,
                     'name' => $barangay->name,
                     'slug' => $barangay->slug,
-                    'status' => $barangay->disaster_status,
+                    'city' => $barangay->city,
+                    'district' => $barangay->district,
+                    'disaster_status' => $barangay->disaster_status,
                     'disaster_type' => $barangay->disaster_type,
                     'latitude' => $barangay->latitude,
                     'longitude' => $barangay->longitude,
                     'affected_families' => $barangay->affected_families,
-                    'total_raised' => $barangay->total_raised,
-                    'resource_needs' => $barangay->resourceNeeds->map(function($need) {
-                        return [
-                            'category' => $need->category,
-                            'urgency' => $need->urgency,
-                            'status' => $need->status,
-                            'description' => $need->description,
-                        ];
-                    }),
+                    'needs_summary' => $barangay->needs_summary,
+                    'urgent_needs' => $barangay->resourceNeeds()
+                        ->whereIn('urgency', ['critical', 'high'])
+                        ->count(),
                 ];
             });
 

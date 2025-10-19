@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>BayanihanCebu - Transparent Disaster Relief for Cebu</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="{{ asset('js/simple-realtime.js') }}"></script>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+    <script src="<?php echo e(asset('js/simple-realtime.js')); ?>"></script>
     <style>
         * {
             margin: 0;
@@ -619,7 +619,7 @@
 </head>
 <body>
 
-    {{-- Hero Section --}}
+    
     <section class="hero-section">
         <div class="hero-header">
             <div class="hero-logo">
@@ -629,7 +629,7 @@
                     <p>Philippines Disaster Relief</p>
                 </div>
             </div>
-            <a href="{{ route('login') }}" class="sign-in-btn">Sign In</a>
+            <a href="<?php echo e(route('login')); ?>" class="sign-in-btn">Sign In</a>
         </div>
 
         <div class="hero-content">
@@ -676,7 +676,7 @@
         </div>
     </section>
 
-    {{-- Map Section --}}
+    
     <section class="map-section" id="map">
         <div class="section-header">
             <h2>Live Disaster Map of Cebu</h2>
@@ -702,25 +702,26 @@
             </div>
         </div>
 
-        {{-- Barangay Cards --}}
+        
         <div class="barangay-cards">
-            @foreach($barangays as $barangay)
+            <?php $__currentLoopData = $barangays; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $barangay): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="barangay-card">
                     <div class="barangay-header">
-                        <div class="barangay-name">📍 {{ $barangay->name }}</div>
-                        <div class="status-badge {{ $barangay->disaster_status }}">
-                            {{ ucfirst($barangay->disaster_status) }}
+                        <div class="barangay-name">📍 <?php echo e($barangay->name); ?></div>
+                        <div class="status-badge <?php echo e($barangay->disaster_status); ?>">
+                            <?php echo e(ucfirst($barangay->disaster_status)); ?>
+
                         </div>
                     </div>
 
-                    @if($barangay->disaster_status === 'safe')
+                    <?php if($barangay->disaster_status === 'safe'): ?>
                         <div class="barangay-info">All clear - no active disasters</div>
-                    @else
-                        {{-- Disaster Type --}}
-                        @if($barangay->disaster_type)
+                    <?php else: ?>
+                        
+                        <?php if($barangay->disaster_type): ?>
                             <div class="barangay-info" style="margin-bottom: 12px;">
                                 <strong>Type:</strong>
-                                @php
+                                <?php
                                     $disasterIcons = [
                                         'flood' => '🌊',
                                         'fire' => '🔥',
@@ -729,57 +730,59 @@
                                         'landslide' => '⛰️',
                                         'other' => '❓'
                                     ];
-                                @endphp
-                                {{ $disasterIcons[$barangay->disaster_type] ?? '' }} {{ ucfirst($barangay->disaster_type) }}
-                            </div>
-                        @endif
+                                ?>
+                                <?php echo e($disasterIcons[$barangay->disaster_type] ?? ''); ?> <?php echo e(ucfirst($barangay->disaster_type)); ?>
 
-                        {{-- Stats --}}
+                            </div>
+                        <?php endif; ?>
+
+                        
                         <div class="barangay-stats">
                             <div class="stat-item">
                                 <div class="stat-item-label">Affected Families</div>
-                                <div class="stat-item-value">{{ $barangay->affected_families }}</div>
+                                <div class="stat-item-value"><?php echo e($barangay->affected_families); ?></div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-item-label">Donations Received</div>
-                                <div class="stat-item-value">₱{{ number_format($barangay->total_raised, 0) }}</div>
+                                <div class="stat-item-value">₱<?php echo e(number_format($barangay->total_raised, 0)); ?></div>
                             </div>
                         </div>
 
-                        {{-- Resource Needs --}}
-                        @if($barangay->resourceNeeds->where('status', '!=', 'fulfilled')->count() > 0)
+                        
+                        <?php if($barangay->resourceNeeds->where('status', '!=', 'fulfilled')->count() > 0): ?>
                             <div class="urgent-needs">
                                 <div class="urgent-needs-label">Urgent Needs:</div>
                                 <div class="needs-tags">
-                                    @foreach($barangay->resourceNeeds->where('status', '!=', 'fulfilled')->unique('category') as $need)
-                                        <span class="need-tag">{{ ucfirst($need->category) }}</span>
-                                    @endforeach
+                                    <?php $__currentLoopData = $barangay->resourceNeeds->where('status', '!=', 'fulfilled')->unique('category'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $need): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <span class="need-tag"><?php echo e(ucfirst($need->category)); ?></span>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?>
 
-                        <button class="donate-btn" onclick="window.location.href='/donate/{{ $barangay->barangay_id }}'">
-                            Donate to {{ $barangay->name }}
+                        <button class="donate-btn" onclick="window.location.href='/donate/<?php echo e($barangay->barangay_id); ?>'">
+                            Donate to <?php echo e($barangay->name); ?>
+
                         </button>
-                    @endif
+                    <?php endif; ?>
                 </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
 
-        {{-- Map Container (PRESERVED FROM YOUR CODE) --}}
+        
         <div class="map-container">
             <div id="barangayMap"></div>
         </div>
     </section>
 
     
-{{-- Track Donation Section --}}
+
 <section class="track-section" id="track">
     <div class="track-container">
         <h2>Track Your Donation</h2>
         <p>Enter your tracking code to see blockchain verification and how your donation is being used</p>
-        <form class="track-form" action="{{ route('donation.track') }}" method="POST">
-            @csrf
+        <form class="track-form" action="<?php echo e(route('donation.track')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
             <input 
                 type="text" 
                 name="tracking_code" 
@@ -794,7 +797,7 @@
     </div>
 </section>
 
-    {{-- Trust Section --}}
+    
     <section class="trust-section">
         <div class="trust-container">
             <div class="trust-header">
@@ -940,6 +943,6 @@
             });
         });
     </script>
-@include('partials.footer')
+<?php echo $__env->make('partials.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </body>
-</html>
+</html><?php /**PATH C:\Users\Judd\BayanihanCebuBackEnd\resources\views\welcome.blade.php ENDPATH**/ ?>

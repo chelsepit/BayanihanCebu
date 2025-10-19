@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Your Physical Donation - BayanihanCebu</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     <style>
         /* Override any conflicting custom styles */
         * {
@@ -29,9 +29,9 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold">BayanihanCebu - Donation Tracking</h1>
-                    <p class="text-blue-200 text-sm">Barangay {{ $donation->barangay->name }}</p>
+                    <p class="text-blue-200 text-sm">Barangay <?php echo e($donation->barangay->name); ?></p>
                 </div>
-                <a href="{{ route('home') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition flex items-center">
+                <a href="<?php echo e(route('home')); ?>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
@@ -49,13 +49,13 @@
             <div class="flex justify-between items-center flex-wrap gap-4">
                 <div>
                     <p class="text-sm text-gray-600 mb-1">Tracking Code</p>
-                    <h2 class="text-3xl font-bold text-gray-900">{{ $donation->tracking_code }}</h2>
+                    <h2 class="text-3xl font-bold text-gray-900"><?php echo e($donation->tracking_code); ?></h2>
                     <span class="inline-block mt-2 px-3 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded">
                         Physical Donation
                     </span>
                 </div>
                 <div>
-                    @php
+                    <?php
                         $statusClass = 'bg-gray-100 text-gray-800';
                         if ($donation->distribution_status === 'pending_distribution') {
                             $statusClass = 'bg-yellow-100 text-yellow-800';
@@ -64,9 +64,10 @@
                         } elseif ($donation->distribution_status === 'fully_distributed') {
                             $statusClass = 'bg-green-100 text-green-800';
                         }
-                    @endphp
-                    <span class="px-4 py-2 text-sm font-semibold rounded {{ $statusClass }}">
-                        {{ strtoupper(str_replace('_', ' ', $donation->distribution_status)) }}
+                    ?>
+                    <span class="px-4 py-2 text-sm font-semibold rounded <?php echo e($statusClass); ?>">
+                        <?php echo e(strtoupper(str_replace('_', ' ', $donation->distribution_status))); ?>
+
                     </span>
                 </div>
             </div>
@@ -84,7 +85,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Donor Name</p>
-                        <p class="text-lg font-bold text-gray-900">{{ $donation->donor_name }}</p>
+                        <p class="text-lg font-bold text-gray-900"><?php echo e($donation->donor_name); ?></p>
                     </div>
                 </div>
             </div>
@@ -99,7 +100,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Category</p>
-                        <p class="text-lg font-bold text-gray-900 capitalize">{{ $donation->category }}</p>
+                        <p class="text-lg font-bold text-gray-900 capitalize"><?php echo e($donation->category); ?></p>
                     </div>
                 </div>
             </div>
@@ -114,7 +115,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Estimated Value</p>
-                        <p class="text-lg font-bold text-gray-900">₱{{ number_format($donation->estimated_value, 2) }}</p>
+                        <p class="text-lg font-bold text-gray-900">₱<?php echo e(number_format($donation->estimated_value, 2)); ?></p>
                     </div>
                 </div>
             </div>
@@ -129,7 +130,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Quantity</p>
-                        <p class="text-lg font-bold text-gray-900">{{ $donation->quantity }}</p>
+                        <p class="text-lg font-bold text-gray-900"><?php echo e($donation->quantity); ?></p>
                     </div>
                 </div>
             </div>
@@ -157,23 +158,23 @@
                         <div class="space-y-3">
                             <div class="flex justify-between py-2 border-b border-gray-200">
                                 <span class="text-gray-600">Donor Name:</span>
-                                <span class="font-semibold text-gray-900">{{ $donation->donor_name }}</span>
+                                <span class="font-semibold text-gray-900"><?php echo e($donation->donor_name); ?></span>
                             </div>
                             <div class="flex justify-between py-2 border-b border-gray-200">
                                 <span class="text-gray-600">Category:</span>
-                                <span class="font-semibold text-gray-900 capitalize">{{ $donation->category }}</span>
+                                <span class="font-semibold text-gray-900 capitalize"><?php echo e($donation->category); ?></span>
                             </div>
                             <div class="flex justify-between py-2 border-b border-gray-200">
                                 <span class="text-gray-600">Quantity:</span>
-                                <span class="font-semibold text-gray-900">{{ $donation->quantity }}</span>
+                                <span class="font-semibold text-gray-900"><?php echo e($donation->quantity); ?></span>
                             </div>
                             <div class="flex justify-between py-2 border-b border-gray-200">
                                 <span class="text-gray-600">Estimated Value:</span>
-                                <span class="font-semibold text-gray-900">₱{{ number_format($donation->estimated_value, 2) }}</span>
+                                <span class="font-semibold text-gray-900">₱<?php echo e(number_format($donation->estimated_value, 2)); ?></span>
                             </div>
                             <div class="flex justify-between py-2">
                                 <span class="text-gray-600">Date Donated:</span>
-                                <span class="font-semibold text-gray-900">{{ $donation->recorded_at->format('M d, Y h:i A') }}</span>
+                                <span class="font-semibold text-gray-900"><?php echo e($donation->recorded_at->format('M d, Y h:i A')); ?></span>
                             </div>
                         </div>
                     </div>
@@ -184,15 +185,15 @@
                         <div class="space-y-3">
                             <div class="flex justify-between py-2 border-b border-gray-200">
                                 <span class="text-gray-600">Barangay:</span>
-                                <span class="font-semibold text-gray-900">{{ $donation->barangay->name }}</span>
+                                <span class="font-semibold text-gray-900"><?php echo e($donation->barangay->name); ?></span>
                             </div>
                             <div class="flex justify-between py-2 border-b border-gray-200">
                                 <span class="text-gray-600">Intended Recipients:</span>
-                                <span class="font-semibold text-gray-900">{{ $donation->intended_recipients }}</span>
+                                <span class="font-semibold text-gray-900"><?php echo e($donation->intended_recipients); ?></span>
                             </div>
                             <div class="flex justify-between py-2">
                                 <span class="text-gray-600">Recorded By:</span>
-                                <span class="font-semibold text-gray-900">{{ $donation->recorder->full_name ?? 'BDRRMC Officer' }}</span>
+                                <span class="font-semibold text-gray-900"><?php echo e($donation->recorder->full_name ?? 'BDRRMC Officer'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -201,56 +202,63 @@
                 <!-- Items Description -->
                 <div class="bg-gray-50 rounded-lg p-4 mb-6">
                     <h4 class="font-semibold text-gray-900 mb-2">Items Donated</h4>
-                    <p class="text-gray-700">{{ $donation->items_description }}</p>
-                    @if($donation->notes)
+                    <p class="text-gray-700"><?php echo e($donation->items_description); ?></p>
+                    <?php if($donation->notes): ?>
                         <div class="mt-3 pt-3 border-t border-gray-300">
-                            <p class="text-sm text-gray-600"><strong>Notes:</strong> {{ $donation->notes }}</p>
+                            <p class="text-sm text-gray-600"><strong>Notes:</strong> <?php echo e($donation->notes); ?></p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
 
                 <!-- Blockchain Status -->
                 <div class="rounded-lg p-4 mb-6 border-2
-                    {{ $donation->blockchain_status === 'confirmed' ? 'bg-green-50 border-green-300' : '' }}
-                    {{ $donation->blockchain_status === 'failed' ? 'bg-red-50 border-red-300' : '' }}
-                    {{ !$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'bg-yellow-50 border-yellow-300' : '' }}">
+                    <?php echo e($donation->blockchain_status === 'confirmed' ? 'bg-green-50 border-green-300' : ''); ?>
+
+                    <?php echo e($donation->blockchain_status === 'failed' ? 'bg-red-50 border-red-300' : ''); ?>
+
+                    <?php echo e(!$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'bg-yellow-50 border-yellow-300' : ''); ?>">
                     <div class="flex items-start">
                         <div class="mr-4">
-                            @if($donation->blockchain_status === 'confirmed')
+                            <?php if($donation->blockchain_status === 'confirmed'): ?>
                                 <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                            @elseif($donation->blockchain_status === 'failed')
+                            <?php elseif($donation->blockchain_status === 'failed'): ?>
                                 <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                            @else
+                            <?php else: ?>
                                 <svg class="w-8 h-8 text-yellow-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                 </svg>
-                            @endif
+                            <?php endif; ?>
                         </div>
                         <div class="flex-1">
                             <h4 class="text-sm font-semibold mb-1
-                                {{ $donation->blockchain_status === 'confirmed' ? 'text-green-800' : '' }}
-                                {{ $donation->blockchain_status === 'failed' ? 'text-red-800' : '' }}
-                                {{ !$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'text-yellow-800' : '' }}">
-                                Blockchain Status: {{ strtoupper($donation->blockchain_status ?? 'PENDING') }}
+                                <?php echo e($donation->blockchain_status === 'confirmed' ? 'text-green-800' : ''); ?>
+
+                                <?php echo e($donation->blockchain_status === 'failed' ? 'text-red-800' : ''); ?>
+
+                                <?php echo e(!$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'text-yellow-800' : ''); ?>">
+                                Blockchain Status: <?php echo e(strtoupper($donation->blockchain_status ?? 'PENDING')); ?>
+
                             </h4>
                             <p class="text-sm mb-2
-                                {{ $donation->blockchain_status === 'confirmed' ? 'text-green-700' : '' }}
-                                {{ $donation->blockchain_status === 'failed' ? 'text-red-700' : '' }}
-                                {{ !$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'text-yellow-700' : '' }}">
-                                @if($donation->blockchain_status === 'confirmed')
+                                <?php echo e($donation->blockchain_status === 'confirmed' ? 'text-green-700' : ''); ?>
+
+                                <?php echo e($donation->blockchain_status === 'failed' ? 'text-red-700' : ''); ?>
+
+                                <?php echo e(!$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'text-yellow-700' : ''); ?>">
+                                <?php if($donation->blockchain_status === 'confirmed'): ?>
                                     This donation has been permanently recorded on the Lisk blockchain.
-                                @elseif($donation->blockchain_status === 'failed')
+                                <?php elseif($donation->blockchain_status === 'failed'): ?>
                                     Blockchain recording failed. The system will retry automatically.
-                                @else
+                                <?php else: ?>
                                     Your donation is being recorded on the blockchain. This may take a few minutes.
-                                @endif
+                                <?php endif; ?>
                             </p>
-                            @if($donation->blockchain_tx_hash)
-                                <a href="https://sepolia-blockscout.lisk.com/tx/{{ $donation->blockchain_tx_hash }}" 
+                            <?php if($donation->blockchain_tx_hash): ?>
+                                <a href="https://sepolia-blockscout.lisk.com/tx/<?php echo e($donation->blockchain_tx_hash); ?>" 
                                    target="_blank" 
                                    class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium">
                                     View on Blockchain Explorer
@@ -258,9 +266,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                     </svg>
                                 </a>
-                            @endif
-                            @if($donation->ipfs_hash)
-                                <a href="https://gateway.pinata.cloud/ipfs/{{ $donation->ipfs_hash }}" 
+                            <?php endif; ?>
+                            <?php if($donation->ipfs_hash): ?>
+                                <a href="https://gateway.pinata.cloud/ipfs/<?php echo e($donation->ipfs_hash); ?>" 
                                    target="_blank" 
                                    class="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 font-medium ml-4">
                                     View Photos on IPFS
@@ -268,42 +276,43 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                     </svg>
                                 </a>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <!-- Distribution History or Pending -->
-                @if($donation->distributions->count() > 0)
+                <?php if($donation->distributions->count() > 0): ?>
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Distribution History</h3>
                     <div class="space-y-4">
-                        @foreach($donation->distributions as $distribution)
+                        <?php $__currentLoopData = $donation->distributions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $distribution): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
-                                    <h4 class="font-semibold text-gray-900">{{ $distribution->distributed_to }}</h4>
-                                    <p class="text-sm text-gray-600">Quantity: {{ $distribution->quantity_distributed }}</p>
-                                    @if($distribution->notes)
-                                        <p class="text-sm text-gray-600 mt-1">{{ $distribution->notes }}</p>
-                                    @endif
+                                    <h4 class="font-semibold text-gray-900"><?php echo e($distribution->distributed_to); ?></h4>
+                                    <p class="text-sm text-gray-600">Quantity: <?php echo e($distribution->quantity_distributed); ?></p>
+                                    <?php if($distribution->notes): ?>
+                                        <p class="text-sm text-gray-600 mt-1"><?php echo e($distribution->notes); ?></p>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="text-right text-sm">
-                                    <p class="text-gray-600 font-medium">{{ $distribution->distributed_at->format('M d, Y') }}</p>
-                                    <p class="text-gray-500">{{ $distribution->distributed_at->format('h:i A') }}</p>
+                                    <p class="text-gray-600 font-medium"><?php echo e($distribution->distributed_at->format('M d, Y')); ?></p>
+                                    <p class="text-gray-500"><?php echo e($distribution->distributed_at->format('h:i A')); ?></p>
                                 </div>
                             </div>
                             <div class="flex items-center text-xs text-gray-500 mt-2">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                 </svg>
-                                Distributed by: {{ $distribution->distributor->full_name ?? 'BDRRMC Officer' }}
+                                Distributed by: <?php echo e($distribution->distributor->full_name ?? 'BDRRMC Officer'); ?>
+
                             </div>
                         </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
-                @else
+                <?php else: ?>
                 <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-200 text-center mb-6">
                     <svg class="w-12 h-12 text-yellow-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -311,7 +320,7 @@
                     <p class="text-sm text-yellow-800 font-medium">This donation is pending distribution to beneficiaries.</p>
                     <p class="text-xs text-yellow-700 mt-1">Check back soon for updates!</p>
                 </div>
-                @endif
+                <?php endif; ?>
 
                 <!-- Timeline -->
                 <div class="mt-8">
@@ -326,34 +335,37 @@
                             </span>
                             <div>
                                 <p class="font-semibold text-gray-900">Donation Received</p>
-                                <p class="text-sm text-gray-600">{{ $donation->recorded_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-sm text-gray-600"><?php echo e($donation->recorded_at->format('M d, Y h:i A')); ?></p>
                             </div>
                         </li>
                         
                         <!-- Step 2: Blockchain -->
                         <li class="ml-6">
                             <span class="absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 ring-4 ring-white
-                                {{ $donation->blockchain_status === 'confirmed' ? 'bg-green-500' : '' }}
-                                {{ $donation->blockchain_status === 'failed' ? 'bg-red-500' : '' }}
-                                {{ !$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'bg-yellow-500' : '' }}">
-                                @if($donation->blockchain_status === 'confirmed')
+                                <?php echo e($donation->blockchain_status === 'confirmed' ? 'bg-green-500' : ''); ?>
+
+                                <?php echo e($donation->blockchain_status === 'failed' ? 'bg-red-500' : ''); ?>
+
+                                <?php echo e(!$donation->blockchain_status || $donation->blockchain_status === 'pending' ? 'bg-yellow-500' : ''); ?>">
+                                <?php if($donation->blockchain_status === 'confirmed'): ?>
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                @else
+                                <?php else: ?>
                                     <svg class="w-4 h-4 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                     </svg>
-                                @endif
+                                <?php endif; ?>
                             </span>
                             <div>
                                 <p class="font-semibold text-gray-900">Blockchain Verification</p>
                                 <p class="text-sm text-gray-600">
-                                    @if($donation->blockchain_recorded_at)
-                                        {{ $donation->blockchain_recorded_at->format('M d, Y h:i A') }}
-                                    @else
+                                    <?php if($donation->blockchain_recorded_at): ?>
+                                        <?php echo e($donation->blockchain_recorded_at->format('M d, Y h:i A')); ?>
+
+                                    <?php else: ?>
                                         In progress...
-                                    @endif
+                                    <?php endif; ?>
                                 </p>
                             </div>
                         </li>
@@ -361,25 +373,26 @@
                         <!-- Step 3: Distribution -->
                         <li class="ml-6">
                             <span class="absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 ring-4 ring-white
-                                {{ $donation->distributions->count() > 0 ? 'bg-green-500' : 'bg-gray-400' }}">
-                                @if($donation->distributions->count() > 0)
+                                <?php echo e($donation->distributions->count() > 0 ? 'bg-green-500' : 'bg-gray-400'); ?>">
+                                <?php if($donation->distributions->count() > 0): ?>
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                @else
+                                <?php else: ?>
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                @endif
+                                <?php endif; ?>
                             </span>
                             <div>
                                 <p class="font-semibold text-gray-900">Distribution to Beneficiaries</p>
                                 <p class="text-sm text-gray-600">
-                                    @if($donation->distributions->count() > 0)
-                                        {{ $donation->distributions->first()->distributed_at->format('M d, Y h:i A') }}
-                                    @else
+                                    <?php if($donation->distributions->count() > 0): ?>
+                                        <?php echo e($donation->distributions->first()->distributed_at->format('M d, Y h:i A')); ?>
+
+                                    <?php else: ?>
                                         Pending
-                                    @endif
+                                    <?php endif; ?>
                                 </p>
                             </div>
                         </li>
@@ -387,25 +400,25 @@
                         <!-- Step 4: Fully Distributed -->
                         <li class="ml-6">
                             <span class="absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 ring-4 ring-white
-                                {{ $donation->distribution_status === 'fully_distributed' ? 'bg-green-500' : 'bg-gray-400' }}">
-                                @if($donation->distribution_status === 'fully_distributed')
+                                <?php echo e($donation->distribution_status === 'fully_distributed' ? 'bg-green-500' : 'bg-gray-400'); ?>">
+                                <?php if($donation->distribution_status === 'fully_distributed'): ?>
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                @else
+                                <?php else: ?>
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                @endif
+                                <?php endif; ?>
                             </span>
                             <div>
                                 <p class="font-semibold text-gray-900">Fully Distributed</p>
                                 <p class="text-sm text-gray-600">
-                                    @if($donation->distribution_status === 'fully_distributed')
+                                    <?php if($donation->distribution_status === 'fully_distributed'): ?>
                                         Completed
-                                    @else
+                                    <?php else: ?>
                                         Awaiting completion
-                                    @endif
+                                    <?php endif; ?>
                                 </p>
                             </div>
                         </li>
@@ -417,7 +430,7 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-wrap gap-4 justify-center mb-6">
-            <a href="{{ route('home') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-md">
+            <a href="<?php echo e(route('home')); ?>" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-md">
                 Return to Map
             </a>
             <button onclick="window.print()" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition shadow-md">
@@ -432,7 +445,7 @@
 
     <script>
     function copyTrackingCode() {
-        const trackingCode = '{{ $donation->tracking_code }}';
+        const trackingCode = '<?php echo e($donation->tracking_code); ?>';
         navigator.clipboard.writeText(trackingCode).then(() => {
             alert('Tracking code copied to clipboard!');
         }).catch(err => {
@@ -443,4 +456,4 @@
     </script>
 
 </body>
-</html>
+</html><?php /**PATH C:\Users\Judd\BayanihanCebuBackEnd\resources\views/donations/track.blade.php ENDPATH**/ ?>

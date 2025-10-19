@@ -30,7 +30,7 @@ Route::get('/api/barangay/{barangayId}', [BarangayMapController::class, 'getBara
 
 // Donation tracking page
 Route::get('/donation/track', function () {
-    return view('donation.track');
+    return view('donations.track');
 })->name('donation.track.page');
 
 // Track donation (POST)
