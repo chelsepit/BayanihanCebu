@@ -10,6 +10,7 @@ use App\Http\Controllers\BarangayDashboardController;
 use App\Http\Controllers\ResidentDashboardController;
 use App\Http\Controllers\PublicMapController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\NotificationController;
 
 // ==================== PUBLIC ROUTES ====================
 
@@ -116,13 +117,12 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // ... existing BDRRMC routes ...
     
     // Incoming Match Requests (Donor Side)
-    Route::get('/api/bdrrmc/matches/incoming', [BarangayDashboardController::class, 'getIncomingMatchRequests']);
-    Route::post('/api/bdrrmc/matches/{id}/accept', [BarangayDashboardController::class, 'acceptMatch']);
-    Route::post('/api/bdrrmc/matches/{id}/reject', [BarangayDashboardController::class, 'rejectMatch']);
-    
+    Route::get('/api/bdrrmc/matches/incoming', [BarangayDashboardController::class, 'getIncomingMatches']);
+    Route::post('/api/bdrrmc/matches/{id}/respond', [BarangayDashboardController::class, 'respondToMatch']);
+
     // My Match Requests (Requester Side)
-    Route::get('/api/bdrrmc/matches/my-requests', [BarangayDashboardController::class, 'getMyMatchRequests']);
-    
+    Route::get('/api/bdrrmc/matches/my-requests', [BarangayDashboardController::class, 'getMyRequests']);
+
     // Active Matches (Both Sides)
     Route::get('/api/bdrrmc/matches/active', [BarangayDashboardController::class, 'getActiveMatches']);
     

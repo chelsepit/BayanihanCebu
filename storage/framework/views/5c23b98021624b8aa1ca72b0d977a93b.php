@@ -47,6 +47,84 @@
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
             </form>
+
+            <div class="flex items-center gap-4">
+    <!-- Notification Bell -->
+    <div class="relative">
+        <button id="notification-bell" 
+                onclick="toggleNotifications()" 
+                class="relative p-2 text-gray-600 hover:text-indigo-600 transition">
+            <i class="fas fa-bell text-xl"></i>
+            <!-- Unread Badge -->
+            <span id="notification-badge" 
+                  class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                0
+            </span>
+        </button>
+
+        <!-- Notifications Dropdown -->
+        <div id="notifications-dropdown" 
+             class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-hidden">
+            
+            <!-- Header -->
+            <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900">Notifications</h3>
+                <div class="flex items-center gap-2">
+                    <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
+                    <button onclick="markAllAsRead()" 
+                            class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">
+                        Mark all read
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="flex border-b bg-gray-50">
+                <button onclick="filterNotifications('all')" 
+                        id="notif-filter-all"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">
+                    All
+                </button>
+                <button onclick="filterNotifications('match_request')" 
+                        id="notif-filter-match_request"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                    Matches
+                </button>
+                <button onclick="filterNotifications('match_accepted')" 
+                        id="notif-filter-match_accepted"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                    Accepted
+                </button>
+                <button onclick="filterNotifications('message')" 
+                        id="notif-filter-message"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                    Messages
+                </button>
+            </div>
+
+            <!-- Notifications List -->
+            <div id="notifications-list" class="overflow-y-auto max-h-80">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p class="text-sm">Loading notifications...</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-4 py-3 border-t bg-gray-50 text-center">
+                <button onclick="viewAllNotifications()" 
+                        class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
+                    View All Notifications
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Info & Logout (existing) -->
+    <div class="flex items-center gap-3">
+        <!-- Your existing user dropdown here -->
+    </div>
+</div>
         </div>
     </div>
 
@@ -140,6 +218,11 @@
                 <button onclick="switchTab('resources', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-handshake mr-2"></i> Resource Needs
                 </button>
+                <button onclick="showTab('my-matches')" 
+                class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
+                data-tab="my-matches">
+                     <i class="fas fa-handshake mr-2"></i>My Matches
+                </button>
                 <button onclick="switchTab('analytics', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-chart-bar mr-2"></i> Analytics
                 </button>
@@ -192,6 +275,94 @@
                 </div>
             </div>
         </div>
+
+        <div id="my-matches-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">My Initiated Matches</h2>
+
+
+        <!-- Filter Tabs -->
+        <div class="flex gap-2">
+            <button onclick="filterMyMatches('all')" 
+                    id="my-matches-filter-all"
+                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-indigo-600 text-white">
+                All (<span id="my-matches-count-all">0</span>)
+            </button>
+            <button onclick="filterMyMatches('pending')" 
+                    id="my-matches-filter-pending"
+                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Pending (<span id="my-matches-count-pending">0</span>)
+            </button>
+            <button onclick="filterMyMatches('accepted')" 
+                    id="my-matches-filter-accepted"
+                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Accepted (<span id="my-matches-count-accepted">0</span>)
+            </button>
+            <button onclick="filterMyMatches('completed')" 
+                    id="my-matches-filter-completed"
+                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Completed (<span id="my-matches-count-completed">0</span>)
+            </button>
+            <button onclick="filterMyMatches('rejected')" 
+                    id="my-matches-filter-rejected"
+                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Rejected (<span id="my-matches-count-rejected">0</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm">Total Matches</p>
+                    <p class="text-3xl font-bold" id="stats-total-matches">0</p>
+                </div>
+                <i class="fas fa-handshake text-4xl opacity-20"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-4 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-yellow-100 text-sm">Pending Response</p>
+                    <p class="text-3xl font-bold" id="stats-pending-matches">0</p>
+                </div>
+                <i class="fas fa-clock text-4xl opacity-20"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-4 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm">Accepted</p>
+                    <p class="text-3xl font-bold" id="stats-accepted-matches">0</p>
+                </div>
+                <i class="fas fa-check-circle text-4xl opacity-20"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm">Success Rate</p>
+                    <p class="text-3xl font-bold" id="stats-success-rate">0%</p>
+                </div>
+                <i class="fas fa-chart-line text-4xl opacity-20"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matches List -->
+    <div id="my-matches-list" class="space-y-4">
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+            <p>Loading matches...</p>
+        </div>
+    </div>
+</div>
+
 
         <!-- TAB 3: Analytics -->
         <div id="analytics-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
@@ -373,21 +544,23 @@
 
         function switchTab(tabName, event) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn, .tab-button').forEach(btn => btn.classList.remove('active'));
 
             const targetTab = document.getElementById(tabName + '-tab');
             let targetBtn = null;
-            
+
             if (event && event.currentTarget) {
                 targetBtn = event.currentTarget;
             } else {
-                targetBtn = document.querySelector(`button[onclick*="switchTab('${tabName}'"]`);
+                targetBtn = document.querySelector(`button[onclick*="switchTab('${tabName}'"]`) ||
+                            document.querySelector(`button[onclick*="showTab('${tabName}'"]`) ||
+                            document.querySelector(`button[data-tab="${tabName}"]`);
             }
 
             if (targetTab) {
                 targetTab.classList.add('active');
             }
-            
+
             if (targetBtn) {
                 targetBtn.classList.add('active');
             }
@@ -411,8 +584,16 @@
                     case 'barangays':
                         loadBarangaysComparison();
                         break;
+                    case 'my-matches':
+                        loadMyMatches();
+                        break;
                 }
             }
+        }
+
+        // Alias for compatibility
+        function showTab(tabName) {
+            switchTab(tabName, null);
         }
 
         // ============================================
@@ -515,14 +696,19 @@
         // ============================================
         // RESOURCE NEEDS & MATCHING
         // ============================================
+        let currentResourceNeeds = [];
+        let currentResourceNeedsFilter = 'all';
 
         async function loadResourceNeeds() {
             const container = document.getElementById('resourceNeedsList');
             container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-2 text-gray-600">Loading resource needs...</p></div>';
 
             try {
+                const filter = currentResourceNeedsFilter || 'all';
                 const response = await fetchAPI('/api/ldrrmo/resource-needs');
-                
+
+                currentResourceNeeds = response;
+
                 if (!response || response.length === 0) {
                     container.innerHTML = `
                         <div class="text-center py-12">
@@ -593,143 +779,145 @@
             }
         }
 
-        async function findMatches(needId) {
-            document.getElementById('suggestedMatchesModal').classList.remove('hidden');
-            const modalBody = document.getElementById('matchesModalBody');
-            
-            modalBody.innerHTML = `
-                <div class="text-center py-12">
-                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
-                    <p class="text-gray-600">Searching for available donations...</p>
-                </div>
-            `;
-
-            try {
-                const data = await fetchAPI(`/api/ldrrmo/find-matches/${needId}`, { method: 'POST' });
+            async function findMatches(needId) {
+                document.getElementById('suggestedMatchesModal').classList.remove('hidden');
+                const modalBody = document.getElementById('matchesModalBody');
                 
-                if (data.success) {
-                    displayMatches(data.need, data.matches);
-                } else {
+                modalBody.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
+                        <p class="text-gray-600">Searching for available donations...</p>
+                    </div>
+                `;
+
+                try {
+                    const data = await fetchAPI(`/api/ldrrmo/find-matches/${needId}`, { method: 'POST' });
+                    
+                    if (data.success) {
+                        displayMatches(data.need, data.matches);
+                    } else {
+                        modalBody.innerHTML = `
+                            <div class="text-center py-8">
+                                <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                                <p class="text-red-600 font-semibold">Error finding matches</p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error finding matches:', error);
                     modalBody.innerHTML = `
                         <div class="text-center py-8">
                             <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
-                            <p class="text-red-600 font-semibold">Error finding matches</p>
+                            <p class="text-red-600 font-semibold">Failed to load matches. Please try again.</p>
                         </div>
                     `;
                 }
-            } catch (error) {
-                console.error('Error finding matches:', error);
-                modalBody.innerHTML = `
-                    <div class="text-center py-8">
-                        <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
-                        <p class="text-red-600 font-semibold">Failed to load matches. Please try again.</p>
-                    </div>
-                `;
             }
-        }
 
-        function displayMatches(need, matches) {
-            const modalBody = document.getElementById('matchesModalBody');
-            
-            let html = `
-                <!-- Need Summary -->
-                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-home text-white text-xl"></i>
+function displayMatches(need, matches) {
+    const modalBody = document.getElementById('matchesModalBody');
+    
+    if (!matches || matches.length === 0) {
+        modalBody.innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-times-circle text-6xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Matches Found</h3>
+                <p class="text-gray-500">No available donations match this resource need at the moment.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const escapeHtml = (text) => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    const html = `
+        <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-bold text-lg text-blue-900 mb-2">Resource Need Details</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="font-semibold text-gray-700">Barangay:</span>
+                    <span class="text-gray-900">${escapeHtml(need.barangay.name)}</span>
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">Category:</span>
+                    <span class="text-gray-900">${escapeHtml(need.category)}</span>
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">Quantity Needed:</span>
+                    <span class="text-gray-900">${escapeHtml(need.quantity)}</span>
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">Urgency:</span>
+                    <span class="px-2 py-1 rounded-full text-xs font-bold ${
+                        need.urgency === 'critical' ? 'bg-red-100 text-red-700' :
+                        need.urgency === 'high' ? 'bg-orange-100 text-orange-700' :
+                        need.urgency === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-green-100 text-green-700'
+                    }">${escapeHtml(need.urgency.toUpperCase())}</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="font-bold text-lg mb-4">Suggested Matches (${matches.length})</h3>
+        
+        ${matches.map(match => `
+            <div class="border rounded-lg p-4 mb-4 hover:shadow-md transition">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">
+                                <i class="fas fa-chart-line"></i> Match Score: ${match.match_score}%
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+                                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(match.barangay.name)}
+                            </span>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="text-lg font-bold text-gray-900 mb-3">
-                                <i class="fas fa-search text-blue-600 mr-2"></i>Looking for: ${escapeHtml(need.item_name)}
-                            </h4>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                    <span class="text-gray-600">Barangay:</span>
-                                    <strong class="ml-2 text-gray-900">${escapeHtml(need.barangay.name)}</strong>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">Quantity Needed:</span>
-                                    <strong class="ml-2 text-gray-900">${escapeHtml(need.quantity)} units</strong>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">Urgency:</span>
-                                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded uppercase">
-                                        ${escapeHtml(need.urgency)}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">Affected Families:</span>
-                                    <strong class="ml-2 text-gray-900">${escapeHtml(need.affected_families)}</strong>
-                                </div>
-                            </div>
+                        
+                        <p class="font-semibold text-gray-900 mb-1">
+                            <i class="fas fa-box mr-1 text-gray-500"></i>
+                            ${escapeHtml(match.donation.items_description)}
+                        </p>
+                        <p class="text-sm text-gray-600 mb-2">
+                            <i class="fas fa-cubes mr-1"></i>
+                            Available: <span class="font-semibold">${escapeHtml(match.donation.quantity)}</span>
+                        </p>
+
+                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                            <span><i class="fas fa-user mr-1"></i>${escapeHtml(match.donation.donor_name)}</span>
+                            <span><i class="fas fa-calendar mr-1"></i>${match.donation.recorded_at}</span>
                         </div>
+
+                        <div class="mt-2">
+                            ${match.can_fully_fulfill ? 
+                                '<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full"><i class="fas fa-check-circle"></i> Can fully fulfill request</span>' :
+                                '<span class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full"><i class="fas fa-exclamation-triangle"></i> Partial fulfillment only</span>'
+                            }
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 flex-shrink-0">
+                        <button onclick="viewMatchDetails(${need.id}, ${match.donation.id})" 
+                                class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-semibold">
+                            <i class="fas fa-info-circle mr-1"></i> View Details
+                        </button>
+                        
+                        <!-- ✅ UPDATED: Now initiates match request -->
+                        <button onclick="contactBarangay(${need.id}, ${match.donation.id}, '${match.barangay.id}', '${escapeHtml(match.barangay.name)}', ${match.match_score}, ${match.can_fully_fulfill})" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-semibold">
+                            <i class="fas fa-handshake mr-1"></i> Initiate Match
+                        </button>
                     </div>
                 </div>
+            </div>
+        `).join('')}
+    `;
 
-                <hr class="my-6 border-dashed border-2 border-gray-300">
-            `;
-
-            if (matches.length === 0) {
-                html += `
-                    <div class="text-center py-12">
-                        <i class="fas fa-box-open text-8xl text-gray-300 mb-6"></i>
-                        <h4 class="text-2xl font-bold text-gray-800 mb-2">No Current Matches Available</h4>
-                        <p class="text-gray-600">No barangays currently have "${escapeHtml(need.item_name)}" available for donation</p>
-                    </div>
-                `;
-            } else {
-                html += matches.map(match => {
-                    const score = Math.round(match.match_score);
-                    const scoreColor = score >= 70 ? 'text-green-600 border-green-500' : 
-                                    score >= 50 ? 'text-yellow-600 border-yellow-500' : 
-                                    'text-red-600 border-red-500';
-
-                    return `
-                        <div class="border-2 ${scoreColor} rounded-xl p-5 mb-4 hover:shadow-xl transition-all">
-                            <div class="flex items-center gap-6">
-                                <!-- Match Score -->
-                                <div class="text-center flex-shrink-0">
-                                    <div class="text-5xl font-black ${scoreColor}">${score}%</div>
-                                    <div class="text-xs text-gray-500 font-semibold mt-1">MATCH</div>
-                                </div>
-
-                                <!-- Match Details -->
-                                <div class="flex-1">
-                                    <h5 class="text-lg font-bold text-gray-900 mb-2">
-                                        <i class="fas fa-building text-blue-600 mr-2"></i>
-                                        ${escapeHtml(match.barangay.name)}
-                                    </h5>
-                                    <p class="text-gray-700 mb-2">
-                                        <strong>Available:</strong> ${escapeHtml(match.donation.item_name)}
-                                        <span class="ml-2 px-2 py-1 bg-gray-200 text-gray-800 text-xs font-semibold rounded">
-                                            ${escapeHtml(match.donation.quantity)} units
-                                        </span>
-                                    </p>
-                                    ${match.can_fulfill ? 
-                                        '<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full"><i class="fas fa-check-circle"></i> Can fully fulfill request</span>' :
-                                        '<span class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full"><i class="fas fa-exclamation-triangle"></i> Partial fulfillment only</span>'
-                                    }
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="flex flex-col gap-2 flex-shrink-0">
-                                    <button onclick="viewMatchDetails(${need.id}, ${match.donation.id})" 
-                                            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-semibold">
-                                        <i class="fas fa-info-circle mr-1"></i> View Details
-                                    </button>
-                                    <button onclick="contactBarangay(${match.barangay.id}, '${escapeHtml(match.barangay.name)}')" 
-                                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-semibold">
-                                        <i class="fas fa-phone mr-1"></i> Contact
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            modalBody.innerHTML = html;
-        }
+    modalBody.innerHTML = html;
+}
 
         function closeMatchModal() {
             document.getElementById('suggestedMatchesModal').classList.add('hidden');
@@ -738,20 +926,329 @@
         function viewMatchDetails(needId, donationId) {
             alert('📋 Detailed Match Information\n\nThis would display:\n• Transfer logistics\n• Distance between barangays\n• Detailed item comparison\n• Confirmation and tracking options');
         }
+let currentMyMatchesFilter = 'all';
+let allMyMatches = [];
 
-        async function contactBarangay(barangayId, barangayName) {
-            try {
-                const data = await fetchAPI(`/api/ldrrmo/barangay-contact/${barangayId}`);
+async function loadMyMatches() {
+    try {
+        const data = await fetchAPI(`/api/ldrrmo/matches?status=${currentMyMatchesFilter}`);
+        
+        allMyMatches = data;
+        
+        // Update counts
+        updateMyMatchesCounts(data);
+        
+        // Display matches
+        displayMyMatches(data);
+        
+        // Load statistics
+        loadMatchStatistics();
+        
+    } catch (error) {
+        console.error('Error loading matches:', error);
+        document.getElementById('my-matches-list').innerHTML = `
+            <div class="text-center py-8 text-red-500">
+                <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
+                <p>Failed to load matches. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+function updateMyMatchesCounts(matches) {
+    // Count by status
+    const counts = {
+        all: matches.length,
+        pending: matches.filter(m => m.status === 'pending').length,
+        accepted: matches.filter(m => m.status === 'accepted').length,
+        completed: matches.filter(m => m.status === 'completed').length,
+        rejected: matches.filter(m => m.status === 'rejected').length
+    };
+    
+    // Update count badges
+    Object.keys(counts).forEach(status => {
+        const countEl = document.getElementById(`my-matches-count-${status}`);
+        if (countEl) countEl.textContent = counts[status];
+    });
+}
+
+function displayMyMatches(matches) {
+    const container = document.getElementById('my-matches-list');
+    
+    if (!matches || matches.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Matches Found</h3>
+                <p class="text-gray-500">
+                    ${currentMyMatchesFilter === 'all' 
+                        ? 'You haven\'t initiated any matches yet.' 
+                        : `No ${currentMyMatchesFilter} matches.`}
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = matches.map(match => `
+        <div class="border rounded-lg p-5 hover:shadow-md transition bg-white">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(match.status)}">
+                            <i class="${getStatusIcon(match.status)} mr-1"></i>
+                            ${match.status_label}
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>
+                            Initiated: ${match.initiated_at}
+                        </span>
+                        ${match.responded_at ? `
+                            <span class="text-xs text-gray-500">
+                                <i class="fas fa-reply mr-1"></i>
+                                Responded: ${match.responded_at}
+                            </span>
+                        ` : ''}
+                    </div>
+                    
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">
+                        Match #${match.id}
+                        ${match.match_score ? `
+                            <span class="text-sm font-normal text-indigo-600">
+                                (Score: ${match.match_score}%)
+                            </span>
+                        ` : ''}
+                    </h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Requesting Side -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-exclamation-circle text-blue-600"></i>
+                        <h4 class="font-semibold text-blue-900">Requesting Barangay</h4>
+                    </div>
+                    <p class="text-sm font-bold text-gray-900">${match.requesting_barangay.name}</p>
+                    <p class="text-sm text-gray-700 mt-2">
+                        <span class="font-semibold">Needs:</span> ${match.resource_need.category}
+                    </p>
+                    <p class="text-sm text-gray-700">
+                        <span class="font-semibold">Quantity:</span> ${match.resource_need.quantity}
+                    </p>
+                    <p class="text-sm">
+                        <span class="font-semibold">Urgency:</span>
+                        <span class="px-2 py-1 rounded-full text-xs font-bold ${getUrgencyColor(match.resource_need.urgency)}">
+                            ${match.resource_need.urgency.toUpperCase()}
+                        </span>
+                    </p>
+                </div>
+
+                <!-- Donating Side -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-hands-helping text-green-600"></i>
+                        <h4 class="font-semibold text-green-900">Donating Barangay</h4>
+                    </div>
+                    <p class="text-sm font-bold text-gray-900">${match.donating_barangay.name}</p>
+                    <p class="text-sm text-gray-700 mt-2">
+                        <span class="font-semibold">Items:</span> ${match.physical_donation.items}
+                    </p>
+                    <p class="text-sm text-gray-700">
+                        <span class="font-semibold">Available:</span> ${match.physical_donation.quantity}
+                    </p>
+                    ${match.can_fully_fulfill ? 
+                        '<span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mt-1"><i class="fas fa-check"></i> Can Fulfill</span>' :
+                        '<span class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full mt-1"><i class="fas fa-exclamation-triangle"></i> Partial</span>'
+                    }
+                </div>
+            </div>
+
+            ${match.response_message ? `
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
+                    <p class="text-xs text-gray-600 mb-1">
+                        <i class="fas fa-comment mr-1"></i>
+                        Response Message:
+                    </p>
+                    <p class="text-sm text-gray-800">"${match.response_message}"</p>
+                </div>
+            ` : ''}
+
+            <div class="flex gap-2 justify-end">
+                ${match.status === 'pending' ? `
+                    <button onclick="cancelMatch(${match.id})" 
+                            class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-semibold">
+                        <i class="fas fa-times mr-1"></i> Cancel Request
+                    </button>
+                ` : ''}
                 
-                if (data.success) {
-                    const contact = data.contact_info;
-                    alert(`📞 Contact Information\n\nBarangay: ${contact.name}\nContact Person: ${contact.contact_person}\nPhone: ${contact.phone}\nEmail: ${contact.email}`);
-                }
-            } catch (error) {
-                alert('Unable to retrieve contact information. Please try again.');
-            }
-        }
+                ${match.has_conversation ? `
+                    <button onclick="viewConversation(${match.id})" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold">
+                        <i class="fas fa-comments mr-1"></i> View Conversation
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
 
+async function loadMatchStatistics() {
+    try {
+        const stats = await fetchAPI('/api/ldrrmo/matches/statistics');
+        
+        document.getElementById('stats-total-matches').textContent = stats.total_matches || 0;
+        document.getElementById('stats-pending-matches').textContent = stats.pending_matches || 0;
+        document.getElementById('stats-accepted-matches').textContent = stats.accepted_matches || 0;
+        document.getElementById('stats-success-rate').textContent = (stats.success_rate || 0) + '%';
+        
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+    }
+}
+
+function filterMyMatches(status) {
+    currentMyMatchesFilter = status;
+    
+    // Update active button
+    document.querySelectorAll('[id^="my-matches-filter-"]').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+    });
+    document.getElementById(`my-matches-filter-${status}`).classList.remove('bg-gray-200', 'text-gray-700');
+    document.getElementById(`my-matches-filter-${status}`).classList.add('bg-indigo-600', 'text-white');
+    
+    // Reload matches
+    loadMyMatches();
+}
+
+async function cancelMatch(matchId) {
+    if (!confirm('Are you sure you want to cancel this match request?')) return;
+    
+    try {
+        const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/cancel`, {
+            method: 'POST'
+        });
+        
+        if (response.success) {
+            alert('✅ Match request cancelled successfully');
+            loadMyMatches();
+        } else {
+            alert('❌ Error: ' + response.message);
+        }
+    } catch (error) {
+        console.error('Error cancelling match:', error);
+        alert('Failed to cancel match. Please try again.');
+    }
+}
+
+function viewConversation(matchId) {
+    alert('🔜 Conversation feature coming next!\n\nYou will be able to view the conversation between both barangays here.');
+    // This will be implemented in the next part
+}
+
+// Helper functions
+function getStatusColor(status) {
+    const colors = {
+        'pending': 'bg-yellow-100 text-yellow-700',
+        'accepted': 'bg-green-100 text-green-700',
+        'rejected': 'bg-red-100 text-red-700',
+        'completed': 'bg-blue-100 text-blue-700',
+        'cancelled': 'bg-gray-100 text-gray-700'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+}
+
+function getStatusIcon(status) {
+    const icons = {
+        'pending': 'fas fa-clock',
+        'accepted': 'fas fa-check-circle',
+        'rejected': 'fas fa-times-circle',
+        'completed': 'fas fa-flag-checkered',
+        'cancelled': 'fas fa-ban'
+    };
+    return icons[status] || 'fas fa-question-circle';
+}
+
+function getUrgencyColor(urgency) {
+    const colors = {
+        'critical': 'bg-red-100 text-red-700',
+        'high': 'bg-orange-100 text-orange-700',
+        'medium': 'bg-yellow-100 text-yellow-700',
+        'low': 'bg-green-100 text-green-700'
+    };
+    return colors[urgency] || 'bg-gray-100 text-gray-700';
+}
+
+// Load matches when tab is shown
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener to tab button if it exists
+    const myMatchesTab = document.querySelector('[data-tab="my-matches"]');
+    if (myMatchesTab) {
+        myMatchesTab.addEventListener('click', function() {
+            loadMyMatches();
+        });
+    }
+});
+
+async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
+    // Show confirmation modal
+    const confirmed = confirm(
+        `🤝 Initiate Match Request\n\n` +
+        `You are about to connect:\n` +
+        `• Requesting Barangay: (with this need)\n` +
+        `• Donating Barangay: ${barangayName}\n\n` +
+        `Match Score: ${matchScore}%\n` +
+        `Can Fully Fulfill: ${canFullyFulfill ? 'Yes ✅' : 'Partial ⚠️'}\n\n` +
+        `Both barangays will be notified. Continue?`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+        // Get the need details to extract quantity
+        const needData = currentResourceNeeds.find(n => n.id === needId);
+        
+        const response = await fetchAPI('/api/ldrrmo/matches/initiate', {
+            method: 'POST',
+            body: JSON.stringify({
+                resource_need_id: needId,
+                physical_donation_id: donationId,
+                match_score: matchScore,
+                quantity_requested: needData?.quantity || '',
+                can_fully_fulfill: canFullyFulfill
+            })
+        });
+
+        if (response.success) {
+            alert(
+                `✅ Match Request Sent!\n\n` +
+                `Match ID: ${response.data.match_id}\n` +
+                `Status: ${response.data.status}\n\n` +
+                `Both barangays have been notified:\n` +
+                `• ${response.data.requesting_barangay} (FYI)\n` +
+                `• ${response.data.donating_barangay} (Action Required)\n\n` +
+                `You can track this match in the "My Matches" tab.`
+            );
+            
+            // Close the modal and refresh
+            closeMatchModal();
+            
+            // Refresh the resource needs list
+            loadResourceNeeds();
+            
+            // TODO: Update notification bell count
+            // loadNotifications();
+        } else {
+            alert('❌ Error: ' + response.message);
+        }
+    } catch (error) {
+        console.error('Error initiating match:', error);
+        alert('Failed to initiate match request. Please try again.');
+    }
+}
         document.addEventListener('click', function(e) {
             const modal = document.getElementById('suggestedMatchesModal');
             if (e.target === modal) {
@@ -1055,6 +1552,254 @@
         window.addEventListener('unhandledrejection', function(event) {
             console.error('Unhandled promise rejection:', event.reason);
         });
+
+        let currentNotificationFilter = 'all';
+let allNotifications = [];
+let notificationDropdownOpen = false;
+
+// Initialize notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotifications();
+    
+    // Poll for new notifications every 30 seconds
+    setInterval(loadNotifications, 30000);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('notifications-dropdown');
+        const bell = document.getElementById('notification-bell');
+        
+        if (notificationDropdownOpen && 
+            !dropdown.contains(event.target) && 
+            !bell.contains(event.target)) {
+            closeNotifications();
+        }
+    });
+});
+
+async function loadNotifications() {
+    try {
+        const data = await fetchAPI('/api/notifications');
+        allNotifications = data;
+        
+        // Update unread count
+        updateUnreadCount();
+        
+        // If dropdown is open, display notifications
+        if (notificationDropdownOpen) {
+            displayNotifications();
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+async function updateUnreadCount() {
+    try {
+        const data = await fetchAPI('/api/notifications/unread-count');
+        const count = data.count || 0;
+        
+        const badge = document.getElementById('notification-badge');
+        if (count > 0) {
+            badge.classList.remove('hidden');
+            badge.textContent = count > 99 ? '99+' : count;
+        } else {
+            badge.classList.add('hidden');
+        }
+        
+        // Update count text
+        document.getElementById('notification-count').textContent = 
+            count === 0 ? 'No unread' : `${count} unread`;
+            
+    } catch (error) {
+        console.error('Error updating unread count:', error);
+    }
+}
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notifications-dropdown');
+    
+    if (notificationDropdownOpen) {
+        closeNotifications();
+    } else {
+        dropdown.classList.remove('hidden');
+        notificationDropdownOpen = true;
+        displayNotifications();
+    }
+}
+
+function closeNotifications() {
+    document.getElementById('notifications-dropdown').classList.add('hidden');
+    notificationDropdownOpen = false;
+}
+
+function displayNotifications() {
+    const container = document.getElementById('notifications-list');
+    
+    // Filter notifications
+    let filtered = allNotifications;
+    if (currentNotificationFilter !== 'all') {
+        filtered = allNotifications.filter(n => n.type === currentNotificationFilter);
+    }
+    
+    if (!filtered || filtered.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-bell-slash text-3xl mb-2"></i>
+                <p class="text-sm">No notifications</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = filtered.map(notif => `
+        <div onclick="handleNotificationClick(${notif.id}, '${notif.action_url || ''}')" 
+             class="px-4 py-3 border-b hover:bg-gray-50 cursor-pointer transition ${notif.is_read ? 'opacity-60' : 'bg-blue-50'}">
+            
+            <div class="flex items-start gap-3">
+                <!-- Icon -->
+                <div class="flex-shrink-0 mt-1">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center ${getNotificationIconBg(notif.type)}">
+                        <i class="${getNotificationIcon(notif.type)} ${getNotificationIconColor(notif.type)}"></i>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-2 mb-1">
+                        <h4 class="font-semibold text-sm text-gray-900 ${!notif.is_read ? 'font-bold' : ''}">
+                            ${notif.title}
+                        </h4>
+                        ${!notif.is_read ? '<span class="w-2 h-2 bg-blue-600 rounded-full"></span>' : ''}
+                    </div>
+                    
+                    <p class="text-xs text-gray-600 mb-2">${notif.message}</p>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">
+                            <i class="fas fa-clock mr-1"></i>
+                            ${notif.created_at}
+                        </span>
+                        
+                        ${notif.action_url ? `
+                            <span class="text-xs text-indigo-600 font-semibold">
+                                Click to view <i class="fas fa-arrow-right ml-1"></i>
+                            </span>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
+
+async function handleNotificationClick(notificationId, actionUrl) {
+    try {
+        // Mark as read
+        await fetchAPI(`/api/notifications/${notificationId}/read`, {
+            method: 'POST'
+        });
+        
+        // Update counts
+        await loadNotifications();
+        
+        // Navigate if there's an action URL
+        if (actionUrl) {
+            closeNotifications();
+            
+            // Parse action (e.g., "view-match-123" or "view-conversation-5")
+            if (actionUrl.includes('view-match-')) {
+                const matchId = actionUrl.replace('view-match-', '');
+                // Go to My Matches tab and highlight this match
+                showTab('my-matches');
+                // TODO: Scroll to and highlight the match
+            } else if (actionUrl.includes('view-conversation-')) {
+                const matchId = actionUrl.replace('view-conversation-', '');
+                viewConversation(matchId);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error handling notification click:', error);
+    }
+}
+
+async function markAllAsRead() {
+    try {
+        await fetchAPI('/api/notifications/mark-all-read', {
+            method: 'POST'
+        });
+        
+        await loadNotifications();
+        displayNotifications();
+        
+    } catch (error) {
+        console.error('Error marking all as read:', error);
+    }
+}
+
+function filterNotifications(type) {
+    currentNotificationFilter = type;
+    
+    // Update active button
+    document.querySelectorAll('[id^="notif-filter-"]').forEach(btn => {
+        btn.classList.remove('border-indigo-600', 'text-indigo-600');
+        btn.classList.add('border-transparent', 'text-gray-600');
+    });
+    
+    const activeBtn = document.getElementById(`notif-filter-${type}`);
+    activeBtn.classList.remove('border-transparent', 'text-gray-600');
+    activeBtn.classList.add('border-indigo-600', 'text-indigo-600');
+    
+    displayNotifications();
+}
+
+function viewAllNotifications() {
+    closeNotifications();
+    // TODO: Navigate to a full notifications page if you create one
+    alert('📋 Full notifications page coming soon!\n\nFor now, all notifications are shown in the dropdown.');
+}
+
+// Helper functions
+function getNotificationIcon(type) {
+    const icons = {
+        'match_request': 'fas fa-handshake',
+        'match_accepted': 'fas fa-check-circle',
+        'match_rejected': 'fas fa-times-circle',
+        'match_completed': 'fas fa-flag-checkered',
+        'message': 'fas fa-comment',
+        'system': 'fas fa-info-circle'
+    };
+    return icons[type] || 'fas fa-bell';
+}
+
+function getNotificationIconBg(type) {
+    const colors = {
+        'match_request': 'bg-blue-100',
+        'match_accepted': 'bg-green-100',
+        'match_rejected': 'bg-red-100',
+        'match_completed': 'bg-purple-100',
+        'message': 'bg-yellow-100',
+        'system': 'bg-gray-100'
+    };
+    return colors[type] || 'bg-gray-100';
+}
+
+function getNotificationIconColor(type) {
+    const colors = {
+        'match_request': 'text-blue-600',
+        'match_accepted': 'text-green-600',
+        'match_rejected': 'text-red-600',
+        'match_completed': 'text-purple-600',
+        'message': 'text-yellow-600',
+        'system': 'text-gray-600'
+    };
+    return colors[type] || 'text-gray-600';
+}
+
+console.log('✅ Notification system loaded');
     </script>
 </body>
-</html><?php /**PATH C:\Users\Judd\BayanihanCebuBackEnd\resources\views\UserDashboards\citydashboard.blade.php ENDPATH**/ ?>
+</html><?php /**PATH C:\Users\Judd\BayanihanCebuBackEnd\resources\views/UserDashboards/citydashboard.blade.php ENDPATH**/ ?>
