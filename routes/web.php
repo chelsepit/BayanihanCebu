@@ -155,8 +155,7 @@ Route::get('/api/donations/barangay/{id}', [DonationController::class, 'getByBar
 
 // Public routes (no login required)
 Route::post('/api/donations/track', [DonationController::class, 'track']);
-Route::get('/api/donations/urgent-needs', [DonationController::class, 'getUrgentNeeds']);
-// Protected routes (require login)
+Route::get('/api/donations/resource-needs', [DonationController::class, 'getResourceNeeds']);
 Route::middleware(['auth.check'])->group(function () {
 
     // Resident routes
@@ -191,3 +190,7 @@ Route::middleware(['auth.check'])->group(function () {
     });
 
     });
+
+
+
+

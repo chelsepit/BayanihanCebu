@@ -342,6 +342,54 @@ class DonationController extends Controller
             ]);
         }
 
+        $stats = [
+            'total_donated' => OnlineDonation::where('donor_email', $userEmail)->sum('amount'),
+            'total_donations' => OnlineDonation::where('donor_email', $userEmail)->count(),
+            'verified_donations' => OnlineDonation::where('donor_email', $userEmail)
+                ->where('verification_status', 'verified')->count(),
+            'blockchain_verified' => OnlineDonation::where('donor_email', $userEmail)
+                ->where('blockchain_status', 'confirmed')->count(),
+            'families_helped' => OnlineDonation::where('donor_email', $userEmail)
+                ->where('verification_status', 'verified')
+                ->join('barangays', 'online_donations.target_barangay_id', '=', 'barangays.barangay_id')
+                ->sum('barangays.affected_families'),
+        ];
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Get all urgent needs for resident dashboard
+     */
+   /**
+ * Get all urgent needs for resident dashboard
+ */
+public function getUrgentNeeds()
+{
+    $needs = ResourceNeed::with(['barangay'])
+        ->whereIn('urgency', ['high', 'critical'])
+        ->where('status', '!=', 'fulfilled')
+        ->orderByRaw("FIELD(urgency, 'critical', 'high')")
+        ->orderBy('created_at', 'desc')
+        ->limit(10)
+        ->get()
+        ->map(function($need) {
+            return [
+                'id' => $need->id,
+                'barangay_id' => $need->barangay_id,
+                'barangay_name' => $need->barangay->name,
+                'category' => $need->category,
+                'description' => $need->description,
+                'quantity' => $need->quantity,
+                'urgency' => $need->urgency,
+                'affected_families' => $need->barangay->affected_families,
+                'disaster_status' => $need->barangay->disaster_status,
+            ];
+        });
+
+    return response()->json($needs);
+}
+}
         // Not found in either table
         return response()->json([
             'success' => false,

@@ -15,9 +15,13 @@ class DisasterMapController extends Controller
      */
     public function index()
     {
-        $barangays = Barangay::with(['currentDisaster.urgentNeeds'])
-            ->orderBy('name')
-            ->get();
+        // CHANGED: currentDisaster.urgentNeeds → resourceNeeds
+        $barangays = Barangay::with(['resourceNeeds' => function($query) {
+            $query->where('status', '!=', 'fulfilled')
+                  ->orderBy('urgency', 'desc');
+        }])
+        ->orderBy('name')
+        ->get();
 
         return view('welcome', compact('barangays'));
     }
@@ -47,7 +51,8 @@ class DisasterMapController extends Controller
      */
     public function showDonateForm(Disaster $disaster)
     {
-        $disaster->load(['barangay', 'urgentNeeds']);
+        // CHANGED: urgentNeeds → resourceNeeds
+        $disaster->load(['barangay', 'resourceNeeds']);
 
         return view('disasters.donate', compact('disaster'));
     }
@@ -55,38 +60,35 @@ class DisasterMapController extends Controller
     /**
      * Process donation
      */
-   public function processDonation(Request $request, Disaster $disaster)
-{
-    $validated = $request->validate([
-        'amount' => 'required|numeric|min:10',
-        'donor_name' => 'required_without:is_anonymous|string|max:255',
-        'donor_email' => 'required_without:is_anonymous|email|max:255',
-        'donor_phone' => 'nullable|string|max:20',
-        'is_anonymous' => 'boolean',
-        'donation_type' => 'required|in:monetary,in-kind',
-    ]);
+    public function processDonation(Request $request, Disaster $disaster)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:10',
+            'donor_name' => 'required_without:is_anonymous|string|max:255',
+            'donor_email' => 'required_without:is_anonymous|email|max:255',
+            'donor_phone' => 'nullable|string|max:20',
+            'is_anonymous' => 'boolean',
+            'donation_type' => 'required|in:monetary,in-kind',
+        ]);
 
-// Then in the processDonation method:
-$donation = Donation::create([
-    'disaster_id' => $disaster->id,
-    'user_id' => Auth::check() ? Auth::user()->user_id : null,
-    'amount' => $validated['amount'],
-    'donation_type' => $validated['donation_type'],
-    'donor_name' => $validated['is_anonymous'] ?? false ? null : $validated['donor_name'],
-    'donor_email' => $validated['is_anonymous'] ?? false ? null : $validated['donor_email'],
-    'donor_phone' => $validated['donor_phone'] ?? null,
-    'is_anonymous' => $validated['is_anonymous'] ?? false,
-    'status' => 'pending',
-]);
+        $donation = Donation::create([
+            'disaster_id' => $disaster->id,
+            'user_id' => Auth::check() ? Auth::user()->user_id : null,
+            'amount' => $validated['amount'],
+            'donation_type' => $validated['donation_type'],
+            'donor_name' => $validated['is_anonymous'] ?? false ? null : $validated['donor_name'],
+            'donor_email' => $validated['is_anonymous'] ?? false ? null : $validated['donor_email'],
+            'donor_phone' => $validated['donor_phone'] ?? null,
+            'is_anonymous' => $validated['is_anonymous'] ?? false,
+            'status' => 'pending',
+        ]);
 
-    // Here you would integrate with payment gateway
-    // For now, we'll just confirm the donation
-    $donation->confirm('0x' . bin2hex(random_bytes(32)));
+        $donation->confirm('0x' . bin2hex(random_bytes(32)));
 
-    return redirect()
-        ->route('donation.success', $donation->tracking_code)
-        ->with('success', 'Thank you for your donation!');
-}
+        return redirect()
+            ->route('donation.success', $donation->tracking_code)
+            ->with('success', 'Thank you for your donation!');
+    }
 
     /**
      * Show donation success page
@@ -121,31 +123,32 @@ $donation = Donation::create([
      */
     public function apiBarangays()
     {
-        $barangays = Barangay::with(['currentDisaster.urgentNeeds'])
-            ->orderBy('name')
-            ->get()
-            ->map(function ($barangay) {
-                $disaster = $barangay->currentDisaster;
-
-                return [
-                    'id' => $barangay->id,
-                    'name' => $barangay->name,
-                    'slug' => $barangay->slug,
-                    'status' => $barangay->status,
-                    'latitude' => $barangay->latitude,
-                    'longitude' => $barangay->longitude,
-                    'has_disaster' => $disaster ? true : false,
-                    'disaster' => $disaster ? [
-                        'id' => $disaster->id,
-                        'title' => $disaster->title,
-                        'type' => $disaster->type,
-                        'severity' => $disaster->severity,
-                        'affected_families' => $disaster->affected_families,
-                        'total_donations' => number_format($disaster->total_donations, 2),
-                        'urgent_needs' => $disaster->urgentNeeds->pluck('type'),
-                    ] : null,
-                ];
-            });
+        // CHANGED: currentDisaster.urgentNeeds → resourceNeeds
+        $barangays = Barangay::with(['resourceNeeds' => function($query) {
+            $query->where('status', '!=', 'fulfilled')
+                  ->orderBy('urgency', 'desc');
+        }])
+        ->orderBy('name')
+        ->get()
+        ->map(function ($barangay) {
+            return [
+                'id' => $barangay->barangay_id,
+                'name' => $barangay->name,
+                'slug' => $barangay->slug,
+                'status' => $barangay->disaster_status,
+                'latitude' => $barangay->latitude,
+                'longitude' => $barangay->longitude,
+                'has_disaster' => $barangay->disaster_status !== 'safe',
+                // CHANGED: urgent_needs → resource_needs
+                'resource_needs' => $barangay->resourceNeeds->map(function($need) {
+                    return [
+                        'category' => $need->category,
+                        'quantity' => $need->quantity,
+                        'urgency' => $need->urgency,
+                    ];
+                }),
+            ];
+        });
 
         return response()->json($barangays);
     }

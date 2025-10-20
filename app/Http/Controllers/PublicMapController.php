@@ -163,30 +163,61 @@ class PublicMapController extends Controller
     /**
      * API endpoint to get all barangays
      */
-    public function apiBarangays()
-    {
-        $barangays = Barangay::with('resourceNeeds')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($barangay) {
+/**
+ * API endpoint for Public Map - Shows ALL barangays with dynamic resource needs
+ */
+public function apiBarangays()
+{
+    $barangays = Barangay::with(['resourceNeeds' => function($query) {
+            $query->where('status', '!=', 'fulfilled')
+                  ->orderByRaw("FIELD(urgency, 'critical', 'high', 'medium', 'low')");
+        }])
+        ->orderBy('name')
+        ->get()
+        ->map(function ($barangay) {
+            // Get active resource needs with full details
+            $resourceNeeds = $barangay->resourceNeeds->map(function($need) {
                 return [
-                    'id' => $barangay->barangay_id,
-                    'name' => $barangay->name,
-                    'slug' => $barangay->slug,
-                    'city' => $barangay->city,
-                    'district' => $barangay->district,
-                    'disaster_status' => $barangay->disaster_status,
-                    'disaster_type' => $barangay->disaster_type,
-                    'latitude' => $barangay->latitude,
-                    'longitude' => $barangay->longitude,
-                    'affected_families' => $barangay->affected_families,
-                    'needs_summary' => $barangay->needs_summary,
-                    'urgent_needs' => $barangay->resourceNeeds()
-                        ->whereIn('urgency', ['critical', 'high'])
-                        ->count(),
+                    'id' => $need->id,
+                    'category' => $need->category,
+                    'description' => $need->description,
+                    'quantity' => $need->quantity,
+                    'urgency' => $need->urgency,
+                    'status' => $need->status,
+                    'created_at' => $need->created_at ? $need->created_at->format('M d, Y') : null,
                 ];
             });
 
-        return response()->json($barangays);
-    }
+            // Calculate highest urgency level for pin sizing
+            $urgencyLevels = ['critical' => 4, 'high' => 3, 'medium' => 2, 'low' => 1];
+            $highestUrgency = 'low';
+            $highestValue = 0;
+
+            foreach ($resourceNeeds as $need) {
+                $value = $urgencyLevels[$need['urgency']] ?? 0;
+                if ($value > $highestValue) {
+                    $highestValue = $value;
+                    $highestUrgency = $need['urgency'];
+                }
+            }
+
+            return [
+                'id' => $barangay->barangay_id,
+                'name' => $barangay->name,
+                'slug' => $barangay->slug,
+                'status' => $barangay->disaster_status,
+                'disaster_type' => $barangay->disaster_type,
+                'latitude' => $barangay->latitude,
+                'longitude' => $barangay->longitude,
+                'affected_families' => $barangay->affected_families,
+                'total_raised' => $barangay->total_raised ?? 0,
+                'resource_needs' => $resourceNeeds,
+                'resource_needs_count' => $resourceNeeds->count(),
+                'highest_urgency' => $highestUrgency,
+                'city' => $barangay->city ?? 'Cebu City',
+            ];
+        });
+
+    return response()->json($barangays)0
+}
 }
