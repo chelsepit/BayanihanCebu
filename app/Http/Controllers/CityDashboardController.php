@@ -11,6 +11,7 @@ use App\Models\PhysicalDonation;
 use App\Models\ResourceNeed;
 use App\Models\ResourceMatch;
 use App\Models\MatchNotification;
+use App\Models\MatchConversation;
 
 class CityDashboardController extends Controller
 {
