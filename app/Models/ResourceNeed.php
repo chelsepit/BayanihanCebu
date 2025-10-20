@@ -16,16 +16,47 @@ class ResourceNeed extends Model
         'quantity',
         'urgency',
         'status',
+        'verification_status',
+        'verified_by',
+        'verified_at',
+        'rejection_reason',
+        'blockchain_tx_hash',
+        'blockchain_status',
+        'blockchain_recorded_at',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'blockchain_recorded_at' => 'datetime',
     ];
 
-    // Relationship: belongs to a barangay
+   
     public function barangay()
     {
         return $this->belongsTo(Barangay::class, 'barangay_id', 'barangay_id');
+    }
+
+
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by', 'user_id');
+    }
+
+
+    public function scopePendingVerification($query)
+    {
+        return $query->where('verification_status', 'pending');
+    }
+
+
+    public function scopeVerified($query)
+    {
+        return $query->where('verification_status', 'verified');
+    }
+
+
+    public function scopeRejected($query)
+    {
+        return $query->where('verification_status', 'rejected');
     }
 }
