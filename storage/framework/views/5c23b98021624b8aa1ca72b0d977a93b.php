@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>City Dashboard (LDRRMO)</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,10 +39,10 @@
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p class="text-sm text-blue-100">Logged in as LDRRMO</p>
-                <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
+                <p class="font-medium"><?php echo e(session('user_name', 'Admin')); ?></p>
             </div>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
@@ -648,69 +648,50 @@
             }
         }
 
-     async function loadMapData() {
-    if (!cityMap && !initMap()) {
-        return;
-    }
-
-    try {
-        const barangays = await fetchAPI('/api/ldrrmo/barangays-map');
-
-        barangays.forEach(barangay => {
-            const colorMap = {
-                'safe': '#10b981',
-                'warning': '#eab308',
-                'critical': '#f97316',
-                'emergency': '#ef4444'
-            };
-            const color = colorMap[barangay.status] || '#9ca3af';
-
-            const marker = L.circleMarker([barangay.lat, barangay.lng], {
-                radius: 8,
-                fillColor: color,
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(cityMap);
-
-            // Build needs list from resource_needs table
-            let needsHtml = '';
-            if (barangay.status !== 'safe' && barangay.resource_needs && barangay.resource_needs.length > 0) {
-                needsHtml = '<div class="mt-2"><strong>Resource Needs:</strong><ul class="mt-1 text-sm">';
-                
-                // Group by urgency or show top 3
-                barangay.resource_needs.slice(0, 3).forEach(need => {
-                    const urgencyBadge = need.urgency === 'critical' ? '🔴' : 
-                                       need.urgency === 'high' ? '🟠' : 
-                                       need.urgency === 'medium' ? '🟡' : '🔵';
-                    needsHtml += `<li>${urgencyBadge} ${escapeHtml(need.category)}: ${escapeHtml(need.quantity)}</li>`;
-                });
-                
-                if (barangay.resource_needs.length > 3) {
-                    needsHtml += `<li class="text-gray-600">...and ${barangay.resource_needs.length - 3} more</li>`;
-                }
-                needsHtml += '</ul></div>';
+        async function loadMapData() {
+            if (!cityMap && !initMap()) {
+                return;
             }
 
-            marker.bindPopup(`
-                <div style="min-width: 250px;">
-                    <strong style="font-size: 16px;">${escapeHtml(barangay.name)}</strong><br>
-                    <span class="px-2 py-1 text-xs rounded" style="background-color: ${color}20; color: ${color}; font-weight: 600;">
-                        ${escapeHtml(String(barangay.status).toUpperCase())}
-                    </span><br>
-                    <div class="mt-2">
-                        <strong>Affected:</strong> ${formatNumber(barangay.affected_families)} families
-                    </div>
-                    ${needsHtml}
-                </div>
-            `);
-        });
-    } catch (error) {
-        console.error('Error loading map data:', error);
-        showError('cityMap', 'Failed to load map data. Please refresh.');
-    }
-}
+            try {
+                const barangays = await fetchAPI('/api/ldrrmo/barangays-map');
+
+                barangays.forEach(barangay => {
+                    const colorMap = {
+                        'safe': '#10b981',
+                        'warning': '#eab308',
+                        'critical': '#f97316',
+                        'emergency': '#ef4444'
+                    };
+                    const color = colorMap[barangay.status] || '#9ca3af';
+
+                    const marker = L.circleMarker([barangay.lat, barangay.lng], {
+                        radius: 8,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(cityMap);
+
+                    const urgentNeedsList = Array.isArray(barangay.urgent_needs)
+                        ? barangay.urgent_needs.map(escapeHtml).join(', ')
+                        : '';
+
+                    marker.bindPopup(`
+                        <div style="min-width: 200px;">
+                            <strong style="font-size: 16px;">${escapeHtml(barangay.name)}</strong><br>
+                            <span style="color: ${color}; font-weight: 600;">${escapeHtml(String(barangay.status).toUpperCase())}</span><br>
+                            <strong>Affected:</strong> ${escapeHtml(formatNumber(barangay.affected_families))} families<br>
+                            ${urgentNeedsList ? '<strong>Needs:</strong> ' + urgentNeedsList : ''}
+                        </div>
+                    `);
+                });
+            } catch (error) {
+                console.error('Error loading map data:', error);
+                showError('cityMap', 'Failed to load map data. Please refresh.');
+            }
+        }
 
         // ============================================
         // RESOURCE NEEDS & MATCHING
@@ -1555,24 +1536,9 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
                 loadedTabs.map = true;
             }
 
-            // Auto-refresh overview statistics every 30 seconds
-            setInterval(loadOverview, 30 * 1000);
+            setInterval(loadOverview, 5 * 60 * 1000);
 
-            // Auto-refresh map data every 30 seconds
-            setInterval(() => {
-                if (loadedTabs.map && cityMap) {
-                    loadMapData();
-                }
-            }, 30 * 1000);
-
-            // Auto-refresh resource needs if tab is active
-            setInterval(() => {
-                if (loadedTabs.resources) {
-                    loadResourceNeeds();
-                }
-            }, 30 * 1000);
-
-            console.log('LDRRMO Dashboard initialized successfully with real-time polling');
+            console.log('LDRRMO Dashboard initialized successfully');
         });
 
         // ============================================
@@ -1836,4 +1802,4 @@ function getNotificationIconColor(type) {
 console.log('✅ Notification system loaded');
     </script>
 </body>
-</html>
+</html><?php /**PATH C:\Users\Judd\BayanihanCebuBackEnd\resources\views/UserDashboards/citydashboard.blade.php ENDPATH**/ ?>

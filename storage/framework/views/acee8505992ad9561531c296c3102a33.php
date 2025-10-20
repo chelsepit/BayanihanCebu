@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>BayanihanCebu - BDRRMC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -59,15 +59,15 @@
     <div class="bg-[#0D47A1] text-white px-6 py-4 flex justify-between items-center">
         <div>
             <h1 class="text-xl font-semibold">BayanihanCebu - BDRRMC</h1>
-            <p class="text-sm text-blue-200">Barangay {{ $barangay->name ?? 'Lahug' }}</p>
+            <p class="text-sm text-blue-200">Barangay <?php echo e($barangay->name ?? 'Lahug'); ?></p>
         </div>
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p class="text-sm text-blue-200">Logged in as</p>
-                <p class="font-medium">{{ session('user_name') }}</p>
+                <p class="font-medium"><?php echo e(session('user_name')); ?></p>
             </div>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
                     Logout
                 </button>
@@ -99,7 +99,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Affected Families</p>
-                        <p class="text-2xl font-bold text-gray-800">{{ $stats['affected_families'] ?? 120 }}</p>
+                        <p class="text-2xl font-bold text-gray-800"><?php echo e($stats['affected_families'] ?? 120); ?></p>
                     </div>
                 </div>
 
@@ -119,7 +119,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Active Requests</p>
-                        <p class="text-2xl font-bold text-gray-800" id="activeRequestsCount">{{ $stats['active_requests'] ?? 0 }}</p>
+                        <p class="text-2xl font-bold text-gray-800" id="activeRequestsCount"><?php echo e($stats['active_requests'] ?? 0); ?></p>
                     </div>
                 </div>
 
@@ -129,7 +129,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Verified Donations</p>
-                        <p class="text-2xl font-bold text-gray-800">{{ $stats['verified_donations'] ?? 13 }}</p>
+                        <p class="text-2xl font-bold text-gray-800"><?php echo e($stats['verified_donations'] ?? 13); ?></p>
                     </div>
                 </div>
             </div>
@@ -462,7 +462,7 @@
             <div class="border-b px-6 py-4 flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-semibold text-gray-800">Record Donation from Donor</h3>
-                    <p class="text-sm text-gray-500 mt-1">Record physical donations received at Barangay {{ $barangay->name ?? 'Lahug' }}</p>
+                    <p class="text-sm text-gray-500 mt-1">Record physical donations received at Barangay <?php echo e($barangay->name ?? 'Lahug'); ?></p>
                 </div>
                 <button onclick="closeRecordModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -612,7 +612,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Distribution Date *</label>
-                        <input type="date" name="distribution_date" value="{{ date('Y-m-d') }}" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="date" name="distribution_date" value="<?php echo e(date('Y-m-d')); ?>" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
 
@@ -2519,7 +2519,7 @@ async function loadConversation(matchId, silentUpdate = false) {
         `;
 
         // Get current barangay ID from session
-        const currentBarangayId = '{{ session("barangay_id") }}';
+        const currentBarangayId = '<?php echo e(session("barangay_id")); ?>';
 
         // Display messages
         displayMessages(data.messages, currentBarangayId, silentUpdate);
@@ -2915,4 +2915,4 @@ console.log('✅ Conversation UI loaded');
 </div>
 
 </body>
-</html>
+</html><?php /**PATH C:\Users\Judd\BayanihanCebuBackEnd\resources\views/UserDashboards/barangaydashboard.blade.php ENDPATH**/ ?>

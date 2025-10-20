@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\ResourceNeed;
 use App\Models\PhysicalDonation;
 use App\Models\DistributionLog;
 use App\Models\Barangay;
 use App\Models\OnlineDonation;
+use App\Models\ResourceMatch;
+use App\Models\MatchConversation;
+use App\Models\MatchMessage;
+use App\Models\MatchNotification;
 
 class BarangayDashboardController extends Controller
 {
@@ -134,6 +139,330 @@ class BarangayDashboardController extends Controller
             'data' => $need
         ]);
     }
+
+    public function getMatchConversation($matchId)
+{
+    try {
+        $barangayId = session('barangay_id');
+
+        $match = ResourceMatch::with([
+            'resourceNeed',
+            'requestingBarangay',
+            'donatingBarangay',
+            'conversation.messages.senderBarangay'
+        ])->findOrFail($matchId);
+
+        // Verify this barangay is a participant
+        if (!in_array($barangayId, [$match->requesting_barangay_id, $match->donating_barangay_id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $conversation = $match->conversation;
+
+        if (!$conversation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No conversation exists for this match'
+            ], 404);
+        }
+
+        // Mark messages as read for this barangay
+        $conversation->markAsReadFor($barangayId);
+
+        $isRequester = $match->requesting_barangay_id === $barangayId;
+
+        $data = [
+            'match_id' => $match->id,
+            'conversation_id' => $conversation->id,
+            'title' => $conversation->title,
+            'is_active' => $conversation->is_active,
+            'my_role' => $isRequester ? 'requester' : 'donor',
+            'participants' => [
+                'requester' => [
+                    'id' => $match->requesting_barangay_id,
+                    'name' => $match->requestingBarangay->name,
+                ],
+                'donor' => [
+                    'id' => $match->donating_barangay_id,
+                    'name' => $match->donatingBarangay->name,
+                ],
+            ],
+            'resource_details' => [
+                'category' => $match->resourceNeed->category,
+                'quantity_needed' => $match->resourceNeed->quantity,
+                'quantity_available' => $match->physicalDonation->quantity,
+                'urgency' => $match->resourceNeed->urgency,
+            ],
+            'messages' => $conversation->messages->map(function($msg) use ($barangayId) {
+                return [
+                    'id' => $msg->id,
+                    'sender_barangay_id' => $msg->sender_barangay_id,
+                    'sender_name' => $msg->sender_name,
+                    'message' => $msg->message,
+                    'message_type' => $msg->message_type,
+                    'is_mine' => $msg->sender_barangay_id === $barangayId,
+                    'is_system' => $msg->isSystemMessage(),
+                    'attachment' => $msg->hasAttachment() ? [
+                        'url' => $msg->attachment_url,
+                        'type' => $msg->attachment_type,
+                        'name' => $msg->attachment_name,
+                        'icon' => $msg->attachment_icon,
+                    ] : null,
+                    'created_at' => $msg->created_at->format('M d, Y h:i A'),
+                    'time_ago' => $msg->time_ago,
+                ];
+            }),
+        ];
+
+        return response()->json($data);
+
+    } catch (\Exception $e) {
+        Log::error('Error loading conversation: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading conversation',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Send a message in the conversation
+ */
+public function sendMessage(Request $request, $matchId)
+{
+    try {
+        $validated = $request->validate([
+            'message' => 'required|string|max:2000',
+            'attachment' => 'nullable|file|max:10240', // 10MB max
+        ]);
+
+        $userId = session('user_id');
+        $barangayId = session('barangay_id');
+
+        $match = ResourceMatch::with('conversation')->findOrFail($matchId);
+
+        // Verify this barangay is a participant
+        if (!in_array($barangayId, [$match->requesting_barangay_id, $match->donating_barangay_id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $conversation = $match->conversation;
+
+        if (!$conversation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No conversation exists for this match'
+            ], 404);
+        }
+
+        // Check if conversation is still active
+        if (!$conversation->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This conversation has been closed'
+            ], 400);
+        }
+
+        // Handle file attachment if present
+        $attachmentData = null;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $path = $file->store('match_attachments', 'public');
+            
+            $attachmentData = [
+                'url' => '/storage/' . $path,
+                'type' => $file->getClientMimeType(),
+                'name' => $file->getClientOriginalName(),
+            ];
+        }
+
+        // Add message to conversation
+        $message = $conversation->addMessage(
+            $userId,
+            $barangayId,
+            $validated['message'],
+            'text',
+            $attachmentData
+        );
+
+        // Get the other barangay to notify them
+        $otherBarangayId = $barangayId === $match->requesting_barangay_id ? 
+            $match->donating_barangay_id : 
+            $match->requesting_barangay_id;
+
+        // Create notification for new message
+        MatchNotification::create([
+            'resource_match_id' => $match->id,
+            'barangay_id' => $otherBarangayId,
+            'type' => 'new_message',
+            'title' => 'New Message',
+            'message' => "You have a new message in your conversation about {$match->resourceNeed->category} transfer.",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message sent successfully',
+            'data' => [
+                'message_id' => $message->id,
+                'created_at' => $message->created_at->format('M d, Y h:i A'),
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error sending message: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error sending message',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Mark messages as read
+ */
+public function markMessagesAsRead($matchId)
+{
+    try {
+        $barangayId = session('barangay_id');
+
+        $match = ResourceMatch::with('conversation')->findOrFail($matchId);
+
+        // Verify this barangay is a participant
+        if (!in_array($barangayId, [$match->requesting_barangay_id, $match->donating_barangay_id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $conversation = $match->conversation;
+
+        if ($conversation) {
+            $conversation->markAsReadFor($barangayId);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Messages marked as read'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error marking messages as read: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error marking messages as read',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+//Complete a match (mark transfer as done)
+
+public function completeMatch(Request $request, $matchId)
+{
+    try {
+        $validated = $request->validate([
+            'completion_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $barangayId = session('barangay_id');
+
+        $match = ResourceMatch::with([
+            'resourceNeed',
+            'physicalDonation',
+            'conversation',
+            'requestingBarangay',
+            'donatingBarangay'
+        ])->findOrFail($matchId);
+
+        // Verify this barangay is a participant
+        if (!in_array($barangayId, [$match->requesting_barangay_id, $match->donating_barangay_id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        // Check if match is accepted
+        if ($match->status !== 'accepted') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only accepted matches can be completed'
+            ], 400);
+        }
+
+        // Update match status
+        $match->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+            'completion_notes' => $validated['completion_notes'] ?? 'Transfer completed successfully',
+        ]);
+
+        // Update physical donation status
+        $match->physicalDonation->update([
+            'distribution_status' => 'fully_distributed',
+        ]);
+
+        // Update resource need status
+        $match->resourceNeed->update([
+            'status' => 'fulfilled',
+        ]);
+
+        // Close conversation
+        if ($match->conversation) {
+            $match->conversation->close();
+        }
+
+        // Notify both barangays
+        MatchNotification::create([
+            'resource_match_id' => $match->id,
+            'barangay_id' => $match->requesting_barangay_id,
+            'type' => 'match_completed',
+            'title' => 'Transfer Completed!',
+            'message' => "The {$match->resourceNeed->category} transfer with {$match->donatingBarangay->name} has been marked as complete.",
+        ]);
+
+        MatchNotification::create([
+            'resource_match_id' => $match->id,
+            'barangay_id' => $match->donating_barangay_id,
+            'type' => 'match_completed',
+            'title' => 'Transfer Completed!',
+            'message' => "The {$match->resourceNeed->category} transfer to {$match->requestingBarangay->name} has been marked as complete. Thank you for your donation!",
+        ]);
+
+        Log::info("Match completed", [
+            'match_id' => $match->id,
+            'requester' => $match->requestingBarangay->name,
+            'donor' => $match->donatingBarangay->name,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transfer marked as complete',
+            'data' => [
+                'match_id' => $match->id,
+                'status' => $match->status,
+                'completed_at' => $match->completed_at->format('M d, Y h:i A'),
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error completing match: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error completing match',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     /**
      * Delete a resource need
@@ -401,6 +730,317 @@ class BarangayDashboardController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating barangay information',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // ==================== MATCH MANAGEMENT APIs ====================
+
+    /**
+     * Get incoming match requests (where this barangay is the donor)
+     */
+    public function getIncomingMatches()
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $matches = ResourceMatch::with([
+                'resourceNeed',
+                'physicalDonation',
+                'requestingBarangay',
+                'donatingBarangay'
+            ])
+            ->where('donating_barangay_id', $barangayId)
+            ->whereIn('status', ['pending', 'accepted', 'rejected'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            $data = $matches->map(function($match) {
+                return [
+                    'id' => $match->id,
+                    'status' => $match->status,
+                    'requesting_barangay' => [
+                        'id' => $match->requesting_barangay_id,
+                        'name' => $match->requestingBarangay->name,
+                        'disaster_status' => $match->requestingBarangay->disaster_status,
+                    ],
+                    'resource_need' => [
+                        'id' => $match->resource_need_id,
+                        'category' => $match->resourceNeed->category,
+                        'quantity' => $match->resourceNeed->quantity,
+                        'urgency' => $match->resourceNeed->urgency,
+                        'description' => $match->resourceNeed->description,
+                    ],
+                    'physical_donation' => [
+                        'id' => $match->physical_donation_id,
+                        'category' => $match->physicalDonation->category,
+                        'quantity' => $match->physicalDonation->quantity,
+                        'tracking_code' => $match->physicalDonation->tracking_code,
+                    ],
+                    'ldrrmo_message' => $match->ldrrmo_message,
+                    'barangay_response' => $match->barangay_response,
+                    'created_at' => $match->created_at->format('M d, Y h:i A'),
+                    'updated_at' => $match->updated_at->format('M d, Y h:i A'),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'counts' => [
+                    'pending' => $matches->where('status', 'pending')->count(),
+                    'accepted' => $matches->where('status', 'accepted')->count(),
+                    'rejected' => $matches->where('status', 'rejected')->count(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching incoming matches: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching incoming matches',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get outgoing match requests (where this barangay is the requester)
+     */
+    public function getMyRequests()
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $matches = ResourceMatch::with([
+                'resourceNeed',
+                'physicalDonation',
+                'requestingBarangay',
+                'donatingBarangay'
+            ])
+            ->where('requesting_barangay_id', $barangayId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            $data = $matches->map(function($match) {
+                return [
+                    'id' => $match->id,
+                    'status' => $match->status,
+                    'donating_barangay' => [
+                        'id' => $match->donating_barangay_id,
+                        'name' => $match->donatingBarangay->name,
+                    ],
+                    'resource_need' => [
+                        'id' => $match->resource_need_id,
+                        'category' => $match->resourceNeed->category,
+                        'quantity' => $match->resourceNeed->quantity,
+                        'urgency' => $match->resourceNeed->urgency,
+                    ],
+                    'physical_donation' => [
+                        'id' => $match->physical_donation_id,
+                        'category' => $match->physicalDonation->category,
+                        'quantity' => $match->physicalDonation->quantity,
+                    ],
+                    'ldrrmo_message' => $match->ldrrmo_message,
+                    'barangay_response' => $match->barangay_response,
+                    'created_at' => $match->created_at->format('M d, Y h:i A'),
+                    'updated_at' => $match->updated_at->format('M d, Y h:i A'),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching my requests: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching my requests',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get active matches (accepted matches with active conversations)
+     */
+    public function getActiveMatches()
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $matches = ResourceMatch::with([
+                'resourceNeed',
+                'physicalDonation',
+                'requestingBarangay',
+                'donatingBarangay',
+                'conversation'
+            ])
+            ->where(function($query) use ($barangayId) {
+                $query->where('requesting_barangay_id', $barangayId)
+                      ->orWhere('donating_barangay_id', $barangayId);
+            })
+            ->where('status', 'accepted')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+            $data = $matches->map(function($match) use ($barangayId) {
+                $isRequester = $match->requesting_barangay_id === $barangayId;
+                $otherBarangay = $isRequester ? $match->donatingBarangay : $match->requestingBarangay;
+
+                $unreadCount = 0;
+                if ($match->conversation) {
+                    // Check the appropriate read status field based on role
+                    $readField = $isRequester ? 'is_read_by_requester' : 'is_read_by_donor';
+                    $unreadCount = $match->conversation->messages()
+                        ->where('sender_barangay_id', '!=', $barangayId)
+                        ->where($readField, false)
+                        ->count();
+                }
+
+                return [
+                    'id' => $match->id,
+                    'my_role' => $isRequester ? 'requester' : 'donor',
+                    'other_barangay' => [
+                        'id' => $otherBarangay->barangay_id,
+                        'name' => $otherBarangay->name,
+                    ],
+                    'resource' => [
+                        'category' => $match->resourceNeed->category,
+                        'quantity_needed' => $match->resourceNeed->quantity,
+                        'quantity_available' => $match->physicalDonation->quantity,
+                    ],
+                    'conversation' => $match->conversation ? [
+                        'id' => $match->conversation->id,
+                        'unread_count' => $unreadCount,
+                        'last_message_at' => $match->conversation->updated_at->format('M d, Y h:i A'),
+                    ] : null,
+                    'created_at' => $match->created_at->format('M d, Y h:i A'),
+                    'updated_at' => $match->updated_at->format('M d, Y h:i A'),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching active matches: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching active matches',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Respond to a match request (accept or reject)
+     */
+    public function respondToMatch(Request $request, $matchId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $validated = $request->validate([
+                'action' => 'required|in:accept,reject',
+                'message' => 'required|string|max:500',
+            ]);
+
+            $match = ResourceMatch::with([
+                'resourceNeed',
+                'physicalDonation',
+                'requestingBarangay',
+                'donatingBarangay'
+            ])->findOrFail($matchId);
+
+            // Verify this barangay is the donor
+            if ($match->donating_barangay_id !== $barangayId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized - you are not the donor for this match'
+                ], 403);
+            }
+
+            // Can only respond to pending matches
+            if ($match->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This match has already been responded to'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            $newStatus = $validated['action'] === 'accept' ? 'accepted' : 'rejected';
+
+            $match->update([
+                'status' => $newStatus,
+                'barangay_response' => $validated['message'],
+                'responded_at' => now(),
+            ]);
+
+            // If accepted, create a conversation
+            if ($newStatus === 'accepted') {
+                $conversation = MatchConversation::create([
+                    'resource_match_id' => $match->id,
+                    'requesting_barangay_id' => $match->requesting_barangay_id,
+                    'donating_barangay_id' => $match->donating_barangay_id,
+                    'is_active' => true,
+                    'last_message_at' => now(),
+                    'last_message_by' => $barangayId,
+                ]);
+
+                // Add system message
+                MatchMessage::create([
+                    'conversation_id' => $conversation->id,
+                    'sender_user_id' => session('user_id'),
+                    'sender_barangay_id' => $barangayId,
+                    'message' => "Match accepted by {$match->donatingBarangay->name}. Conversation started.",
+                    'message_type' => 'system',
+                    'is_read_by_requester' => false,
+                    'is_read_by_donor' => true, // Donor created it, so marked as read for them
+                ]);
+            }
+
+            // Create notification for requester
+            MatchNotification::create([
+                'resource_match_id' => $match->id,
+                'barangay_id' => $match->requesting_barangay_id,
+                'type' => $newStatus === 'accepted' ? 'match_accepted' : 'match_rejected',
+                'title' => $newStatus === 'accepted' ? 'Match Request Accepted' : 'Match Request Rejected',
+                'message' => $validated['message'],
+                'is_read' => false,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Match ' . $newStatus . ' successfully',
+                'data' => [
+                    'match_id' => $match->id,
+                    'status' => $newStatus,
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error responding to match: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error responding to match',
                 'error' => $e->getMessage()
             ], 500);
         }
