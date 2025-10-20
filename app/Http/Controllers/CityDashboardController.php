@@ -77,42 +77,48 @@ class CityDashboardController extends Controller
     /**
      * Get all barangays for map - UPDATED TO USE RESOURCE_NEEDS
      */
-    public function getBarangaysMapData()
-    {
-        try {
-            $barangays = Barangay::all()->map(function ($barangay) {
-                // Get resource needs for this barangay
-                $resourceNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
-                    ->where('status', '!=', 'fulfilled')
-                    ->pluck('category')
-                    ->unique()
-                    ->toArray();
-
+   /**
+ * Get all barangays for LDRRMO map - Shows ALL barangays (including Safe)
+ */
+public function getBarangaysMapData()
+{
+    $barangays = Barangay::select([
+        'barangay_id',
+        'name', 
+        'disaster_status as status',
+        'affected_families',
+        'latitude as lat', 
+        'longitude as lng'
+    ])
+    ->with(['resourceNeeds' => function($query) {
+        // Only get pending and high priority needs
+        $query->where('status', '!=', 'fulfilled')
+              ->orderBy('urgency', 'desc');
+    }])
+    ->get()
+    ->map(function($barangay) {
+        return [
+            'id' => $barangay->barangay_id,
+            'name' => $barangay->name,
+            'status' => $barangay->status,
+            'affected_families' => $barangay->affected_families,
+            'lat' => $barangay->lat,
+            'lng' => $barangay->lng,
+            // Format resource needs for map display
+            'resource_needs' => $barangay->resourceNeeds->map(function($need) {
                 return [
-                    'barangay_id' => $barangay->barangay_id,
-                    'name' => $barangay->name,
-                    'city' => $barangay->city,
-                    'lat' => isset($barangay->latitude) ? (float) $barangay->latitude : 10.3157,
-                    'lng' => isset($barangay->longitude) ? (float) $barangay->longitude : 123.8854,
-                    'status' => $barangay->disaster_status,
-                    'disaster_type' => $barangay->disaster_type,
-                    'affected_families' => $barangay->affected_families,
-                    'needs_help' => $barangay->needsHelp(),
-                    'resource_needs' => $resourceNeeds
+                    'category' => $need->category,
+                    'description' => $need->description,
+                    'quantity' => $need->quantity,
+                    'urgency' => $need->urgency,
+                    'status' => $need->status
                 ];
-            });
+            })
+        ];
+    });
 
-            return response()->json($barangays);
-        } catch (\Exception $e) {
-            Log::error('Error loading map data: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error loading map data',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
+    return response()->json($barangays);
+}
     /**
      * Get analytics data - FIXED VERSION WITH PAYMENT METHOD
      */
@@ -290,8 +296,7 @@ class CityDashboardController extends Controller
                         'progress' => round($progress, 2),
                         'donors_count' => $donorsCount,
                         'days_active' => $barangay->updated_at ? $barangay->updated_at->diffInDays(now()) : 0,
-                        'resource_needs' => $resourceNeeds,
-                        'urgent_needs' => $resourceNeeds,
+                        'resource_needs' => $resourceNeeds
                     ];
                 });
 

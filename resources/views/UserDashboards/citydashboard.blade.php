@@ -467,50 +467,69 @@
             }
         }
 
-        async function loadMapData() {
-            if (!cityMap && !initMap()) {
-                return;
-            }
+     async function loadMapData() {
+    if (!cityMap && !initMap()) {
+        return;
+    }
 
-            try {
-                const barangays = await fetchAPI('/api/ldrrmo/barangays-map');
+    try {
+        const barangays = await fetchAPI('/api/ldrrmo/barangays-map');
 
-                barangays.forEach(barangay => {
-                    const colorMap = {
-                        'safe': '#10b981',
-                        'warning': '#eab308',
-                        'critical': '#f97316',
-                        'emergency': '#ef4444'
-                    };
-                    const color = colorMap[barangay.status] || '#9ca3af';
+        barangays.forEach(barangay => {
+            const colorMap = {
+                'safe': '#10b981',
+                'warning': '#eab308',
+                'critical': '#f97316',
+                'emergency': '#ef4444'
+            };
+            const color = colorMap[barangay.status] || '#9ca3af';
 
-                    const marker = L.circleMarker([barangay.lat, barangay.lng], {
-                        radius: 8,
-                        fillColor: color,
-                        color: '#fff',
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    }).addTo(cityMap);
+            const marker = L.circleMarker([barangay.lat, barangay.lng], {
+                radius: 8,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(cityMap);
 
-                    const urgentNeedsList = Array.isArray(barangay.urgent_needs)
-                        ? barangay.urgent_needs.map(escapeHtml).join(', ')
-                        : '';
-
-                    marker.bindPopup(`
-                        <div style="min-width: 200px;">
-                            <strong style="font-size: 16px;">${escapeHtml(barangay.name)}</strong><br>
-                            <span style="color: ${color}; font-weight: 600;">${escapeHtml(String(barangay.status).toUpperCase())}</span><br>
-                            <strong>Affected:</strong> ${escapeHtml(formatNumber(barangay.affected_families))} families<br>
-                            ${urgentNeedsList ? '<strong>Needs:</strong> ' + urgentNeedsList : ''}
-                        </div>
-                    `);
+            // Build needs list from resource_needs table
+            let needsHtml = '';
+            if (barangay.status !== 'safe' && barangay.resource_needs && barangay.resource_needs.length > 0) {
+                needsHtml = '<div class="mt-2"><strong>Resource Needs:</strong><ul class="mt-1 text-sm">';
+                
+                // Group by urgency or show top 3
+                barangay.resource_needs.slice(0, 3).forEach(need => {
+                    const urgencyBadge = need.urgency === 'critical' ? '🔴' : 
+                                       need.urgency === 'high' ? '🟠' : 
+                                       need.urgency === 'medium' ? '🟡' : '🔵';
+                    needsHtml += `<li>${urgencyBadge} ${escapeHtml(need.category)}: ${escapeHtml(need.quantity)}</li>`;
                 });
-            } catch (error) {
-                console.error('Error loading map data:', error);
-                showError('cityMap', 'Failed to load map data. Please refresh.');
+                
+                if (barangay.resource_needs.length > 3) {
+                    needsHtml += `<li class="text-gray-600">...and ${barangay.resource_needs.length - 3} more</li>`;
+                }
+                needsHtml += '</ul></div>';
             }
-        }
+
+            marker.bindPopup(`
+                <div style="min-width: 250px;">
+                    <strong style="font-size: 16px;">${escapeHtml(barangay.name)}</strong><br>
+                    <span class="px-2 py-1 text-xs rounded" style="background-color: ${color}20; color: ${color}; font-weight: 600;">
+                        ${escapeHtml(String(barangay.status).toUpperCase())}
+                    </span><br>
+                    <div class="mt-2">
+                        <strong>Affected:</strong> ${formatNumber(barangay.affected_families)} families
+                    </div>
+                    ${needsHtml}
+                </div>
+            `);
+        });
+    } catch (error) {
+        console.error('Error loading map data:', error);
+        showError('cityMap', 'Failed to load map data. Please refresh.');
+    }
+}
 
         // ============================================
         // RESOURCE NEEDS & MATCHING
@@ -1039,9 +1058,24 @@
                 loadedTabs.map = true;
             }
 
-            setInterval(loadOverview, 5 * 60 * 1000);
+            // Auto-refresh overview statistics every 30 seconds
+            setInterval(loadOverview, 30 * 1000);
 
-            console.log('LDRRMO Dashboard initialized successfully');
+            // Auto-refresh map data every 30 seconds
+            setInterval(() => {
+                if (loadedTabs.map && cityMap) {
+                    loadMapData();
+                }
+            }, 30 * 1000);
+
+            // Auto-refresh resource needs if tab is active
+            setInterval(() => {
+                if (loadedTabs.resources) {
+                    loadResourceNeeds();
+                }
+            }, 30 * 1000);
+
+            console.log('LDRRMO Dashboard initialized successfully with real-time polling');
         });
 
         // ============================================

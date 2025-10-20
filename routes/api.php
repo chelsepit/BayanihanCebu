@@ -20,7 +20,7 @@ use App\Http\Controllers\BarangayDashboardController;
 
 // ==================== RESIDENT DASHBOARD ROUTES ====================
 Route::prefix('resident')->group(function () {
-    Route::get('/urgent-needs', [ResidentDashboardController::class, 'getUrgentNeeds']);
+    Route::get('/resource-needs', [ResidentDashboardController::class, 'getResourceNeeds']); // CHANGED FROM urgent-needs
     Route::get('/barangays-map', [ResidentDashboardController::class, 'getBarangaysMap']);
     Route::get('/statistics', [ResidentDashboardController::class, 'getStatistics']);
 });

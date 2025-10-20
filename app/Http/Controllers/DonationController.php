@@ -347,29 +347,32 @@ class DonationController extends Controller
     /**
      * Get all urgent needs for resident dashboard
      */
-    public function getUrgentNeeds()
-    {
-        $needs = ResourceNeed::with(['barangay'])
-            ->whereIn('urgency', ['high', 'critical'])
-            ->where('status', '!=', 'fulfilled')
-            ->orderByRaw("FIELD(urgency, 'critical', 'high')")
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function($need) {
-                return [
-                    'id' => $need->id,
-                    'barangay_id' => $need->barangay_id,
-                    'barangay_name' => $need->barangay->name,
-                    'category' => $need->category,
-                    'description' => $need->description,
-                    'quantity' => $need->quantity,
-                    'urgency' => $need->urgency,
-                    'affected_families' => $need->barangay->affected_families,
-                    'disaster_status' => $need->barangay->disaster_status,
-                ];
-            });
+   /**
+ * Get all urgent needs for resident dashboard
+ */
+public function getUrgentNeeds()
+{
+    $needs = ResourceNeed::with(['barangay'])
+        ->whereIn('urgency', ['high', 'critical'])
+        ->where('status', '!=', 'fulfilled')
+        ->orderByRaw("FIELD(urgency, 'critical', 'high')")
+        ->orderBy('created_at', 'desc')
+        ->limit(10)
+        ->get()
+        ->map(function($need) {
+            return [
+                'id' => $need->id,
+                'barangay_id' => $need->barangay_id,
+                'barangay_name' => $need->barangay->name,
+                'category' => $need->category,
+                'description' => $need->description,
+                'quantity' => $need->quantity,
+                'urgency' => $need->urgency,
+                'affected_families' => $need->barangay->affected_families,
+                'disaster_status' => $need->barangay->disaster_status,
+            ];
+        });
 
-        return response()->json($needs);
-    }
+    return response()->json($needs);
+}
 }

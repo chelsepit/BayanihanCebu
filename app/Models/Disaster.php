@@ -32,17 +32,19 @@ class Disaster extends Model
 
     public function barangay()
     {
-    return $this->belongsTo(Barangay::class, 'barangay_id', 'barangay_id');
+        return $this->belongsTo(Barangay::class, 'barangay_id', 'barangay_id');
     }
 
-    public function urgentNeeds()
+    public function resourceNeeds()
     {
-        return $this->hasMany(UrgentNeed::class);
+        return $this->hasMany(ResourceNeed::class, 'barangay_id', 'barangay_id');
     }
 
-    public function activeUrgentNeeds()
+    // CHANGED: activeUrgentNeeds → activeResourceNeeds
+    public function activeResourceNeeds()
     {
-        return $this->hasMany(UrgentNeed::class)->where('is_fulfilled', false);
+        return $this->hasMany(ResourceNeed::class, 'barangay_id', 'barangay_id')
+            ->where('status', '!=', 'fulfilled');
     }
 
     public function donations()

@@ -38,21 +38,21 @@
             </div>
         </div>
 
-        @if($disaster->urgentNeeds->count() > 0)
-            <div>
-                <p class="text-sm font-semibold text-gray-700 mb-2">Urgent Needs:</p>
-                <div class="flex gap-2 flex-wrap">
-                    @foreach($disaster->urgentNeeds as $need)
-                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                            {{ ucfirst($need->type) }}
-                            @if($need->quantity_needed)
-                                ({{ $need->quantity_fulfilled }}/{{ $need->quantity_needed }} {{ $need->unit }})
-                            @endif
-                        </span>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+@if($disaster->resourceNeeds->count() > 0)
+    <div>
+        <p class="text-sm font-semibold text-gray-700 mb-2">Resource Needs:</p>
+        <div class="flex gap-2 flex-wrap">
+            @foreach($disaster->resourceNeeds as $need)
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                    {{ ucfirst($need->category) }}
+                    @if($need->quantity)
+                        ({{ $need->quantity }})
+                    @endif
+                </span>
+            @endforeach
+        </div>
+    </div>
+@endif
     </div>
 
     <!-- Donation Form -->
