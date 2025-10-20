@@ -72,6 +72,18 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/api/ldrrmo/resource-needs', [CityDashboardController::class, 'getResourceNeeds']);
     Route::post('/api/ldrrmo/find-matches/{needId}', [CityDashboardController::class, 'findMatches']);
     Route::get('/api/ldrrmo/barangay-contact/{barangayId}', [CityDashboardController::class, 'getBarangayContact']);
+
+    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
+
+    Route::post('/api/ldrrmo/resource-needs/{needId}/verify', [CityDashboardController::class, 'verifyResourceNeed']);
+    Route::post('/api/ldrrmo/resource-needs/{needId}/revert', [CityDashboardController::class, 'revertVerification']);
+    }); 
+    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
+    Route::post('/api/ldrrmo/matches/initiate', [CityDashboardController::class, 'initiateMatch']);
+    Route::get('/api/ldrrmo/matches', [CityDashboardController::class, 'getMyInitiatedMatches']);
+    Route::post('/api/ldrrmo/matches/{id}/cancel', [CityDashboardController::class, 'cancelMatch']);
+    Route::get('/api/ldrrmo/matches/statistics', [CityDashboardController::class, 'getMatchStatistics']);
+    });
 });
 
 
@@ -98,6 +110,30 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // Barangay Info
     Route::get('/api/bdrrmc/my-barangay', [BarangayDashboardController::class, 'getBarangayInfo']);
     Route::patch('/api/bdrrmc/my-barangay', [BarangayDashboardController::class, 'updateBarangayInfo']);
+
+    // ==================== BDRRMC MATCHING ROUTES ====================
+Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
+    // ... existing BDRRMC routes ...
+    
+    // Incoming Match Requests (Donor Side)
+    Route::get('/api/bdrrmc/matches/incoming', [BarangayDashboardController::class, 'getIncomingMatchRequests']);
+    Route::post('/api/bdrrmc/matches/{id}/accept', [BarangayDashboardController::class, 'acceptMatch']);
+    Route::post('/api/bdrrmc/matches/{id}/reject', [BarangayDashboardController::class, 'rejectMatch']);
+    
+    // My Match Requests (Requester Side)
+    Route::get('/api/bdrrmc/matches/my-requests', [BarangayDashboardController::class, 'getMyMatchRequests']);
+    
+    // Active Matches (Both Sides)
+    Route::get('/api/bdrrmc/matches/active', [BarangayDashboardController::class, 'getActiveMatches']);
+    
+    // Conversation & Messaging
+    Route::get('/api/bdrrmc/matches/{id}/conversation', [BarangayDashboardController::class, 'getMatchConversation']);
+    Route::post('/api/bdrrmc/matches/{id}/messages', [BarangayDashboardController::class, 'sendMessage']);
+    Route::post('/api/bdrrmc/matches/{id}/messages/mark-read', [BarangayDashboardController::class, 'markMessagesAsRead']);
+    
+    // Complete Match
+    Route::post('/api/bdrrmc/matches/{id}/complete', [BarangayDashboardController::class, 'completeMatch']);
+});
 });
 
 // ==================== RESIDENT ROUTES ====================
@@ -143,4 +179,15 @@ Route::middleware(['auth.check'])->group(function () {
         Route::get('/api/donations/all-pending-verifications', [DonationController::class, 'getPendingVerifications']);
         Route::post('/api/donations/{id}/verify', [DonationController::class, 'verify']);
     });
+    // ==================== NOTIFICATION ROUTES (BOTH LDRRMO & BDRRMC) ====================
+    Route::middleware(['auth.check'])->group(function () {
+    // Notifications
+    Route::get('/api/notifications', [NotificationController::class, 'getNotifications']);
+    Route::get('/api/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/api/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/api/notifications/{id}', [NotificationController::class, 'deleteNotification']);
+    Route::get('/api/notifications/grouped', [NotificationController::class, 'getGroupedNotifications']);
+    });
+
     });

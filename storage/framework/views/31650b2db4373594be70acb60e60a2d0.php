@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>City Dashboard (LDRRMO)</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,10 +39,10 @@
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p class="text-sm text-blue-100">Logged in as LDRRMO</p>
-                <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
+                <p class="font-medium"><?php echo e(session('user_name', 'Admin')); ?></p>
             </div>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
@@ -1362,4 +1362,4 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 </script>
 </body>
-</html>
+</html><?php /**PATH C:\Users\janlo\Git\BayanihanCebu\resources\views/UserDashboards/citydashboard.blade.php ENDPATH**/ ?>
