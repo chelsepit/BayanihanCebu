@@ -82,8 +82,18 @@
             <div class="flex justify-between items-center mb-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800">Barangay Status</h2>
-                    <span class="inline-block mt-2 px-3 py-1 bg-orange-100 text-orange-700 text-sm font-medium rounded">
-                        CRITICAL
+                    @php
+                        $status = $barangay->disaster_status ?? 'safe';
+                        $statusConfig = [
+                            'safe' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'icon' => '✅', 'label' => 'Safe'],
+                            'warning' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'icon' => '⚠️', 'label' => 'Warning'],
+                            'critical' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-700', 'icon' => '🔶', 'label' => 'Critical'],
+                            'emergency' => ['bg' => 'bg-red-100', 'text' => 'text-red-700', 'icon' => '🚨', 'label' => 'Emergency']
+                        ];
+                        $config = $statusConfig[$status] ?? $statusConfig['safe'];
+                    @endphp
+                    <span class="inline-block mt-2 px-3 py-1 {{ $config['bg'] }} {{ $config['text'] }} text-sm font-medium rounded">
+                        {{ $config['icon'] }} {{ strtoupper($config['label']) }}
                     </span>
                 </div>
                 <button onclick="openEditStatusModal()" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">

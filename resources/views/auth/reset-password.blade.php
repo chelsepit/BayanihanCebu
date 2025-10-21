@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DonorTrack | Resident Registration</title>
+    <title>DonorTrack | Reset Password</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
@@ -16,21 +16,10 @@
             <p class="text-sm text-gray-500 -mt-1">Cebu Donations</p>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex mb-6 border border-gray-200 rounded-lg overflow-hidden">
-            <a href="{{ route('login') }}" 
-               class="w-1/2 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 text-center">
-                Staff Login
-            </a>
-            <button class="w-1/2 py-2 text-sm font-medium bg-white text-green-700 border-b-2 border-green-500">
-                Register
-            </button>
-        </div>
-
         <!-- Heading -->
-        <h2 class="text-xl font-bold text-center mb-1">Resident Registration</h2>
+        <h2 class="text-xl font-bold text-center mb-1">Reset Password</h2>
         <p class="text-center text-gray-500 text-sm mb-6">
-            Register to access full barangay donation data
+            Enter your new password
         </p>
 
         <!-- Error Messages -->
@@ -50,37 +39,16 @@
             </div>
         @endif
 
-        <!-- ✅ Registration Form -->
-        <form method="POST" action="{{ route('register.post') }}">
+        <!-- Reset Password Form -->
+        <form method="POST" action="{{ route('password.update') }}">
             @csrf
 
-            <!-- Full Name -->
-            <div class="mb-4">
-                <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input type="text" id="full_name" name="full_name" required
-                       value="{{ old('full_name') }}"
-                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                       placeholder="Juan Dela Cruz">
-                @error('full_name')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+            <input type="hidden" name="token" value="{{ $token }}">
+            <input type="hidden" name="email" value="{{ $email }}">
 
-            <!-- Email -->
+            <!-- New Password -->
             <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" id="email" name="email" required
-                       value="{{ old('email') }}"
-                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                       placeholder="juan@donortrack.ph">
-                @error('email')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Password -->
-            <div class="mb-4">
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                 <div class="relative">
                     <input type="password" id="password" name="password" required
                            class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10"
@@ -93,16 +61,11 @@
                         </svg>
                     </button>
                 </div>
-                @error('password')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
             </div>
 
             <!-- Confirm Password -->
-            <div class="mb-4">
-                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
-                    Confirm Password
-                </label>
+            <div class="mb-6">
+                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
                 <div class="relative">
                     <input type="password" id="password_confirmation" name="password_confirmation" required
                            class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10"
@@ -117,33 +80,18 @@
                 </div>
             </div>
 
-            <!-- Barangay Dropdown -->
-            <div class="mb-6">
-                <label for="barangay_id" class="block text-sm font-medium text-gray-700 mb-1">Barangay</label>
-                <select id="barangay_id" name="barangay_id" required
-                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">Select your barangay</option>
-                    @foreach($barangays as $barangay)
-                        <option value="{{ $barangay->barangay_id }}" {{ old('barangay_id') == $barangay->barangay_id ? 'selected' : '' }}>
-                            {{ $barangay->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('barangay_id')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Submit Button -->
             <button type="submit"
                     class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2">
-                <span>Register</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Reset Password</span>
             </button>
         </form>
 
-        <!-- Back to Home -->
+        <!-- Back to Login -->
         <div class="mt-4 text-center">
-            <a href="{{ url('/') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to home</a>
+            <a href="{{ route('login') }}" class="text-sm text-blue-600 hover:underline">← Back to login</a>
         </div>
     </div>
 
@@ -168,26 +116,6 @@
                 `;
             }
         }
-
-        // Form validation for password mismatch
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const passwordConfirm = document.getElementById('password_confirmation').value;
-
-            if (password !== passwordConfirm) {
-                e.preventDefault();
-
-                // Clear only password fields
-                document.getElementById('password').value = '';
-                document.getElementById('password_confirmation').value = '';
-
-                // Show error message
-                alert('Passwords do not match. Please try again.');
-
-                // Focus on password field
-                document.getElementById('password').focus();
-            }
-        });
     </script>
 
 </body>

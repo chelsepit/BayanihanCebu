@@ -218,6 +218,6 @@ public function apiBarangays()
             ];
         });
 
-    return response()->json($barangays)0
+    return response()->json($barangays);
 }
 }
