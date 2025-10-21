@@ -24,6 +24,12 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Password Reset routes
+Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
 // Public map and donation tracking
 Route::get('/barangay/map', [BarangayMapController::class, 'index'])->name('barangay.map');
 Route::get('/api/barangay-map-data', [BarangayMapController::class, 'getMapData']);
