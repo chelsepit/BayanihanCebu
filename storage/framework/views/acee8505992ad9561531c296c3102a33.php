@@ -82,8 +82,19 @@
             <div class="flex justify-between items-center mb-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800">Barangay Status</h2>
-                    <span class="inline-block mt-2 px-3 py-1 bg-orange-100 text-orange-700 text-sm font-medium rounded">
-                        CRITICAL
+                    <?php
+                        $status = $barangay->disaster_status ?? 'safe';
+                        $statusConfig = [
+                            'safe' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'icon' => '✅', 'label' => 'Safe'],
+                            'warning' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'icon' => '⚠️', 'label' => 'Warning'],
+                            'critical' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-700', 'icon' => '🔶', 'label' => 'Critical'],
+                            'emergency' => ['bg' => 'bg-red-100', 'text' => 'text-red-700', 'icon' => '🚨', 'label' => 'Emergency']
+                        ];
+                        $config = $statusConfig[$status] ?? $statusConfig['safe'];
+                    ?>
+                    <span class="inline-block mt-2 px-3 py-1 <?php echo e($config['bg']); ?> <?php echo e($config['text']); ?> text-sm font-medium rounded">
+                        <?php echo e($config['icon']); ?> <?php echo e(strtoupper($config['label'])); ?>
+
                     </span>
                 </div>
                 <button onclick="openEditStatusModal()" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
@@ -205,19 +216,18 @@
                 <button onclick="switchTab('needs')" class="tab-btn active">Resource Requests</button>
                 <button onclick="switchTab('online')" class="tab-btn">Online Donations</button>
                 <button onclick="switchTab('physical')" class="tab-btn">Donations Received</button>
-                <button onclick="switchTab('map')" class="tab-btn">Coordination Map</button>
-                <button onclick="showTab('match-requests')" 
+                <button onclick="showTab('match-requests')"
                     class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
                     data-tab="match-requests">
                 <i class="fas fa-inbox mr-2"></i>Match Requests
                 <span id="incoming-requests-badge" class="hidden ml-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">0</span>
             </button>
-            <button onclick="showTab('my-requests')" 
+            <button onclick="showTab('my-requests')"
                     class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
                     data-tab="my-requests">
-                <i class="fas fa-paper-plane mr-2"></i>My Requests
+                <i class="fas fa-paper-plane mr-2"></i>Pending Requests
             </button>
-            <button onclick="showTab('active-matches')" 
+            <button onclick="showTab('active-matches')"
                     class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
                     data-tab="active-matches">
                 <i class="fas fa-comments mr-2"></i>Active Matches
@@ -231,9 +241,6 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold">Resource Requests for Your Barangay</h2>
                 <div class="flex gap-3">
-                    <button onclick="openRecordModal()" class="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 transition flex items-center gap-2">
-                        <i class="fas fa-clipboard-check"></i> Record Donation
-                    </button>
                     <button onclick="openNeedModal()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-2">
                         <i class="fas fa-plus"></i> Create Request
                     </button>
@@ -326,20 +333,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: Coordination Map -->
-        <div id="map-tab" class="tab-content bg-white rounded-b-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold mb-6">Nearby Barangays Status</h2>
-            
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                <i class="fas fa-map-marker-alt text-blue-600 text-xl mt-1"></i>
-                <div>
-                    <p class="text-sm text-gray-700">
-                        View status of nearby barangays to coordinate resource sharing and support
-                    </p>
-                </div>
-            </div>
-        </div>
-
+        <!-- TAB 4: Match Requests -->
         <div id="match-requests-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
     <div class="mb-6">
         <h2 class="text-2xl font-bold mb-2">Incoming Match Requests</h2>
@@ -388,11 +382,11 @@
     </div>
 </div>
 
-<!-- TAB CONTENT: My Requests (for REQUESTERS) -->
+<!-- TAB CONTENT: Pending Requests (for REQUESTERS) -->
 <div id="my-requests-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold mb-2">My Match Requests</h2>
-        <p class="text-gray-600">Track the status of your resource requests</p>
+        <h2 class="text-2xl font-bold mb-2">Pending Match Requests</h2>
+        <p class="text-gray-600">Track the status of your pending resource requests</p>
     </div>
 
     <div id="my-requests-list" class="space-y-4">
@@ -2041,67 +2035,80 @@ async function loadMyRequests() {
 
 function displayMyRequests(requests) {
     const container = document.getElementById('my-requests-list');
-    
-    if (!requests || requests.length === 0) {
+
+    // Filter to show only pending and rejected requests (not accepted)
+    const pendingRequests = requests.filter(r => r.status !== 'accepted');
+
+    if (!pendingRequests || pendingRequests.length === 0) {
         container.innerHTML = `
             <div class="text-center py-12">
                 <i class="fas fa-paper-plane text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Requests Sent</h3>
-                <p class="text-gray-500">LDRRMO hasn't initiated any matches for your resource needs yet.</p>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Pending Requests</h3>
+                <p class="text-gray-500">You don't have any pending match requests. Accepted matches appear in the "Active Matches" tab.</p>
             </div>
         `;
         return;
     }
-    
-    const html = requests.map(request => `
+
+    const html = pendingRequests.map(request => {
+        // Safe access to nested properties with fallbacks
+        const donatingBarangay = request.donating_barangay?.name || request.donating_barangay || 'Unknown Barangay';
+        const initiatedAt = request.initiated_at || request.created_at || 'Unknown date';
+        const resourceNeed = request.resource_need || {};
+        const category = resourceNeed.category || 'Unknown category';
+        const quantity = resourceNeed.quantity || 'Unknown quantity';
+        const donationItems = request.donation_items || 'Items not specified';
+        const statusLabel = request.status_label || (request.status ? request.status.toUpperCase() : 'PENDING');
+
+        return `
         <div class="border rounded-lg p-5 hover:shadow-md transition">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(request.status)}">
                             <i class="${getStatusIcon(request.status)} mr-1"></i>
-                            ${request.status_label}
+                            ${statusLabel}
                         </span>
                     </div>
-                    
+
                     <h3 class="text-lg font-bold text-gray-900">
-                        Match with ${request.donating_barangay}
+                        Match with ${donatingBarangay}
                     </h3>
                     <p class="text-sm text-gray-600">
                         <i class="fas fa-calendar mr-1"></i>
-                        Initiated: ${request.initiated_at}
+                        Initiated: ${initiatedAt}
                     </p>
                 </div>
             </div>
 
             <div class="bg-gray-50 border rounded-lg p-3 mb-3">
-                <p class="text-sm"><span class="font-semibold">Your Need:</span> ${request.resource_need.category} - ${request.resource_need.quantity}</p>
-                <p class="text-sm"><span class="font-semibold">Donor Has:</span> ${request.donation_items}</p>
+                <p class="text-sm"><span class="font-semibold">Your Need:</span> ${category} - ${quantity}</p>
+                <p class="text-sm"><span class="font-semibold">Donor Has:</span> ${donationItems}</p>
             </div>
 
             ${request.response_message ? `
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                    <p class="text-xs text-blue-600 font-semibold mb-1">Response from ${request.donating_barangay}:</p>
+                    <p class="text-xs text-blue-600 font-semibold mb-1">Response from ${donatingBarangay}:</p>
                     <p class="text-sm text-gray-800">"${request.response_message}"</p>
                 </div>
             ` : ''}
 
             <div class="flex gap-2 justify-end">
-                ${request.status === 'accepted' ? `
-                    <button onclick="viewConversation(${request.id})"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
-                        <i class="fas fa-comments mr-2"></i>Open Conversation
-                    </button>
-                ` : ''}
                 ${request.status === 'pending' ? `
                     <button class="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg cursor-not-allowed" disabled>
                         <i class="fas fa-clock mr-2"></i>Waiting for Response
                     </button>
                 ` : ''}
+                ${request.status === 'rejected' ? `
+                    <div class="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm">
+                        <i class="fas fa-times-circle mr-2"></i>This request was declined
+                    </div>
+                ` : ''}
             </div>
         </div>
-    `).join('');
-    
+    `;
+    }).join('');
+
     container.innerHTML = html;
 }
 
@@ -2145,7 +2152,7 @@ async function loadActiveMatches() {
 
 function displayActiveMatches(matches) {
     const container = document.getElementById('active-matches-list');
-    
+
     if (!matches || matches.length === 0) {
         container.innerHTML = `
             <div class="text-center py-12">
@@ -2156,36 +2163,47 @@ function displayActiveMatches(matches) {
         `;
         return;
     }
-    
-    const html = matches.map(match => `
+
+    const html = matches.map(match => {
+        // Safe access to nested properties with fallbacks (matching backend API structure)
+        const otherBarangay = match.other_barangay?.name || match.other_barangay || 'Unknown Barangay';
+        const role = match.my_role || match.role || 'participant';
+        const acceptedAt = match.accepted_at || match.created_at || match.updated_at || 'Unknown date';
+        const lastMessageAt = match.conversation?.last_message_at || match.last_message_at || 'No messages yet';
+        const resourceCategory = match.resource?.category || match.resource_category || match.resource_need?.category || 'Unknown resource';
+        const totalMessages = match.conversation?.total_messages || match.total_messages || match.conversation?.message_count || 0;
+        const unreadMessages = match.conversation?.unread_count || match.unread_messages || 0;
+        const lastMessage = match.conversation?.last_message || match.last_message || '';
+
+        return `
         <div class="border-2 border-green-200 rounded-lg p-5 bg-green-50 hover:shadow-lg transition cursor-pointer"
              onclick="viewConversation(${match.id})">
-            
+
             <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
                             <i class="fas fa-check-circle mr-1"></i>Active Match
                         </span>
-                        ${match.unread_messages > 0 ? `
+                        ${unreadMessages > 0 ? `
                             <span class="px-3 py-1 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse">
-                                <i class="fas fa-envelope mr-1"></i>${match.unread_messages} New
+                                <i class="fas fa-envelope mr-1"></i>${unreadMessages} New
                             </span>
                         ` : ''}
                     </div>
-                    
+
                     <h3 class="text-lg font-bold text-gray-900 mb-1">
-                        ${match.role === 'requester' ? 'Receiving from' : 'Donating to'} ${match.other_barangay}
+                        ${role === 'requester' ? 'Receiving from' : 'Donating to'} ${otherBarangay}
                     </h3>
                     <p class="text-sm text-gray-600">
                         <i class="fas fa-handshake mr-1"></i>
-                        Match accepted ${match.accepted_at}
+                        Match accepted ${acceptedAt}
                     </p>
                 </div>
 
                 <div class="text-right">
                     <p class="text-xs text-gray-500 mb-1">Last message:</p>
-                    <p class="text-sm font-semibold text-gray-700">${match.last_message_at || 'No messages yet'}</p>
+                    <p class="text-sm font-semibold text-gray-700">${lastMessageAt}</p>
                 </div>
             </div>
 
@@ -2193,19 +2211,19 @@ function displayActiveMatches(matches) {
                 <div class="grid grid-cols-2 gap-3 text-sm">
                     <div>
                         <p class="text-gray-600">Resource:</p>
-                        <p class="font-semibold">${match.resource_category}</p>
+                        <p class="font-semibold">${resourceCategory}</p>
                     </div>
                     <div>
                         <p class="text-gray-600">Total Messages:</p>
-                        <p class="font-semibold">${match.total_messages}</p>
+                        <p class="font-semibold">${totalMessages}</p>
                     </div>
                 </div>
             </div>
 
-            ${match.last_message ? `
+            ${lastMessage ? `
                 <div class="bg-gray-50 border rounded-lg p-3 mb-3">
                     <p class="text-xs text-gray-500 mb-1">Latest message:</p>
-                    <p class="text-sm text-gray-800">"${match.last_message.substring(0, 100)}${match.last_message.length > 100 ? '...' : ''}"</p>
+                    <p class="text-sm text-gray-800">"${lastMessage.substring(0, 100)}${lastMessage.length > 100 ? '...' : ''}"</p>
                 </div>
             ` : ''}
 
@@ -2215,8 +2233,9 @@ function displayActiveMatches(matches) {
                 </button>
             </div>
         </div>
-    `).join('');
-    
+    `;
+    }).join('');
+
     container.innerHTML = html;
 }
 
