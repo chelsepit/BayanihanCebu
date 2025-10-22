@@ -2,7 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require('dotenv').config();
 
 module.exports = {
-  solidity: "0.8.19",
+  solidity: "0.8.30",
   networks: {
     liskSepolia: {
       url: "https://rpc.sepolia-api.lisk.com",
