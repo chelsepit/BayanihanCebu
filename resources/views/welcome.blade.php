@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>BayanihanCebu - Transparent Disaster Relief for Cebu</title>
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('js/simple-realtime.js') }}"></script>
     <style>
@@ -228,7 +228,7 @@
         .map-section {
               padding: 80px 20px;
                 background: #f9fafb;
-                position: relative; 
+                position: relative;
 }
 
         .section-header {
@@ -287,7 +287,7 @@
             gap: 24px;
             height: 830px;
             align-items: start;
-            position: relative;  
+            position: relative;
             z-index: 1;
         }
 
@@ -524,8 +524,8 @@
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: all 0.3s;
-            position: relative; 
-            z-index: 3; 
+            position: relative;
+            z-index: 3;
         }
 
         .barangay-card:hover {
@@ -801,7 +801,7 @@
 
             .barangay-cards {
                   grid-template-columns: repeat(2, 1fr);
-                   padding: 0 40px;  
+                   padding: 0 40px;
             }
 
             .trust-grid {
@@ -814,7 +814,7 @@
 
             .map-container {
                 height: 500px;
-                 margin-bottom: 40px; 
+                 margin-bottom: 40px;
             }
         }
 
@@ -826,7 +826,7 @@
 
             .stats-grid {
                 grid-template-columns: 1fr;
-               
+
             }
 
             .barangay-cards {
@@ -844,12 +844,12 @@
 
             .map-container {
               height: 400px;
-        grid-template-columns: 1fr; 
+        grid-template-columns: 1fr;
         margin-bottom: 30px;
             }
             .summary-panel {
-        height: auto; 
-    } 
+        height: auto;
+    }
         } {
             .header-content {
                 flex-direction: column;
@@ -896,9 +896,356 @@
         .leaflet-popup-content::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        /* Modal Animation */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* ========================================
+           DONATION MODAL STYLES
+           ======================================== */
+
+        /* Modal Backdrop */
+        #donationModal {
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Modal Content */
+        #donationModal .bg-white {
+            max-height: 95vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Form Inputs */
+        #donationModal input[type="text"],
+        #donationModal input[type="email"],
+        #donationModal input[type="tel"],
+        #donationModal input[type="number"],
+        #donationModal select {
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        #donationModal input:focus,
+        #donationModal select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        #donationModal input::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Payment Method Options */
+        .payment-option {
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .payment-option:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-option.selected {
+            border-width: 3px !important;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2) !important;
+            transform: scale(1.05);
+        }
+
+        .payment-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #3b82f6;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Anonymous Toggle */
+        #anonymousCheckbox {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #anonymousCheckbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        /* Anonymous Notice */
+        #anonymousNotice {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Submit Button */
+        #donationModal button[type="submit"] {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #donationModal button[type="submit"]:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        #donationModal button[type="submit"]:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #donationModal button[type="submit"]:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Cancel Button */
+        #donationModal button[type="button"] {
+            transition: all 0.2s ease;
+        }
+
+        #donationModal button[type="button"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Labels */
+        #donationModal label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* Info Box */
+        #donationModal .bg-blue-50 {
+            border-left: 4px solid #3b82f6;
+            transition: all 0.2s ease;
+        }
+
+        #donationModal .bg-blue-50:hover {
+            background-color: #dbeafe;
+        }
+
+        /* Close Button */
+        #donationModal .text-gray-400 {
+            transition: all 0.2s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        #donationModal .text-gray-400:hover {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            transform: rotate(90deg);
+        }
+
+        /* Amount Input Special Styling */
+        #donationModal input[type="number"] {
+            font-size: 18px;
+            font-weight: 600;
+            color: #059669;
+        }
+
+        /* Select Dropdown */
+        #donationModal select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Payment Method Icons */
+        .payment-option svg {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        /* Modal Header */
+        #donationModal h2 {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Scrollbar Styling for Modal */
+        #donationModal .bg-white::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #donationModal .bg-white::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        #donationModal .bg-white::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        #donationModal .bg-white::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Responsive Modal */
+        @media (max-width: 640px) {
+            #donationModal .bg-white {
+                margin: 1rem;
+                max-width: calc(100% - 2rem);
+                padding: 1.5rem;
+            }
+
+            .payment-option {
+                padding: 0.75rem;
+            }
+
+            #donationModal h2 {
+                font-size: 1.25rem;
+            }
+        }
     </style>
 </head>
 <body>
+
+    {{-- Success/Error Notification Banner --}}
+    @if(session('success') || session('error') || session('info'))
+        <div id="notificationBanner" class="fixed top-0 left-0 right-0 z-50 animate-slideDown">
+            @if(session('success'))
+                <div class="bg-green-500 text-white px-6 py-4 shadow-lg">
+                    <div class="max-w-7xl mx-auto flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                            <div>
+                                <h4 class="font-bold text-lg">{{ session('success') }}</h4>
+                                @if(session('tracking_code'))
+                                    <p class="text-sm mt-1">
+                                        Your Tracking Code: <span class="font-mono font-bold text-lg">{{ session('tracking_code') }}</span>
+                                    </p>
+                                    <p class="text-xs mt-1 opacity-90">
+                                        Save this code to track your donation on the blockchain!
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+                        <button onclick="closeBanner()" class="text-white hover:text-gray-200 text-2xl font-bold ml-4">×</button>
+                    </div>
+                </div>
+            @elseif(session('error'))
+                <div class="bg-red-500 text-white px-6 py-4 shadow-lg">
+                    <div class="max-w-7xl mx-auto flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-exclamation-circle text-2xl"></i>
+                            <div>
+                                <h4 class="font-bold">{{ session('error') }}</h4>
+                            </div>
+                        </div>
+                        <button onclick="closeBanner()" class="text-white hover:text-gray-200 text-2xl font-bold ml-4">×</button>
+                    </div>
+                </div>
+            @elseif(session('info'))
+                <div class="bg-blue-500 text-white px-6 py-4 shadow-lg">
+                    <div class="max-w-7xl mx-auto flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-info-circle text-2xl"></i>
+                            <div>
+                                <h4 class="font-bold">{{ session('info') }}</h4>
+                            </div>
+                        </div>
+                        <button onclick="closeBanner()" class="text-white hover:text-gray-200 text-2xl font-bold ml-4">×</button>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <style>
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .animate-slideDown {
+                animation: slideDown 0.4s ease-out;
+            }
+        </style>
+
+        <script>
+            function closeBanner() {
+                const banner = document.getElementById('notificationBanner');
+                banner.style.animation = 'slideUp 0.3s ease-in';
+                setTimeout(() => {
+                    banner.remove();
+                }, 300);
+            }
+
+            // Auto-close after 10 seconds
+            setTimeout(() => {
+                const banner = document.getElementById('notificationBanner');
+                if (banner) {
+                    closeBanner();
+                }
+            }, 10000);
+        </script>
+    @endif
 
     {{-- Hero Section --}}
     <section class="hero-section">
@@ -971,7 +1318,7 @@
             {{-- Interactive Map --}}
             <div class="map-wrapper">
                 <div id="barangayMap"></div>
-                
+
                 {{-- Map Legend Overlay - Updated to match urgency levels --}}
                 <div class="map-legend-overlay">
                     <div class="legend-title">📍 Urgency Levels</div>
@@ -998,7 +1345,7 @@
 
             {{-- Summary Panel --}}
             <div class="summary-panel">
-                
+
                 {{-- City Statistics --}}
                 <div class="summary-card">
                     <div class="card-title">
@@ -1113,7 +1460,7 @@
                             </div>
                         @endif
 
-                        <button class="donate-btn" onclick="window.location.href='/donate/{{ $barangay->barangay_id }}'">
+                        <button class="donate-btn" onclick="openDonationModal('{{ $barangay->barangay_id }}')">
                             Donate to {{ $barangay->name }}
                         </button>
                     @endif
@@ -1122,7 +1469,7 @@
         </div>
     </section>
 
-    
+
 {{-- Track Donation Section --}}
 <section class="track-section" id="track">
     <div class="track-container">
@@ -1130,10 +1477,10 @@
         <p>Enter your tracking code to see blockchain verification and how your donation is being used</p>
         <form class="track-form" action="{{ route('donation.track') }}" method="POST">
             @csrf
-            <input 
-                type="text" 
-                name="tracking_code" 
-                class="track-input" 
+            <input
+                type="text"
+                name="tracking_code"
+                class="track-input"
                 placeholder="Enter Tracking Code (e.g., CC002-2025-00001)"
                 required
             >
@@ -1178,7 +1525,7 @@
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    
+
     <script>
         // Initialize map centered on Cebu City
         const map = L.map('barangayMap').setView([10.3157, 123.8854], 12);
@@ -1306,11 +1653,11 @@
         // Get highest urgency level from resource needs
         function getHighestUrgency(resourceNeeds) {
             if (!resourceNeeds || resourceNeeds.length === 0) return 'low';
-            
+
             const urgencyOrder = { critical: 4, high: 3, medium: 2, low: 1 };
             let highest = 'low';
             let highestValue = 0;
-            
+
             resourceNeeds.forEach(need => {
                 const value = urgencyOrder[need.urgency] || 0;
                 if (value > highestValue) {
@@ -1318,7 +1665,7 @@
                     highest = need.urgency;
                 }
             });
-            
+
             return highest;
         }
 
@@ -1467,7 +1814,7 @@
                                             📍 View on Google Maps
                                         </a>
                                         ${barangay.status !== 'safe' && resourceCount > 0 ? `
-                                            <button onclick="window.location.href='/donate/${barangay.id}'" style="width: 100%; background: #ef4444; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                                            <button onclick="openDonationModal('${barangay.barangay_id}')" style="width: 100%; background: #ef4444; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
                                                 ❤️ Donate to ${barangay.name}
                                             </button>
                                         ` : ''}
@@ -1500,7 +1847,7 @@
                     // Populate barangay list (only affected ones with resource needs)
                     const barangayList = document.getElementById('barangayList');
                     const affectedBarangays = data.filter(b => b.status !== 'safe');
-                
+
                     if (affectedBarangays.length === 0) {
                         barangayList.innerHTML = `
                             <div style="text-align: center; padding: 20px; color: #10b981;">
@@ -1618,6 +1965,381 @@
             });
         });
     </script>
+
+    <!-- Donation Modal -->
+    <!-- Donation Modal -->
+    <div id="donationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display: none;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative animate-fadeIn">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    💖 Make a Donation
+                </h2>
+                <button onclick="closeDonationModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">
+                    ×
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-500 mb-6">
+                Support a barangay in need. Your donation will be processed securely via PayMongo.
+            </p>
+
+            <!-- Donation Form -->
+            <form id="donationForm" class="space-y-4">
+                @csrf
+
+                <!-- Barangay Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Barangay</label>
+                    <select name="barangay_id" id="barangaySelect" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">Choose a barangay...</option>
+                        @foreach($barangays as $b)
+                            <option value="{{ $b->barangay_id }}">{{ $b->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount (PHP)</label>
+                    <input type="number" name="amount" min="1" required placeholder="1000"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Donation Type (Hidden - Only Monetary Accepted) -->
+                <input type="hidden" name="donation_type" value="monetary">
+
+                <!-- Personal Info -->
+                <div class="pt-3 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700">Donor Details</h3>
+
+                        <!-- Anonymous Toggle -->
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="anonymousCheckbox" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                            <span class="text-xs font-medium text-gray-600">Donate Anonymously</span>
+                        </label>
+                    </div>
+
+                    <div id="personalInfoSection">
+                        <input type="text" name="donor_name" id="donorNameInput" placeholder="Full Name *" required
+                            value="{{ session('user_name') ?? '' }}"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 focus:ring-2 focus:ring-blue-500">
+
+                        <input type="email" name="donor_email" placeholder="Email (optional for tracking)"
+                            value="{{ session('email') ?? '' }}"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 focus:ring-2 focus:ring-blue-500">
+
+                        <input type="tel" name="donor_phone" placeholder="Phone (optional)"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div id="anonymousNotice" class="hidden mt-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        <p class="text-xs text-gray-600">
+                            <i class="fas fa-user-secret mr-1"></i>
+                            Your donation will be listed as "Anonymous Donor". You'll still receive a tracking code via your payment method.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Payment Method (Icons) -->
+                <div class="pt-4 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Payment Method</h3>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <!-- GCash -->
+                        <div class="payment-option cursor-pointer border-2 border-gray-300 rounded-xl p-3 flex flex-col items-center hover:border-blue-500 hover:bg-blue-50 transition"
+                            data-method="gcash" onclick="selectPaymentMethod(this)">
+                            <div class="h-10 w-10 mb-2 flex items-center justify-center">
+                                <svg viewBox="0 0 48 48" class="h-full w-full">
+                                    <rect fill="#2E7CF6" width="48" height="48" rx="8"/>
+                                    <text x="24" y="32" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">G</text>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">GCash</span>
+                            <span class="text-[10px] text-gray-500 mt-1">E-Wallet</span>
+                        </div>
+
+                        <!-- GrabPay -->
+                        <div class="payment-option cursor-pointer border-2 border-gray-300 rounded-xl p-3 flex flex-col items-center hover:border-green-500 hover:bg-green-50 transition"
+                            data-method="grabpay" onclick="selectPaymentMethod(this)">
+                            <div class="h-10 w-10 mb-2 flex items-center justify-center bg-green-600 rounded-lg">
+                                <span class="text-white font-bold text-lg">Grab</span>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">GrabPay</span>
+                            <span class="text-[10px] text-gray-500 mt-1">E-Wallet</span>
+                        </div>
+
+                        <!-- PayMaya -->
+                        <div class="payment-option cursor-pointer border-2 border-gray-300 rounded-xl p-3 flex flex-col items-center hover:border-purple-500 hover:bg-purple-50 transition"
+                            data-method="paymaya" onclick="selectPaymentMethod(this)">
+                            <div class="h-10 w-10 mb-2 flex items-center justify-center">
+                                <svg viewBox="0 0 48 48" class="h-full w-full">
+                                    <defs>
+                                        <linearGradient id="mayaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#00D632;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#00B528;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect fill="url(#mayaGradient)" width="48" height="48" rx="8"/>
+                                    <text x="24" y="32" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">Maya</text>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">Maya</span>
+                            <span class="text-[10px] text-gray-500 mt-1">E-Wallet</span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="payment_method" id="paymentMethod" required>
+
+                    <!-- Payment method error -->
+                    <p id="paymentMethodError" class="text-red-500 text-xs mt-2 hidden">
+                        <i class="fas fa-exclamation-circle mr-1"></i>Please select a payment method
+                    </p>
+                </div>
+
+                <!-- Payment Info -->
+                <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p class="text-xs text-blue-800">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <strong>Secure Payment:</strong> You'll be redirected to PayMongo's secure checkout page.
+                        Your donation will be recorded on the Lisk blockchain for transparency.
+                    </p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3 pt-5">
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold text-sm transition">
+                        Proceed to Payment
+                    </button>
+                    <button type="button" onclick="closeDonationModal()"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold text-sm transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="hidden mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 class="font-bold text-green-800 mb-1">✅ Donation Successful!</h4>
+                <p class="text-sm text-green-700 mb-1">Your tracking code:
+                    <span id="trackingCodeDisplay" class="font-mono font-bold"></span>
+                </p>
+                <p class="text-xs text-green-600">Blockchain verification in progress...</p>
+                <button onclick="window.location.href='#donations'"
+                    class="w-full mt-3 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold text-sm transition">
+                    View My Donations
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    // Load barangays into modal select
+    async function loadBarangaysForModal() {
+        try {
+            const response = await fetch('/api/barangays');
+            const barangays = await response.json();
+            const select = document.getElementById('barangaySelect');
+            select.innerHTML = '<option value="">Choose a barangay...</option>';
+            barangays.forEach(b => {
+                // API returns 'id' field which contains barangay_id value
+                select.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+            });
+        } catch (error) {
+            console.error('Failed to load barangays:', error);
+        }
+    }
+
+    // Payment method selection
+    function selectPaymentMethod(element) {
+        // Remove 'selected' class from all payment options
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+
+        // Add 'selected' class to clicked option
+        element.classList.add('selected');
+
+        // Get method and convert to API format
+        const method = element.dataset.method;
+        const methodMap = {
+            'gcash': 'gcash',
+            'grabpay': 'grab_pay',
+            'paymaya': 'paymaya'
+        };
+
+        // Set the hidden input value
+        document.getElementById('paymentMethod').value = methodMap[method] || method;
+
+        // Hide error message
+        const errorEl = document.getElementById('paymentMethodError');
+        if (errorEl) {
+            errorEl.classList.add('hidden');
+        }
+    }
+
+    // Copy tracking code
+    function copyTrackingCode() {
+        const trackingCode = document.getElementById('trackingCodeDisplay').textContent;
+        const copyBtn = document.getElementById('copyBtn');
+
+        navigator.clipboard.writeText(trackingCode).then(() => {
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            copyBtn.classList.add('bg-green-700');
+
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('bg-green-700');
+            }, 2000);
+        });
+    }
+
+    // Show/hide personal info based on anonymous checkbox
+    document.addEventListener('DOMContentLoaded', function() {
+        const anonymousCheckbox = document.getElementById('anonymousCheckbox');
+        if (anonymousCheckbox) {
+            anonymousCheckbox.addEventListener('change', function(e) {
+                const personalInfo = document.getElementById('personalInfoSection');
+                const anonymousNotice = document.getElementById('anonymousNotice');
+                const nameInput = document.getElementById('donorNameInput');
+
+                if (e.target.checked) {
+                    personalInfo.style.display = 'none';
+                    anonymousNotice.classList.remove('hidden');
+                    nameInput.removeAttribute('required');
+                    // Set anonymous donor name
+                    nameInput.value = 'Anonymous Donor';
+                } else {
+                    personalInfo.style.display = 'block';
+                    anonymousNotice.classList.add('hidden');
+                    nameInput.setAttribute('required', 'required');
+                    nameInput.value = '{{ session('user_name') ?? '' }}';
+                }
+            });
+        }
+    });
+
+    // Handle form submission
+    document.getElementById('donationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        // Validate payment method
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        if (!paymentMethod) {
+            document.getElementById('paymentMethodError').classList.remove('hidden');
+            return;
+        }
+
+        const formData = new FormData(e.target);
+
+        // Safe check for anonymous checkbox
+        const anonymousCheckbox = document.getElementById('anonymousCheckbox');
+        const isAnonymous = anonymousCheckbox ? anonymousCheckbox.checked : false;
+
+        const data = {
+            barangay_id: formData.get('barangay_id'),
+            amount: parseFloat(formData.get('amount')),
+            donation_type: formData.get('donation_type'),
+            donor_name: isAnonymous ? 'Anonymous Donor' : formData.get('donor_name'),
+            donor_email: isAnonymous ? null : (formData.get('donor_email') || null),
+            donor_phone: isAnonymous ? null : (formData.get('donor_phone') || null),
+            payment_method: paymentMethod, // Already converted to grab_pay in selectPaymentMethod
+            is_anonymous: isAnonymous
+        };
+
+        // Validation
+        if (!data.barangay_id) {
+            alert('Please select a barangay');
+            return;
+        }
+
+        if (data.amount < 100) {
+            alert('Minimum donation amount is PHP 100');
+            return;
+        }
+
+        if (!isAnonymous && !data.donor_name) {
+            alert('Please enter your name or check "Donate Anonymously"');
+            return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+        try {
+            // Use the new public anonymous donation endpoint
+            const response = await fetch('/donations/create-payment-public', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.data && result.data.checkout_url) {
+                // Store tracking code for when user returns
+                sessionStorage.setItem('pending_tracking_code', result.data.tracking_code);
+
+                // Redirect to PayMongo checkout
+                window.location.href = result.data.checkout_url;
+            } else {
+                alert('Error: ' + (result.message || 'Something went wrong'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Donation error:', error);
+            alert('Failed to submit donation. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+
+    function openDonationModal(barangayId = null) {
+        const modal = document.getElementById('donationModal');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+
+        // Load barangays if not loaded
+        loadBarangaysForModal();
+
+        // Pre-select barangay if provided
+        if (barangayId) {
+            setTimeout(() => {
+                document.getElementById('barangaySelect').value = barangayId;
+            }, 100);
+        }
+    }
+
+    function closeDonationModal() {
+        const modal = document.getElementById('donationModal');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+
+        // Reset form
+        document.getElementById('donationForm').reset();
+        document.getElementById('donationForm').style.display = 'block';
+        const successMsg = document.getElementById('successMessage');
+        successMsg.style.display = 'none';
+        successMsg.classList.add('hidden');
+    }
+    </script>
+
 @include('partials.footer')
 </body>
 </html>

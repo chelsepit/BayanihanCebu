@@ -18,7 +18,19 @@ class ResidentDashboardController extends Controller
      */
     public function index()
     {
-        return view('UserDashboards.residentdashboard');
+        // Get all barangays with their resource needs
+        $barangays = Barangay::with(['resourceNeeds' => function($query) {
+            $query->where('status', '!=', 'fulfilled');
+        }])->get();
+
+        // Calculate total donations for each barangay
+        $barangays->each(function($barangay) {
+            $barangay->total_raised = \App\Models\Donation::where('barangay_id', $barangay->barangay_id)
+                ->where('status', '!=', 'pending')
+                ->sum('amount');
+        });
+
+        return view('UserDashboards.residentdashboard', compact('barangays'));
     }
 
     /**
