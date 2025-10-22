@@ -11,23 +11,23 @@ BayanihanCebu is a blockchain-based disaster relief management system designed t
 ### Key Features
 
 - 🔐 **Secure Authentication System**
-  - Role-based access control (Resident, BDRRMC, LDRRMO, Admin)
-  - Barangay-specific user management
+    - Role-based access control (Resident, BDRRMC, LDRRMO, Admin)
+    - Barangay-specific user management
 
 - 🌊 **Disaster Management**
-  - Real-time disaster reporting
-  - Severity level tracking
-  - Geographic information system integration
+    - Real-time disaster reporting
+    - Severity level tracking
+    - Geographic information system integration
 
 - 💰 **Transparent Donations**
-  - Blockchain-verified transactions
-  - Real-time donation tracking
-  - Automated receipt generation
+    - Blockchain-verified transactions
+    - Real-time donation tracking
+    - Automated receipt generation
 
 - 📊 **Resource Management**
-  - Resource request system
-  - Resource matching algorithm
-  - Inventory tracking
+    - Resource request system
+    - Resource matching algorithm
+    - Inventory tracking
 
 ## Getting Started
 
@@ -42,26 +42,31 @@ BayanihanCebu is a blockchain-based disaster relief management system designed t
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/carlreyyy/BayanihanCebu.git
 ```
 
 2. Install PHP dependencies:
+
 ```bash
 composer install
 ```
 
 3. Install NPM packages:
+
 ```bash
 npm install
 ```
 
 4. Create environment file:
+
 ```bash
 cp .env.example .env
 ```
 
 5. Generate application key:
+
 ```bash
 php artisan key:generate
 ```
@@ -69,11 +74,13 @@ php artisan key:generate
 6. Configure your database in `.env`
 
 7. Run migrations:
+
 ```bash
 php artisan migrate
 ```
 
 8. Start the development server:
+
 ```bash
 php artisan serve
 ```

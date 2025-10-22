@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResidentDashboardController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CityDashboardController;
 use App\Http\Controllers\BarangayDashboardController;
 
@@ -28,10 +29,19 @@ Route::prefix('resident')->group(function () {
 // ==================== DONATION ROUTES (for residents) ====================
 Route::post('/donations', [DonationController::class, 'store']);
 Route::get('/donations/my', [DonationController::class, 'myDonations']);
+Route::get('/donations/{id}', [DonationController::class, 'show']);
 Route::post('/donations/track', [DonationController::class, 'track']);
 Route::get('/donations/stats', [DonationController::class, 'getResidentStats']);
 Route::get('/donations', [DonationController::class, 'index']);
 Route::get('/donations/barangay/{barangayId}', [DonationController::class, 'getByBarangay']);
+
+// ==================== PAYMENT ROUTES (PayMongo) ====================
+Route::post('/payments/create-intent', [PaymentController::class, 'createPaymentIntent']);
+Route::post('/payments/attach-method', [PaymentController::class, 'attachPaymentMethod']);
+
+// Webhook (no auth needed)
+Route::post('/webhooks/paymongo', [PaymentController::class, 'webhook']);
+Route::post('/payments/create-source', [PaymentController::class, 'createPaymentSource']);
 
 // ==================== LDRRMO ROUTES ====================
 Route::prefix('ldrrmo')->group(function () {
@@ -70,6 +80,6 @@ Route::prefix('bdrrmc')->group(function () {
     Route::patch('/my-barangay', [BarangayDashboardController::class, 'updateBarangayInfo']);
 });
 
-// ==================== DONATION VERIFICATION ROUTES (BDRRMC/LDRRMO) ====================
-Route::get('/donations/pending/{barangayId?}', [DonationController::class, 'getPendingVerifications']);
-Route::post('/donations/{id}/verify', [DonationController::class, 'verify']);
+    // ==================== DONATION VERIFICATION ROUTES (BDRRMC/LDRRMO) ====================
+    Route::get('/donations/pending/{barangayId?}', [DonationController::class, 'getPendingVerifications']);
+    Route::post('/donations/{id}/verify', [DonationController::class, 'verify']);

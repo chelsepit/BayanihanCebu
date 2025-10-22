@@ -11,6 +11,7 @@ use App\Http\Controllers\ResidentDashboardController;
 use App\Http\Controllers\PublicMapController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentController;
 
 // ==================== PUBLIC ROUTES ====================
 
@@ -84,7 +85,7 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
 
     Route::post('/api/ldrrmo/resource-needs/{needId}/verify', [CityDashboardController::class, 'verifyResourceNeed']);
     Route::post('/api/ldrrmo/resource-needs/{needId}/revert', [CityDashboardController::class, 'revertVerification']);
-    }); 
+    });
     Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::post('/api/ldrrmo/matches/initiate', [CityDashboardController::class, 'initiateMatch']);
     Route::get('/api/ldrrmo/matches', [CityDashboardController::class, 'getMyInitiatedMatches']);
@@ -121,7 +122,7 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // ==================== BDRRMC MATCHING ROUTES ====================
 Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // ... existing BDRRMC routes ...
-    
+
     // Incoming Match Requests (Donor Side)
     Route::get('/api/bdrrmc/matches/incoming', [BarangayDashboardController::class, 'getIncomingMatches']);
     Route::post('/api/bdrrmc/matches/{id}/respond', [BarangayDashboardController::class, 'respondToMatch']);
@@ -131,12 +132,12 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
 
     // Active Matches (Both Sides)
     Route::get('/api/bdrrmc/matches/active', [BarangayDashboardController::class, 'getActiveMatches']);
-    
+
     // Conversation & Messaging
     Route::get('/api/bdrrmc/matches/{id}/conversation', [BarangayDashboardController::class, 'getMatchConversation']);
     Route::post('/api/bdrrmc/matches/{id}/messages', [BarangayDashboardController::class, 'sendMessage']);
     Route::post('/api/bdrrmc/matches/{id}/messages/mark-read', [BarangayDashboardController::class, 'markMessagesAsRead']);
-    
+
     // Complete Match
     Route::post('/api/bdrrmc/matches/{id}/complete', [BarangayDashboardController::class, 'completeMatch']);
 });
@@ -197,6 +198,29 @@ Route::middleware(['auth.check'])->group(function () {
 
     });
 
+// ==================== DONATION PAYMENT ROUTES ====================
+// New PayMongo Checkout Sessions routes (authenticated)
+Route::middleware(['auth.check'])->group(function () {
+    Route::post('/donations/create-payment', [DonationController::class, 'createPayment'])->name('donations.create-payment');
+});
+
+// PUBLIC/ANONYMOUS donation route (no auth required)
+// Rate limited to prevent spam (10 requests per minute per IP)
+Route::post('/donations/create-payment-public', [DonationController::class, 'createPaymentPublic'])
+    ->name('donations.create-payment-public')
+    ->middleware('throttle:10,1');
+
+// Public success/cancel routes (no auth required as user might lose session)
+Route::get('/donations/success', [DonationController::class, 'success'])->name('donations.success');
+Route::get('/donations/cancel', [DonationController::class, 'cancel'])->name('donations.cancel');
+
+// PayMongo webhook (no CSRF, no auth)
+Route::post('/webhook/paymongo', [DonationController::class, 'webhook'])->withoutMiddleware(['web']);
+
+// Old payment routes (deprecated - keeping for backward compatibility)
+Route::post('/api/payments/create-source', [PaymentController::class, 'createPaymentSource'])->name('payments.create-source');
+Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/failed', [PaymentController::class, 'failed'])->name('payment.failed');
 
 
 

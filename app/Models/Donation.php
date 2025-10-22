@@ -19,6 +19,15 @@ class Donation extends Model
         'items',
         'status',
         'transaction_hash',
+        'paymongo_payment_id',
+        'payment_source_id', // PayMongo source ID
+        'payment_session_id', // PayMongo checkout session ID
+        'payment_id', // PayMongo payment ID
+        'checkout_url', // PayMongo checkout URL
+        'paymongo_payment_intent_id', // Added
+        'payment_method', // Added
+        'payment_status',
+        'paid_at', // Added
         'donor_name',
         'donor_email',
         'donor_phone',
@@ -31,6 +40,7 @@ class Donation extends Model
         'amount' => 'decimal:2',
         'is_anonymous' => 'boolean',
         'distributed_at' => 'datetime',
+        'paid_at' => 'datetime', // Added
         'items' => 'array',
     ];
 
@@ -48,7 +58,7 @@ class Donation extends Model
     public static function generateTrackingCode()
     {
         do {
-            $code = date('md') . '-' . date('Hi') . '-' . rand(10000, 99999);
+            $code = 'DON-' . strtoupper(Str::random(8));
         } while (static::where('tracking_code', $code)->exists());
 
         return $code;
@@ -90,8 +100,6 @@ class Donation extends Model
             'status' => 'confirmed',
             'transaction_hash' => $transactionHash,
         ]);
-
-        // No need to update disaster - donations are counted via relationship
     }
 
     public function markAsDistributed($notes = null)

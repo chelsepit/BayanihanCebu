@@ -3,20 +3,22 @@
  * Handles both Online and Physical Donations
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    const trackingForm = document.getElementById('tracking-form');
-    const resultsContainer = document.getElementById('tracking-results');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const errorMessage = document.getElementById('error-message');
+document.addEventListener("DOMContentLoaded", function () {
+    const trackingForm = document.getElementById("tracking-form");
+    const resultsContainer = document.getElementById("tracking-results");
+    const loadingSpinner = document.getElementById("loading-spinner");
+    const errorMessage = document.getElementById("error-message");
 
     if (trackingForm) {
-        trackingForm.addEventListener('submit', async function(e) {
+        trackingForm.addEventListener("submit", async function (e) {
             e.preventDefault();
-            
-            const trackingCode = document.getElementById('tracking_code').value.trim();
-            
+
+            const trackingCode = document
+                .getElementById("tracking_code")
+                .value.trim();
+
             if (!trackingCode) {
-                showError('Please enter a tracking code');
+                showError("Please enter a tracking code");
                 return;
             }
 
@@ -31,13 +33,15 @@ document.addEventListener('DOMContentLoaded', function() {
         hideResults();
 
         try {
-            const response = await fetch('/api/donations/track', {
-                method: 'POST',
+            const response = await fetch("/api/donations/track", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
                 },
-                body: JSON.stringify({ tracking_code: trackingCode })
+                body: JSON.stringify({ tracking_code: trackingCode }),
             });
 
             const data = await response.json();
@@ -47,26 +51,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 displayResults(data);
             } else {
-                showError(data.message || 'Donation not found');
+                showError(data.message || "Donation not found");
             }
-
         } catch (error) {
             hideLoading();
-            showError('An error occurred while tracking your donation. Please try again.');
-            console.error('Tracking error:', error);
+            showError(
+                "An error occurred while tracking your donation. Please try again.",
+            );
+            console.error("Tracking error:", error);
         }
     }
 
     function displayResults(data) {
         const { donation_type, donation } = data;
 
-        if (donation_type === 'online') {
+        if (donation_type === "online") {
             displayOnlineDonation(donation);
-        } else if (donation_type === 'physical') {
+        } else if (donation_type === "physical") {
             displayPhysicalDonation(donation);
         }
 
-        resultsContainer.classList.remove('hidden');
+        resultsContainer.classList.remove("hidden");
     }
 
     function displayOnlineDonation(donation) {
@@ -99,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Amount:</span>
-                                <span class="font-semibold text-gray-800">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</span>
+                                <span class="font-semibold text-gray-800">₱${parseFloat(donation.amount).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Payment Method:</span>
@@ -122,12 +127,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="text-gray-600">Disaster:</span>
                                 <span class="font-semibold text-gray-800">${donation.disaster_title}</span>
                             </div>
-                            ${donation.verified_by ? `
+                            ${
+                                donation.verified_by
+                                    ? `
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Verified By:</span>
                                 <span class="font-semibold text-gray-800">${donation.verified_by}</span>
                             </div>
-                            ` : ''}
+                            `
+                                    : ""
+                            }
                         </div>
                     </div>
                 </div>
@@ -136,7 +145,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${renderBlockchainStatus(donation)}
 
                 <!-- Explorer Link -->
-                ${donation.explorer_url ? `
+                ${
+                    donation.explorer_url
+                        ? `
                 <div class="mt-4 text-center">
                     <a href="${donation.explorer_url}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800">
                         View on Blockchain Explorer
@@ -145,7 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                     </a>
                 </div>
-                ` : ''}
+                `
+                        : ""
+                }
             </div>
         `;
 
@@ -166,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="text-right">
                         <span class="px-4 py-2 ${getDistributionStatusColor(donation.distribution_status)} font-semibold rounded-full">
-                            ${donation.distribution_status.replace(/_/g, ' ').toUpperCase()}
+                            ${donation.distribution_status.replace(/_/g, " ").toUpperCase()}
                         </span>
                     </div>
                 </div>
@@ -190,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Est. Value:</span>
-                                <span class="font-semibold text-gray-800">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</span>
+                                <span class="font-semibold text-gray-800">₱${parseFloat(donation.estimated_value).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                             </div>
                         </div>
                     </div>
@@ -207,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Recorded By:</span>
-                                <span class="font-semibold text-gray-800">${donation.recorded_by || 'N/A'}</span>
+                                <span class="font-semibold text-gray-800">${donation.recorded_by || "N/A"}</span>
                             </div>
                         </div>
                     </div>
@@ -223,17 +236,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${renderBlockchainStatus(donation)}
 
                 <!-- Distribution History -->
-                ${donation.distributions && donation.distributions.length > 0 ? `
+                ${
+                    donation.distributions && donation.distributions.length > 0
+                        ? `
                 <div class="mt-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribution History</h3>
                     <div class="space-y-4">
-                        ${donation.distributions.map(dist => `
+                        ${donation.distributions
+                            .map(
+                                (dist) => `
                             <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h4 class="font-semibold text-gray-800">${dist.distributed_to}</h4>
                                         <p class="text-sm text-gray-600">Quantity: ${dist.quantity_distributed}</p>
-                                        ${dist.notes ? `<p class="text-sm text-gray-600 mt-1">${dist.notes}</p>` : ''}
+                                        ${dist.notes ? `<p class="text-sm text-gray-600 mt-1">${dist.notes}</p>` : ""}
                                         <p class="text-xs text-gray-500 mt-2">By: ${dist.distributed_by}</p>
                                     </div>
                                     <div class="text-right text-sm text-gray-600">
@@ -241,14 +258,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join("")}
                     </div>
                 </div>
-                ` : `
+                `
+                        : `
                 <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                     <p class="text-sm text-yellow-800">This donation is pending distribution to beneficiaries.</p>
                 </div>
-                `}
+                `
+                }
             </div>
         `;
 
@@ -256,34 +277,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderBlockchainStatus(donation) {
-        const status = donation.blockchain_status || 'pending';
+        const status = donation.blockchain_status || "pending";
         let bgColor, textColor, icon, message;
 
-        if (status === 'confirmed') {
-            bgColor = 'bg-green-50';
-            textColor = 'text-green-800';
-            icon = '✓';
-            message = 'This donation has been permanently recorded on the Lisk blockchain for transparency.';
-        } else if (status === 'failed') {
-            bgColor = 'bg-red-50';
-            textColor = 'text-red-800';
-            icon = '✗';
-            message = 'Blockchain recording failed. The system will retry automatically.';
+        if (status === "confirmed") {
+            bgColor = "bg-green-50";
+            textColor = "text-green-800";
+            icon = "✓";
+            message =
+                "This donation has been permanently recorded on the Lisk blockchain for transparency.";
+        } else if (status === "failed") {
+            bgColor = "bg-red-50";
+            textColor = "text-red-800";
+            icon = "✗";
+            message =
+                "Blockchain recording failed. The system will retry automatically.";
         } else {
-            bgColor = 'bg-yellow-50';
-            textColor = 'text-yellow-800';
-            icon = '⟳';
-            message = 'Your donation is being recorded on the blockchain. This may take a few minutes.';
+            bgColor = "bg-yellow-50";
+            textColor = "text-yellow-800";
+            icon = "⟳";
+            message =
+                "Your donation is being recorded on the blockchain. This may take a few minutes.";
         }
 
         return `
-            <div class="p-4 ${bgColor} rounded-lg border-2 border-${textColor.replace('text-', '')} mb-4">
+            <div class="p-4 ${bgColor} rounded-lg border-2 border-${textColor.replace("text-", "")} mb-4">
                 <div class="flex items-center">
                     <span class="text-2xl mr-3">${icon}</span>
                     <div>
                         <h4 class="font-semibold ${textColor}">Blockchain Status: ${status.toUpperCase()}</h4>
                         <p class="text-sm ${textColor}">${message}</p>
-                        ${donation.blockchain_tx_hash ? `
+                        ${
+                            donation.blockchain_tx_hash
+                                ? `
                             <a href="https://sepolia-blockscout.lisk.com/tx/${donation.blockchain_tx_hash}" 
                                target="_blank" 
                                class="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center mt-2">
@@ -292,7 +318,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                 </svg>
                             </a>
-                        ` : ''}
+                        `
+                                : ""
+                        }
                     </div>
                 </div>
             </div>
@@ -301,50 +329,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getStatusColor(status) {
         const colors = {
-            'pending': 'bg-yellow-100 text-yellow-800',
-            'verified': 'bg-green-100 text-green-800',
-            'rejected': 'bg-red-100 text-red-800'
+            pending: "bg-yellow-100 text-yellow-800",
+            verified: "bg-green-100 text-green-800",
+            rejected: "bg-red-100 text-red-800",
         };
-        return colors[status] || 'bg-gray-100 text-gray-800';
+        return colors[status] || "bg-gray-100 text-gray-800";
     }
 
     function getDistributionStatusColor(status) {
         const colors = {
-            'pending_distribution': 'bg-yellow-100 text-yellow-800',
-            'partially_distributed': 'bg-blue-100 text-blue-800',
-            'fully_distributed': 'bg-green-100 text-green-800'
+            pending_distribution: "bg-yellow-100 text-yellow-800",
+            partially_distributed: "bg-blue-100 text-blue-800",
+            fully_distributed: "bg-green-100 text-green-800",
         };
-        return colors[status] || 'bg-gray-100 text-gray-800';
+        return colors[status] || "bg-gray-100 text-gray-800";
     }
 
     function showLoading() {
         if (loadingSpinner) {
-            loadingSpinner.classList.remove('hidden');
+            loadingSpinner.classList.remove("hidden");
         }
     }
 
     function hideLoading() {
         if (loadingSpinner) {
-            loadingSpinner.classList.add('hidden');
+            loadingSpinner.classList.add("hidden");
         }
     }
 
     function showError(message) {
         if (errorMessage) {
             errorMessage.textContent = message;
-            errorMessage.classList.remove('hidden');
+            errorMessage.classList.remove("hidden");
         }
     }
 
     function hideError() {
         if (errorMessage) {
-            errorMessage.classList.add('hidden');
+            errorMessage.classList.add("hidden");
         }
     }
 
     function hideResults() {
         if (resultsContainer) {
-            resultsContainer.classList.add('hidden');
+            resultsContainer.classList.add("hidden");
         }
     }
 });

@@ -1,43 +1,43 @@
 {
-  "name": "bayanihanacebu-blockchain",
-  "version": "1.0.0",
-  "description": "Blockchain service for BayanihanCebu",
-  "main": "index.js",
-  "scripts": {
-    "test": "hardhat test",
-    "compile": "hardhat compile",
-    "deploy:testnet": "hardhat run scripts/deploy.js --network liskSepolia",
-    "verify": "hardhat verify --network liskSepolia"
-  },
-  "keywords": [
-    "blockchain",
-    "hardhat",
-    "lisk"
-  ],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
-    "@nomicfoundation/hardhat-network-helpers": "^1.1.0",
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "@nomiclabs/hardhat-etherscan": "^3.1.8",
-    "@typechain/ethers-v5": "^10.2.1",
-    "@typechain/hardhat": "^6.1.6",
-    "@types/chai": "^4.3.20",
-    "@types/mocha": "^10.0.10",
-    "chai": "^4.5.0",
-    "hardhat": "^2.19.0",
-    "hardhat-gas-reporter": "^1.0.10",
-    "solidity-coverage": "^0.8.16",
-    "ts-node": "^10.9.2",
-    "typechain": "^8.3.2"
-  },
-  "dependencies": {
-    "axios": "^1.6.0",
-    "dotenv": "^16.3.1",
-    "ethers": "^5.7.2",
-    "form-data": "^4.0.0",
-    "mysql2": "^3.6.0"
-  }
+    "name": "bayanihanacebu-blockchain",
+    "version": "1.0.0",
+    "description": "Blockchain service for BayanihanCebu",
+    "main": "index.js",
+    "scripts": {
+        "test": "hardhat test",
+        "compile": "hardhat compile",
+        "deploy:testnet": "hardhat run scripts/deploy.js --network liskSepolia",
+        "verify": "hardhat verify --network liskSepolia"
+    },
+    "keywords": [
+        "blockchain",
+        "hardhat",
+        "lisk"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
+        "@nomicfoundation/hardhat-network-helpers": "^1.1.0",
+        "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+        "@nomiclabs/hardhat-ethers": "^2.2.3",
+        "@nomiclabs/hardhat-etherscan": "^3.1.8",
+        "@typechain/ethers-v5": "^10.2.1",
+        "@typechain/hardhat": "^6.1.6",
+        "@types/chai": "^4.3.20",
+        "@types/mocha": "^10.0.10",
+        "chai": "^4.5.0",
+        "hardhat": "^2.19.0",
+        "hardhat-gas-reporter": "^1.0.10",
+        "solidity-coverage": "^0.8.16",
+        "ts-node": "^10.9.2",
+        "typechain": "^8.3.2"
+    },
+    "dependencies": {
+        "axios": "^1.6.0",
+        "dotenv": "^16.6.1",
+        "ethers": "^5.8.0",
+        "form-data": "^4.0.0",
+        "mysql2": "^3.6.0"
+    }
 }

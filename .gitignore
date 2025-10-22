@@ -6,9 +6,11 @@ node_modules/
 /public/build
 /public/hot
 /public/storage
+/storage/framework
 /storage/framework/views
 /storage/framework/cache
 /storage/logs
+/storage/app
 /storage/*.key
 /storage/pail
 
@@ -60,3 +62,6 @@ yarn-error.log*
 # Hardhat build artifacts (redundant safety)
 blockchain-services/artifacts/
 blockchain-services/cache/
+storage/framework/views/ 
+storage/framework/sessions/ 
+storage/framework/cache/ 

@@ -9,11 +9,12 @@
  * @returns {Promise<void>}
  */
 async function loadPhysicalDonations() {
-    const tbody = document.getElementById('donationsList');
-    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i></td></tr>';
+    const tbody = document.getElementById("donationsList");
+    tbody.innerHTML =
+        '<tr><td colspan="7" class="px-4 py-8 text-center"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i></td></tr>';
 
     try {
-        const response = await fetch('/api/bdrrmc/physical-donations');
+        const response = await fetch("/api/bdrrmc/physical-donations");
         const donations = await response.json();
 
         if (donations.length === 0) {
@@ -28,7 +29,9 @@ async function loadPhysicalDonations() {
             return;
         }
 
-        tbody.innerHTML = donations.map(donation => `
+        tbody.innerHTML = donations
+            .map(
+                (donation) => `
             <tr class="border-b hover:bg-gray-50">
                 <td class="px-4 py-3">
                     <a href="#" onclick="viewDonationDetails(${donation.id}); return false;" class="text-blue-600 hover:underline font-medium">${donation.tracking_code}</a>
@@ -44,32 +47,40 @@ async function loadPhysicalDonations() {
                 </td>
                 <td class="px-4 py-3">
                     <div class="flex gap-2">
-                        ${donation.distribution_status === 'fully_distributed' ? `
+                        ${
+                            donation.distribution_status === "fully_distributed"
+                                ? `
                             <button onclick="viewDistributionDetails(${donation.id})" class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded transition">
                                 <i class="fas fa-camera"></i> View Distribution
                             </button>
-                        ` : donation.distribution_status === 'partially_distributed' ? `
+                        `
+                                : donation.distribution_status ===
+                                    "partially_distributed"
+                                  ? `
                             <button onclick="viewDistributionDetails(${donation.id})" class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded transition">
                                 <i class="fas fa-eye"></i> View
                             </button>
                             <button onclick="openDistributeModal(${donation.id}, '${donation.tracking_code}')" class="flex items-center gap-2 px-3 py-1.5 text-sm bg-teal-500 text-white rounded hover:bg-teal-600 transition">
                                 <i class="fas fa-check-circle"></i> Mark Complete
                             </button>
-                        ` : `
+                        `
+                                  : `
                             <button onclick="openPartialDistributeModal(${donation.id}, '${donation.tracking_code}')" class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded transition">
                                 Partially Dist.
                             </button>
                             <button onclick="openDistributeModal(${donation.id}, '${donation.tracking_code}')" class="flex items-center gap-2 px-3 py-1.5 text-sm bg-teal-500 text-white rounded hover:bg-teal-600 transition">
                                 <i class="fas fa-check-circle"></i> Fully Dist.
                             </button>
-                        `}
+                        `
+                        }
                     </div>
                 </td>
             </tr>
-        `).join('');
-
+        `,
+            )
+            .join("");
     } catch (error) {
-        console.error('Error loading donations:', error);
+        console.error("Error loading donations:", error);
         tbody.innerHTML = `
             <tr>
                 <td colspan="7" class="px-4 py-12 text-center text-red-500">
@@ -87,10 +98,10 @@ async function loadPhysicalDonations() {
  * @returns {Promise<void>}
  */
 async function loadOnlineDonations() {
-    const tbody = document.getElementById('onlineDonationsList');
+    const tbody = document.getElementById("onlineDonationsList");
 
     try {
-        const response = await fetch('/api/bdrrmc/online-donations');
+        const response = await fetch("/api/bdrrmc/online-donations");
         const donations = await response.json();
 
         if (donations.length === 0) {
@@ -105,7 +116,7 @@ async function loadOnlineDonations() {
             `;
         }
     } catch (error) {
-        console.error('Error loading online donations:', error);
+        console.error("Error loading online donations:", error);
     }
 }
 
@@ -127,64 +138,89 @@ async function viewDonationDetails(donationId) {
  */
 async function viewDistributionDetails(donationId) {
     try {
-        const response = await fetch(`/api/bdrrmc/physical-donations/${donationId}`);
+        const response = await fetch(
+            `/api/bdrrmc/physical-donations/${donationId}`,
+        );
         const donation = await response.json();
 
         // Populate modal with donation info
-        document.getElementById('viewTrackingCode').textContent = donation.tracking_code;
-        document.getElementById('viewDonorName').textContent = donation.donor_name;
-        document.getElementById('viewCategory').textContent = formatCategory(donation.category);
-        document.getElementById('viewQuantity').textContent = donation.quantity;
-        document.getElementById('viewDateReceived').textContent = formatDateShort(donation.recorded_at);
-        document.getElementById('viewItems').textContent = donation.items_description;
+        document.getElementById("viewTrackingCode").textContent =
+            donation.tracking_code;
+        document.getElementById("viewDonorName").textContent =
+            donation.donor_name;
+        document.getElementById("viewCategory").textContent = formatCategory(
+            donation.category,
+        );
+        document.getElementById("viewQuantity").textContent = donation.quantity;
+        document.getElementById("viewDateReceived").textContent =
+            formatDateShort(donation.recorded_at);
+        document.getElementById("viewItems").textContent =
+            donation.items_description;
 
         // Distribution status badge
-        const statusBadge = document.getElementById('viewDistStatus');
-        statusBadge.textContent = formatStatus(donation.distribution_status).toUpperCase();
+        const statusBadge = document.getElementById("viewDistStatus");
+        statusBadge.textContent = formatStatus(
+            donation.distribution_status,
+        ).toUpperCase();
         statusBadge.className = `px-3 py-1 text-xs font-semibold rounded ${getDistributionStatusBadge(donation.distribution_status)}`;
 
         // Get latest distribution
         if (donation.distributions && donation.distributions.length > 0) {
-            const latestDist = donation.distributions[donation.distributions.length - 1];
+            const latestDist =
+                donation.distributions[donation.distributions.length - 1];
 
-            document.getElementById('viewDistDate').textContent = formatDateShort(latestDist.distributed_at);
-            document.getElementById('viewDistTo').textContent = latestDist.distributed_to;
-            document.getElementById('viewDistQuantity').textContent = latestDist.quantity_distributed;
+            document.getElementById("viewDistDate").textContent =
+                formatDateShort(latestDist.distributed_at);
+            document.getElementById("viewDistTo").textContent =
+                latestDist.distributed_to;
+            document.getElementById("viewDistQuantity").textContent =
+                latestDist.quantity_distributed;
 
             // Show notes if available
             if (latestDist.notes) {
-                document.getElementById('viewNotesSection').style.display = 'block';
-                document.getElementById('viewNotes').textContent = latestDist.notes;
+                document.getElementById("viewNotesSection").style.display =
+                    "block";
+                document.getElementById("viewNotes").textContent =
+                    latestDist.notes;
             } else {
-                document.getElementById('viewNotesSection').style.display = 'none';
+                document.getElementById("viewNotesSection").style.display =
+                    "none";
             }
 
             // Display photos
-            const photosGrid = document.getElementById('viewPhotosGrid');
+            const photosGrid = document.getElementById("viewPhotosGrid");
             if (latestDist.photo_urls && latestDist.photo_urls.length > 0) {
-                photosGrid.innerHTML = latestDist.photo_urls.map(photo => `
+                photosGrid.innerHTML = latestDist.photo_urls
+                    .map(
+                        (photo) => `
                     <div class="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-blue-500 transition" onclick="openPhotoModal('${photo}')">
                         <img src="${photo}" class="w-full h-full object-cover" alt="Distribution Photo">
                     </div>
-                `).join('');
+                `,
+                    )
+                    .join("");
             } else {
-                photosGrid.innerHTML = '<p class="text-sm text-gray-500 col-span-3">No photos available</p>';
+                photosGrid.innerHTML =
+                    '<p class="text-sm text-gray-500 col-span-3">No photos available</p>';
             }
         } else {
             // No distribution yet
-            document.getElementById('viewDistDate').textContent = 'Not distributed yet';
-            document.getElementById('viewDistTo').textContent = '---';
-            document.getElementById('viewDistQuantity').textContent = '---';
-            document.getElementById('viewNotesSection').style.display = 'none';
-            document.getElementById('viewPhotosGrid').innerHTML = '<p class="text-sm text-gray-500 col-span-3">No distribution recorded yet</p>';
+            document.getElementById("viewDistDate").textContent =
+                "Not distributed yet";
+            document.getElementById("viewDistTo").textContent = "---";
+            document.getElementById("viewDistQuantity").textContent = "---";
+            document.getElementById("viewNotesSection").style.display = "none";
+            document.getElementById("viewPhotosGrid").innerHTML =
+                '<p class="text-sm text-gray-500 col-span-3">No distribution recorded yet</p>';
         }
 
         // Open modal
-        document.getElementById('viewDistributionModal').classList.add('active');
-
+        document
+            .getElementById("viewDistributionModal")
+            .classList.add("active");
     } catch (error) {
-        console.error('Error loading distribution details:', error);
-        alert('Error loading distribution details');
+        console.error("Error loading distribution details:", error);
+        alert("Error loading distribution details");
     }
 }
 
@@ -194,8 +230,8 @@ async function viewDistributionDetails(donationId) {
  */
 function openPhotoModal(photoUrl) {
     // Create full-screen photo viewer
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
+    const modal = document.createElement("div");
+    modal.className = "modal active";
     modal.innerHTML = `
         <div class="max-w-4xl w-full mx-4">
             <div class="bg-white rounded-lg p-4">
@@ -216,7 +252,9 @@ function openPhotoModal(photoUrl) {
  * Prints a receipt for a donation
  */
 function printReceipt() {
-    const trackingCode = document.getElementById('generatedTrackingCode').textContent;
+    const trackingCode = document.getElementById(
+        "generatedTrackingCode",
+    ).textContent;
     const printContent = `
         <div style="padding: 40px; font-family: Arial, sans-serif;">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -232,7 +270,7 @@ function printReceipt() {
         </div>
     `;
 
-    document.getElementById('printReceipt').innerHTML = printContent;
+    document.getElementById("printReceipt").innerHTML = printContent;
     window.print();
 }
 
@@ -243,9 +281,9 @@ function printReceipt() {
  */
 function getDistributionStatusBadge(status) {
     const badges = {
-        'pending_distribution': 'bg-yellow-100 text-yellow-700',
-        'partially_distributed': 'bg-blue-100 text-blue-700',
-        'fully_distributed': 'bg-green-100 text-green-700'
+        pending_distribution: "bg-yellow-100 text-yellow-700",
+        partially_distributed: "bg-blue-100 text-blue-700",
+        fully_distributed: "bg-green-100 text-green-700",
     };
-    return badges[status] || 'bg-gray-100 text-gray-700';
+    return badges[status] || "bg-gray-100 text-gray-700";
 }

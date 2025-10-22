@@ -15,10 +15,10 @@ async function fetchAPI(url, options = {}) {
         const response = await fetch(url, {
             ...options,
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                ...options.headers
-            }
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+                ...options.headers,
+            },
         });
 
         if (!response.ok) {
@@ -37,12 +37,12 @@ async function fetchAPI(url, options = {}) {
  */
 function formatCategory(category) {
     const categories = {
-        'food': 'Food',
-        'water': 'Water',
-        'medical': 'Medical Supplies',
-        'shelter': 'Shelter Materials',
-        'clothing': 'Clothing',
-        'other': 'Other'
+        food: "Food",
+        water: "Water",
+        medical: "Medical Supplies",
+        shelter: "Shelter Materials",
+        clothing: "Clothing",
+        other: "Other",
     };
     return categories[category] || category;
 }
@@ -51,25 +51,35 @@ function formatCategory(category) {
  * Format status for display
  */
 function formatStatus(status) {
-    return status ? status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Unknown';
+    return status
+        ? status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+        : "Unknown";
 }
 
 /**
  * Format date
  */
 function formatDate(dateString) {
-    if (!dateString) return 'Unknown date';
+    if (!dateString) return "Unknown date";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    });
 }
 
 /**
  * Format date (short version)
  */
 function formatDateShort(dateString) {
-    if (!dateString) return 'Unknown date';
+    if (!dateString) return "Unknown date";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
 }
 
 /**
@@ -77,12 +87,12 @@ function formatDateShort(dateString) {
  */
 function getUrgencyBadge(urgency) {
     const badges = {
-        'low': 'bg-gray-100 text-gray-700',
-        'medium': 'bg-blue-100 text-blue-700',
-        'high': 'bg-orange-100 text-orange-700',
-        'critical': 'bg-red-100 text-red-700'
+        low: "bg-gray-100 text-gray-700",
+        medium: "bg-blue-100 text-blue-700",
+        high: "bg-orange-100 text-orange-700",
+        critical: "bg-red-100 text-red-700",
     };
-    return badges[urgency] || 'bg-gray-100 text-gray-700';
+    return badges[urgency] || "bg-gray-100 text-gray-700";
 }
 
 /**
@@ -90,11 +100,11 @@ function getUrgencyBadge(urgency) {
  */
 function getNeedStatusBadge(status) {
     const badges = {
-        'pending': 'bg-yellow-100 text-yellow-700',
-        'fulfilled': 'bg-green-100 text-green-700',
-        'partially_fulfilled': 'bg-blue-100 text-blue-700'
+        pending: "bg-yellow-100 text-yellow-700",
+        fulfilled: "bg-green-100 text-green-700",
+        partially_fulfilled: "bg-blue-100 text-blue-700",
     };
-    return badges[status] || 'bg-gray-100 text-gray-700';
+    return badges[status] || "bg-gray-100 text-gray-700";
 }
 
 /**
@@ -102,11 +112,11 @@ function getNeedStatusBadge(status) {
  */
 function getDistributionStatusBadge(status) {
     const badges = {
-        'pending': 'bg-yellow-100 text-yellow-700',
-        'partially_distributed': 'bg-blue-100 text-blue-700',
-        'fully_distributed': 'bg-green-100 text-green-700'
+        pending: "bg-yellow-100 text-yellow-700",
+        partially_distributed: "bg-blue-100 text-blue-700",
+        fully_distributed: "bg-green-100 text-green-700",
     };
-    return badges[status] || 'bg-gray-100 text-gray-700';
+    return badges[status] || "bg-gray-100 text-gray-700";
 }
 
 /**
@@ -114,13 +124,21 @@ function getDistributionStatusBadge(status) {
  */
 function getStatusBadge(status) {
     const badges = {
-        'pending': '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i>Pending</span>',
-        'accepted': '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>Accepted</span>',
-        'rejected': '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold"><i class="fas fa-times-circle mr-1"></i>Rejected</span>',
-        'completed': '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold"><i class="fas fa-flag-checkered mr-1"></i>Completed</span>',
-        'cancelled': '<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold"><i class="fas fa-ban mr-1"></i>Cancelled</span>'
+        pending:
+            '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i>Pending</span>',
+        accepted:
+            '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>Accepted</span>',
+        rejected:
+            '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold"><i class="fas fa-times-circle mr-1"></i>Rejected</span>',
+        completed:
+            '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold"><i class="fas fa-flag-checkered mr-1"></i>Completed</span>',
+        cancelled:
+            '<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold"><i class="fas fa-ban mr-1"></i>Cancelled</span>',
     };
-    return badges[status] || `<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">${status}</span>`;
+    return (
+        badges[status] ||
+        `<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">${status}</span>`
+    );
 }
 
 /**
@@ -128,12 +146,12 @@ function getStatusBadge(status) {
  */
 function getUrgencyColor(urgency) {
     const colors = {
-        'low': 'bg-gray-100 text-gray-700',
-        'medium': 'bg-blue-100 text-blue-700',
-        'high': 'bg-orange-100 text-orange-700',
-        'critical': 'bg-red-100 text-red-700'
+        low: "bg-gray-100 text-gray-700",
+        medium: "bg-blue-100 text-blue-700",
+        high: "bg-orange-100 text-orange-700",
+        critical: "bg-red-100 text-red-700",
     };
-    return colors[urgency] || 'bg-gray-100 text-gray-700';
+    return colors[urgency] || "bg-gray-100 text-gray-700";
 }
 
 /**
@@ -141,13 +159,13 @@ function getUrgencyColor(urgency) {
  */
 function getStatusColor(status) {
     const colors = {
-        'pending': 'bg-yellow-100 text-yellow-700',
-        'accepted': 'bg-green-100 text-green-700',
-        'rejected': 'bg-red-100 text-red-700',
-        'completed': 'bg-blue-100 text-blue-700',
-        'cancelled': 'bg-gray-100 text-gray-700'
+        pending: "bg-yellow-100 text-yellow-700",
+        accepted: "bg-green-100 text-green-700",
+        rejected: "bg-red-100 text-red-700",
+        completed: "bg-blue-100 text-blue-700",
+        cancelled: "bg-gray-100 text-gray-700",
     };
-    return colors[status] || 'bg-gray-100 text-gray-700';
+    return colors[status] || "bg-gray-100 text-gray-700";
 }
 
 /**
@@ -155,11 +173,11 @@ function getStatusColor(status) {
  */
 function getStatusIcon(status) {
     const icons = {
-        'pending': 'fas fa-clock',
-        'accepted': 'fas fa-check-circle',
-        'rejected': 'fas fa-times-circle',
-        'completed': 'fas fa-flag-checkered',
-        'cancelled': 'fas fa-ban'
+        pending: "fas fa-clock",
+        accepted: "fas fa-check-circle",
+        rejected: "fas fa-times-circle",
+        completed: "fas fa-flag-checkered",
+        cancelled: "fas fa-ban",
     };
-    return icons[status] || 'fas fa-question-circle';
+    return icons[status] || "fas fa-question-circle";
 }
