@@ -244,72 +244,6 @@ public function getBarangaysMapData()
         }
     }
 
-    /**
-     * Get active fundraisers - barangays that need help
-     */
-    public function getActiveFundraisers()
-    {
-        try {
-            $fundraisers = Barangay::where('disaster_status', '!=', 'safe')
-                ->with('resourceNeeds')
-                ->get()
-                ->map(function ($barangay) {
-                    $totalDonations = Donation::where('barangay_id', $barangay->barangay_id)
-                        ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                        ->sum('amount');
-
-                    $goal = ($barangay->affected_families ?? 0) * 10000;
-                    $progress = $goal > 0 ? min(100, ($totalDonations / $goal) * 100) : 0;
-
-                    $donorsCount = Donation::where('barangay_id', $barangay->barangay_id)
-                        ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                        ->distinct('donor_email')
-                        ->count();
-
-                    // Get resource needs for this barangay
-                    $resourceNeeds = ResourceNeed::where('barangay_id', $barangay->barangay_id)
-                        ->whereIn('status', ['pending', 'partially_fulfilled'])
-                        ->get()
-                        ->map(function ($need) {
-                            return [
-                                'category' => $need->category ?? 'General',
-                                'quantity' => $need->quantity ?? '0',
-                                'urgency' => $need->urgency ?? 'low',
-                                'status' => $need->status ?? 'pending',
-                                'description' => $need->description ?? ''
-                            ];
-                        });
-
-                    return [
-                        'id' => $barangay->barangay_id,
-                        'title' => $barangay->disaster_type
-                            ? ucfirst($barangay->disaster_type) . ' Relief - ' . $barangay->name
-                            : 'Emergency Relief - ' . $barangay->name,
-                        'barangay' => $barangay->name,
-                        'disaster_type' => $barangay->disaster_type,
-                        'status' => $barangay->disaster_status,
-                        'severity' => $barangay->disaster_status, // Add severity
-                        'description' => $barangay->needs_summary ?? 'Emergency assistance needed',
-                        'affected_families' => $barangay->affected_families ?? 0,
-                        'goal' => $goal,
-                        'raised' => $totalDonations,
-                        'progress' => round($progress, 2),
-                        'donors_count' => $donorsCount,
-                        'days_active' => $barangay->updated_at ? $barangay->updated_at->diffInDays(now()) : 0,
-                        'resource_needs' => $resourceNeeds
-                    ];
-                });
-
-            return response()->json($fundraisers);
-        } catch (\Exception $e) {
-            Log::error('Error loading fundraisers: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error loading fundraisers',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
      * Get detailed barangay information
@@ -623,14 +557,17 @@ public function revertVerification($needId)
             })
                 ->map(function($donation) use ($need) {
                     $matchScore = $this->calculateMatchScore($need, $donation);
-                    
+
                     return [
                         'donation' => [
                             'id' => $donation->id,
+                            'items_description' => $donation->items_description ?? $donation->category ?? 'Unknown',
                             'item_name' => $donation->items_description ?? $donation->category ?? 'Unknown',
-                            'quantity' => $donation->quantity ?? 0,
+                            'quantity' => $donation->quantity ?? '0',
                             'status' => $donation->distribution_status ?? 'available',
                             'category' => $donation->category ?? 'general',
+                            'donor_name' => $donation->donor_name ?? 'Anonymous',
+                            'recorded_at' => $donation->recorded_at ? $donation->recorded_at->format('M d, Y') : 'N/A',
                         ],
                         'barangay' => [
                             'id' => $donation->barangay_id,
@@ -638,6 +575,7 @@ public function revertVerification($needId)
                         ],
                         'match_score' => $matchScore,
                         'can_fulfill' => ($donation->quantity ?? 0) >= $this->extractQuantityNumber($need->quantity ?? '0'),
+                        'can_fully_fulfill' => ($donation->quantity ?? 0) >= $this->extractQuantityNumber($need->quantity ?? '0'),
                     ];
                 })
                 ->filter(function($match) {
@@ -654,6 +592,7 @@ public function revertVerification($needId)
                         'id' => $need->barangay_id,
                         'name' => $need->barangay->name ?? 'Unknown',
                     ],
+                    'category' => $need->category ?? 'Unknown',
                     'item_name' => $need->category ?? 'Unknown',
                     'description' => $need->description ?? '',
                     'quantity' => $need->quantity ?? '0',
@@ -985,4 +924,201 @@ public function getMatchStatistics()
     }
 }
 
+public function getMatchDetails($needId, $donationId)
+{
+    try {
+        // Optimized: Only select needed columns and eager load barangay name
+        $need = ResourceNeed::select('id', 'barangay_id', 'category', 'description', 'quantity', 'urgency', 'status')
+            ->with('barangay:barangay_id,name')
+            ->findOrFail($needId);
+
+        $donation = PhysicalDonation::select('id', 'barangay_id', 'items_description', 'quantity', 'category', 'distribution_status', 'donor_name')
+            ->with('barangay:barangay_id,name')
+            ->findOrFail($donationId);
+
+        // Calculate match score
+        $matchScore = $this->calculateMatchScore($need, $donation);
+
+        return response()->json([
+            'success' => true,
+            'need' => [
+                'id' => $need->id,
+                'barangay_id' => $need->barangay_id,
+                'barangay_name' => $need->barangay->name ?? 'Unknown',
+                'category' => $need->category ?? 'General',
+                'description' => $need->description ?? '',
+                'quantity' => $need->quantity ?? '0',
+                'urgency' => $need->urgency ?? 'low',
+                'status' => $need->status ?? 'pending',
+            ],
+            'donation' => [
+                'id' => $donation->id,
+                'barangay_id' => $donation->barangay_id,
+                'barangay_name' => $donation->barangay->name ?? 'Unknown',
+                'items_description' => $donation->items_description ?? '',
+                'quantity' => $donation->quantity ?? '0',
+                'category' => $donation->category ?? 'general',
+                'distribution_status' => $donation->distribution_status ?? 'pending_distribution',
+                'donor_name' => $donation->donor_name ?? 'Anonymous',
+            ],
+            'match_analysis' => [
+                'match_score' => $matchScore,
+                'can_fully_fulfill' => $this->extractQuantityNumber($donation->quantity) >= $this->extractQuantityNumber($need->quantity),
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error loading match details: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading match details',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Get conversation for a match (LDRRMO as monitor)
+ */
+public function getMatchConversation($matchId)
+{
+    try {
+        $match = ResourceMatch::with([
+            'requestingBarangay:barangay_id,name',
+            'donatingBarangay:barangay_id,name',
+            'resourceNeed:id,category,quantity',
+            'physicalDonation:id,items_description,quantity',
+            'conversation.messages' => function($query) {
+                $query->orderBy('created_at', 'asc');
+            }
+        ])->findOrFail($matchId);
+
+        // Check if conversation exists
+        if (!$match->conversation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No conversation exists for this match yet'
+            ], 404);
+        }
+
+        $conversation = $match->conversation;
+
+        $messages = $conversation->messages->map(function($message) use ($match) {
+            // Determine sender name
+            $senderName = 'Unknown';
+            $senderRole = 'unknown';
+
+            if ($message->sender_barangay_id === $match->requesting_barangay_id) {
+                $senderName = $match->requestingBarangay->name . ' (Requesting)';
+                $senderRole = 'requester';
+            } elseif ($message->sender_barangay_id === $match->donating_barangay_id) {
+                $senderName = $match->donatingBarangay->name . ' (Donating)';
+                $senderRole = 'donor';
+            } elseif ($message->sender_user_id) {
+                $senderName = 'LDRRMO';
+                $senderRole = 'ldrrmo';
+            }
+
+            return [
+                'id' => $message->id,
+                'message' => $message->message,
+                'sender_name' => $senderName,
+                'sender_role' => $senderRole,
+                'created_at' => $message->created_at->format('M d, Y h:i A'),
+                'timestamp' => $message->created_at->toIso8601String(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'match' => [
+                'id' => $match->id,
+                'status' => $match->status,
+                'requesting_barangay' => $match->requestingBarangay->name,
+                'donating_barangay' => $match->donatingBarangay->name,
+                'resource_need' => $match->resourceNeed->category . ' (' . $match->resourceNeed->quantity . ')',
+                'donation' => $match->physicalDonation->items_description . ' (' . $match->physicalDonation->quantity . ')',
+            ],
+            'conversation' => [
+                'id' => $conversation->id,
+                'status' => $conversation->status,
+                'message_count' => $messages->count(),
+                'messages' => $messages,
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error loading conversation: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading conversation',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Send message in match conversation (LDRRMO as participant)
+ */
+public function sendMessage(Request $request, $matchId)
+{
+    try {
+        $validated = $request->validate([
+            'message' => 'required|string|max:1000'
+        ]);
+
+        $match = ResourceMatch::with('conversation')->findOrFail($matchId);
+
+        // Create conversation if it doesn't exist (for accepted matches)
+        if (!$match->conversation) {
+            if ($match->status !== 'accepted') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conversation can only be started for accepted matches'
+                ], 400);
+            }
+
+            $conversation = MatchConversation::create([
+                'resource_match_id' => $match->id,
+                'status' => 'active'
+            ]);
+        } else {
+            $conversation = $match->conversation;
+        }
+
+        // Create message from LDRRMO (no barangay_id, only user_id)
+        $userId = session('user_id');
+
+        $message = $conversation->messages()->create([
+            'sender_user_id' => $userId,
+            'sender_barangay_id' => null, // LDRRMO doesn't have barangay_id
+            'message' => $validated['message'],
+        ]);
+
+        // Update conversation last_message_at
+        $conversation->update([
+            'last_message_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message sent successfully',
+            'data' => [
+                'id' => $message->id,
+                'message' => $message->message,
+                'sender_name' => 'LDRRMO',
+                'sender_role' => 'ldrrmo',
+                'created_at' => $message->created_at->format('M d, Y h:i A'),
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error sending message: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error sending message',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 }

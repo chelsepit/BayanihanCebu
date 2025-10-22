@@ -49,10 +49,6 @@ Route::get('/donate/{barangay:barangay_id}', [PublicMapController::class, 'showD
 Route::post('/donate/{barangay:barangay_id}', [PublicMapController::class, 'processDonation'])->name('donation.process');
 Route::get('/donation/success/{trackingCode}', [PublicMapController::class, 'donationSuccess'])->name('donation.success');
 
-// Fundraisers page
-Route::get('/fundraisers', function () {
-    return view('fundraisers.index');
-})->name('fundraisers');
 
 // Statistics API
 Route::get('/api/statistics', [PublicMapController::class, 'statistics'])->name('api.statistics');
@@ -72,7 +68,6 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/api/ldrrmo/barangays-map', [CityDashboardController::class, 'getBarangaysMapData']);
     Route::get('/api/ldrrmo/analytics', [CityDashboardController::class, 'getAnalyticsData']);
     Route::get('/api/ldrrmo/barangays-comparison', [CityDashboardController::class, 'getBarangaysComparison']);
-    Route::get('/api/ldrrmo/fundraisers', [CityDashboardController::class, 'getActiveFundraisers']);
     Route::get('/api/ldrrmo/barangays/{barangayId}', [CityDashboardController::class, 'getBarangayDetails']);
     Route::patch('/api/ldrrmo/barangays/{barangayId}/status', [CityDashboardController::class, 'updateBarangayStatus']);
     Route::get('/api/ldrrmo/recent-activity', [CityDashboardController::class, 'getRecentActivity']);
@@ -196,31 +191,21 @@ Route::middleware(['auth.check'])->group(function () {
     Route::get('/api/notifications/grouped', [NotificationController::class, 'getGroupedNotifications']);
     });
 
+    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
+
+    Route::post('/api/ldrrmo/resource-needs/{needId}/verify', [CityDashboardController::class, 'verifyResourceNeed']);
+    Route::post('/api/ldrrmo/resource-needs/{needId}/revert', [CityDashboardController::class, 'revertVerification']);
+    }); 
+    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
+    Route::post('/api/ldrrmo/matches/initiate', [CityDashboardController::class, 'initiateMatch']);
+    Route::get('/api/ldrrmo/matches', [CityDashboardController::class, 'getMyInitiatedMatches']);
+    Route::post('/api/ldrrmo/matches/{id}/cancel', [CityDashboardController::class, 'cancelMatch']);
+    Route::get('/api/ldrrmo/matches/statistics', [CityDashboardController::class, 'getMatchStatistics']);
+    Route::get('/api/ldrrmo/match-details/{needId}/{donationId}', [CityDashboardController::class, 'getMatchDetails']);
+
+    // Conversation & Messaging (LDRRMO as Monitor)
+    Route::get('/api/ldrrmo/matches/{id}/conversation', [CityDashboardController::class, 'getMatchConversation']);
+    Route::post('/api/ldrrmo/matches/{id}/messages', [CityDashboardController::class, 'sendMessage']);
     });
 
-// ==================== DONATION PAYMENT ROUTES ====================
-// New PayMongo Checkout Sessions routes (authenticated)
-Route::middleware(['auth.check'])->group(function () {
-    Route::post('/donations/create-payment', [DonationController::class, 'createPayment'])->name('donations.create-payment');
-});
-
-// PUBLIC/ANONYMOUS donation route (no auth required)
-// Rate limited to prevent spam (10 requests per minute per IP)
-Route::post('/donations/create-payment-public', [DonationController::class, 'createPaymentPublic'])
-    ->name('donations.create-payment-public')
-    ->middleware('throttle:10,1');
-
-// Public success/cancel routes (no auth required as user might lose session)
-Route::get('/donations/success', [DonationController::class, 'success'])->name('donations.success');
-Route::get('/donations/cancel', [DonationController::class, 'cancel'])->name('donations.cancel');
-
-// PayMongo webhook (no CSRF, no auth)
-Route::post('/webhook/paymongo', [DonationController::class, 'webhook'])->withoutMiddleware(['web']);
-
-// Old payment routes (deprecated - keeping for backward compatibility)
-Route::post('/api/payments/create-source', [PaymentController::class, 'createPaymentSource'])->name('payments.create-source');
-Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('/payment/failed', [PaymentController::class, 'failed'])->name('payment.failed');
-
-
-
+    });
