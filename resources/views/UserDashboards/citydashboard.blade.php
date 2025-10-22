@@ -26,7 +26,29 @@
             border-radius: 0.5rem;
             margin: 1rem 0;
         }
+
+        /* Modal Overlay Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
     </style>
+
+    
 </head>
 <body class="bg-gray-50">
 
@@ -171,17 +193,6 @@
                 <p class="text-xs text-gray-600 mt-2" id="affectedBarangays">0 Barangays</p>
             </div>
 
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-600">Active Fundraisers</p>
-                        <h3 class="text-3xl font-bold text-gray-800" id="activeFundraisers">0</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-hand-holding-heart text-blue-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
 
             <div class="bg-white rounded-xl p-6 shadow-sm">
                 <div class="flex justify-between items-start">
@@ -218,16 +229,11 @@
                 <button onclick="switchTab('resources', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-handshake mr-2"></i> Resource Needs
                 </button>
-                <button onclick="showTab('my-matches')" 
-                class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
-                data-tab="my-matches">
-                     <i class="fas fa-handshake mr-2"></i>My Matches
+                <button onclick="switchTab('my-matches', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition" data-tab="my-matches">
+                    <i class="fas fa-handshake mr-2"></i> My Matches
                 </button>
                 <button onclick="switchTab('analytics', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-chart-bar mr-2"></i> Analytics
-                </button>
-                <button onclick="switchTab('fundraisers', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
-                    <i class="fas fa-donate mr-2"></i> Fundraisers
                 </button>
                 <button onclick="switchTab('barangays', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-list mr-2"></i> Barangays
@@ -268,10 +274,45 @@
                 </div>
             </div>
 
+            <!-- Filter Tabs -->
+            <div class="mb-6 border-b border-gray-200">
+                <nav class="flex space-x-8">
+                    <button onclick="filterResourceNeeds('all')" id="resource-tab-all" class="resource-filter-tab pb-4 px-1 border-b-2 font-medium text-sm border-blue-600 text-blue-600">
+                        All Requests
+                        <span id="resource-count-all" class="ml-2 px-2 py-0.5 bg-gray-200 rounded-full text-xs">0</span>
+                    </button>
+                    <button onclick="filterResourceNeeds('pending')" id="resource-tab-pending" class="resource-filter-tab pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700">
+                        Pending Verification
+                        <span id="resource-count-pending" class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">0</span>
+                    </button>
+                    <button onclick="filterResourceNeeds('verified')" id="resource-tab-verified" class="resource-filter-tab pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700">
+                        Verified Requests
+                        <span id="resource-count-verified" class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">0</span>
+                    </button>
+                    <button onclick="filterResourceNeeds('rejected')" id="resource-tab-rejected" class="resource-filter-tab pb-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700">
+                        Rejected
+                        <span id="resource-count-rejected" class="ml-2 px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">0</span>
+                    </button>
+                </nav>
+            </div>
+
             <div id="resourceNeedsList" class="space-y-4">
                 <div class="text-center py-8 text-gray-500">
                     <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
                     <p>Loading resource needs...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Modal -->
+        <div id="verificationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <h3 class="text-lg font-semibold mb-4" id="verificationModalTitle">Verify Resource Request</h3>
+                <div id="verificationModalContent"></div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button onclick="closeVerificationModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Cancel</button>
+                    <button id="rejectBtn" onclick="handleReject()" class="hidden px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Reject</button>
+                    <button id="verifyBtn" onclick="handleVerify()" class="hidden px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Verify</button>
                 </div>
             </div>
         </div>
@@ -363,6 +404,96 @@
     </div>
 </div>
 
+<!-- Match Details Modal -->
+<div id="matchDetailsModal" class="modal hidden">
+    <div class="bg-white rounded-lg shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
+            <h3 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                Match Details & Logistics
+            </h3>
+            <button onclick="closeMatchDetailsModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div id="matchDetailsContent" class="p-6">
+            <!-- Loading State -->
+            <div class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <p class="text-gray-600">Loading match details...</p>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="sticky bottom-0 bg-gray-50 border-t px-6 py-4 flex justify-end gap-3">
+            <button onclick="closeMatchDetailsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                Close
+            </button>
+            <button id="initiateMatchFromDetails" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                <i class="fas fa-handshake mr-2"></i>Initiate Match
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Conversation Modal -->
+<div id="conversationModal" class="modal hidden">
+    <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center rounded-t-lg">
+            <div>
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-comments"></i>
+                    Match Conversation
+                </h3>
+                <p class="text-sm text-indigo-100 mt-1" id="conversationSubtitle">Group chat between barangays</p>
+            </div>
+            <button onclick="closeConversationModal()" class="text-white hover:text-gray-200 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Match Info Banner -->
+        <div id="conversationMatchInfo" class="bg-blue-50 border-b border-blue-200 px-6 py-3">
+            <!-- Match details will be inserted here -->
+        </div>
+
+        <!-- Messages Container -->
+        <div id="conversationMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50" style="max-height: 400px;">
+            <div class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                <p class="text-gray-600">Loading conversation...</p>
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="border-t bg-white px-6 py-4 rounded-b-lg">
+            <form id="sendMessageForm" onsubmit="sendConversationMessage(event)" class="flex gap-3">
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Type your message as LDRRMO..."
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                    maxlength="1000"
+                />
+                <button
+                    type="submit"
+                    class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i>
+                    Send
+                </button>
+            </form>
+            <p class="text-xs text-gray-500 mt-2">
+                <i class="fas fa-info-circle"></i> You're participating as LDRRMO. Messages are visible to both barangays.
+            </p>
+        </div>
+    </div>
+</div>
+
 
         <!-- TAB 3: Analytics -->
         <div id="analytics-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
@@ -391,24 +522,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: Fundraisers -->
-        <div id="fundraisers-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Active Fundraisers</h2>
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    <i class="fas fa-plus mr-2"></i> Create Fundraiser
-                </button>
-            </div>
-
-            <div id="fundraisersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                    <p>Loading fundraisers...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 5: Barangays Comparison -->
+        <!-- TAB 4: Barangays Comparison -->
         <div id="barangays-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
             <h2 class="text-2xl font-bold mb-6">Barangay Comparison</h2>
 
@@ -536,7 +650,7 @@
         let statusChart = null;
         let familiesChart = null;
         let paymentMethodChart = null;
-        let loadedTabs = { map: false, resources: false, analytics: false, fundraisers: false, barangays: false };
+        let loadedTabs = { map: false, resources: false, analytics: false, barangays: false };
 
         // ============================================
         // TAB SWITCHING
@@ -578,9 +692,6 @@
                     case 'analytics':
                         loadAnalytics();
                         break;
-                    case 'fundraisers':
-                        loadFundraisers();
-                        break;
                     case 'barangays':
                         loadBarangaysComparison();
                         break;
@@ -608,7 +719,6 @@
                 document.getElementById('onlineDonations').textContent = formatCurrency(stats.online_donations);
                 document.getElementById('affectedFamilies').textContent = formatNumber(stats.total_affected_families);
                 document.getElementById('affectedBarangays').textContent = formatNumber(stats.affected_barangays) + ' Barangays';
-                document.getElementById('activeFundraisers').textContent = formatNumber(stats.active_fundraisers);
                 document.getElementById('criticalBarangays').textContent = formatNumber(stats.critical_barangays);
                 document.getElementById('totalDonors').textContent = formatNumber(stats.total_donors);
                 document.getElementById('blockchainVerified').textContent = '0 blockchain verified';
@@ -716,7 +826,9 @@
         // RESOURCE NEEDS & MATCHING
         // ============================================
         let currentResourceNeeds = [];
+        let allResourceNeeds = [];
         let currentResourceNeedsFilter = 'all';
+        let currentVerificationNeedId = null;
 
         async function loadResourceNeeds() {
             const container = document.getElementById('resourceNeedsList');
@@ -724,16 +836,20 @@
 
             try {
                 const filter = currentResourceNeedsFilter || 'all';
-                const response = await fetchAPI('/api/ldrrmo/resource-needs');
+                const response = await fetchAPI(`/api/ldrrmo/resource-needs?filter=${filter}`);
 
+                allResourceNeeds = response;
                 currentResourceNeeds = response;
+
+                // Update counts
+                updateResourceNeedsCounts();
 
                 if (!response || response.length === 0) {
                     container.innerHTML = `
                         <div class="text-center py-12">
                             <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2">All Needs Fulfilled</h3>
-                            <p class="text-gray-600">No active resource needs at this time</p>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">No Resource Needs Found</h3>
+                            <p class="text-gray-600">No requests match the current filter</p>
                         </div>
                     `;
                     return;
@@ -747,24 +863,81 @@
                         'low': 'bg-blue-100 text-blue-800 border-blue-300'
                     };
 
+                    const verificationBadges = {
+                        'pending': 'bg-yellow-100 text-yellow-800',
+                        'verified': 'bg-green-100 text-green-800',
+                        'rejected': 'bg-red-100 text-red-800'
+                    };
+
+                    const verificationIcons = {
+                        'pending': '⏳',
+                        'verified': '✓',
+                        'rejected': '✗'
+                    };
+
                     const urgencyClass = urgencyColors[need.urgency] || urgencyColors['low'];
+                    const verificationClass = verificationBadges[need.verification_status] || verificationBadges['pending'];
+                    const verificationIcon = verificationIcons[need.verification_status] || '⏳';
+
+                    // Rejection reason display
+                    const rejectionHtml = (need.verification_status === 'rejected' && need.rejection_reason) ? `
+                        <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+                            <p class="text-sm text-red-800"><strong>Rejection Reason:</strong> ${escapeHtml(need.rejection_reason)}</p>
+                        </div>
+                    ` : '';
+
+                    // Action buttons based on verification status
+                    let actionButtons = '';
+                    if (need.verification_status === 'pending') {
+                        actionButtons = `
+                            <button onclick="openVerificationModal(${need.id}, 'verify')"
+                                class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 whitespace-nowrap">
+                                ✓ Verify
+                            </button>
+                            <button onclick="openVerificationModal(${need.id}, 'reject')"
+                                class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 whitespace-nowrap">
+                                ✗ Reject
+                            </button>
+                        `;
+                    } else if (need.verification_status === 'verified') {
+                        actionButtons = `
+                            <button onclick="revertVerification(${need.id})"
+                                class="px-4 py-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 whitespace-nowrap">
+                                ↺ Revert
+                            </button>
+                            <button onclick="findMatchesForNeed(${need.id})"
+                                class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 whitespace-nowrap">
+                                🔍 Find Match
+                            </button>
+                        `;
+                    } else {
+                        actionButtons = `
+                            <button onclick="revertVerification(${need.id})"
+                                class="px-4 py-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 whitespace-nowrap">
+                                ↺ Revert
+                            </button>
+                        `;
+                    }
 
                     return `
                         <div class="border-2 ${urgencyClass} rounded-xl p-6 hover:shadow-lg transition-all">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-3">
+                                    <div class="flex items-center gap-3 mb-3 flex-wrap">
                                         <h3 class="text-xl font-bold text-gray-900">${escapeHtml(need.barangay_name)}</h3>
                                         <span class="px-3 py-1 ${urgencyClass} text-xs font-bold rounded-full uppercase border">
                                             ${escapeHtml(need.urgency)}
                                         </span>
-                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                                        <span class="px-3 py-1 ${verificationClass} text-xs font-bold rounded-full">
+                                            ${verificationIcon} ${escapeHtml(need.verification_status).toUpperCase()}
+                                        </span>
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
                                             ${escapeHtml(need.category)}
                                         </span>
                                     </div>
-                                    
+
                                     <p class="text-gray-700 mb-4">${escapeHtml(need.description)}</p>
-                                    
+
                                     <div class="grid grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <span class="text-gray-600">Quantity:</span>
@@ -775,17 +948,11 @@
                                             <strong class="ml-2 text-gray-900">${escapeHtml(need.affected_families)}</strong>
                                         </div>
                                     </div>
+                                    ${rejectionHtml}
                                 </div>
 
-                                <div class="flex flex-col items-end gap-3">
-                                    <span class="px-4 py-2 bg-red-100 text-red-700 text-sm font-semibold rounded-lg">
-                                        ACTIVE
-                                    </span>
-                                    <button onclick="findMatches(${need.id})" 
-                                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md hover:shadow-lg">
-                                        <i class="fas fa-search"></i>
-                                        Look for Match
-                                    </button>
+                                <div class="flex flex-col gap-2 ml-4">
+                                    ${actionButtons}
                                 </div>
                             </div>
                         </div>
@@ -796,6 +963,170 @@
                 console.error('Error loading resource needs:', error);
                 showError('resourceNeedsList', 'Failed to load resource needs. Please try again.');
             }
+        }
+
+        // Filter resource needs by verification status
+        function filterResourceNeeds(filter) {
+            currentResourceNeedsFilter = filter;
+
+            // Update active tab styling
+            document.querySelectorAll('.resource-filter-tab').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            const activeTab = document.getElementById(`resource-tab-${filter}`);
+            if (activeTab) {
+                activeTab.classList.add('border-blue-600', 'text-blue-600');
+                activeTab.classList.remove('border-transparent', 'text-gray-500');
+            }
+
+            loadResourceNeeds();
+        }
+
+        // Update resource needs counts
+        async function updateResourceNeedsCounts() {
+            try {
+                const allResponse = await fetchAPI('/api/ldrrmo/resource-needs?filter=all');
+                const pendingResponse = await fetchAPI('/api/ldrrmo/resource-needs?filter=pending');
+                const verifiedResponse = await fetchAPI('/api/ldrrmo/resource-needs?filter=verified');
+                const rejectedResponse = await fetchAPI('/api/ldrrmo/resource-needs?filter=rejected');
+
+                document.getElementById('resource-count-all').textContent = allResponse.length;
+                document.getElementById('resource-count-pending').textContent = pendingResponse.length;
+                document.getElementById('resource-count-verified').textContent = verifiedResponse.length;
+                document.getElementById('resource-count-rejected').textContent = rejectedResponse.length;
+            } catch (error) {
+                console.error('Error updating counts:', error);
+            }
+        }
+
+        // Open verification modal
+        function openVerificationModal(needId, action) {
+            currentVerificationNeedId = needId;
+            const need = currentResourceNeeds.find(n => n.id === needId);
+            const modal = document.getElementById('verificationModal');
+            const title = document.getElementById('verificationModalTitle');
+            const content = document.getElementById('verificationModalContent');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+
+            if (action === 'reject') {
+                title.textContent = 'Reject Resource Request';
+                content.innerHTML = `
+                    <p class="text-gray-700 mb-4">Please provide a reason for rejecting this request:</p>
+                    <textarea id="rejectionReason" class="w-full border rounded p-2 h-24 focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Enter rejection reason..."></textarea>
+                    <div class="mt-3 p-3 bg-gray-50 rounded text-sm">
+                        <p><strong>Barangay:</strong> ${escapeHtml(need.barangay_name)}</p>
+                        <p><strong>Category:</strong> ${escapeHtml(need.category)}</p>
+                        <p><strong>Quantity:</strong> ${escapeHtml(need.quantity)}</p>
+                    </div>
+                `;
+                verifyBtn.classList.add('hidden');
+                rejectBtn.classList.remove('hidden');
+            } else {
+                title.textContent = 'Verify Resource Request';
+                content.innerHTML = `
+                    <p class="text-gray-700 mb-4">Are you sure you want to verify this resource request?</p>
+                    <div class="bg-gray-50 p-3 rounded">
+                        <p class="mb-2"><strong>Barangay:</strong> ${escapeHtml(need.barangay_name)}</p>
+                        <p class="mb-2"><strong>Category:</strong> ${escapeHtml(need.category)}</p>
+                        <p class="mb-2"><strong>Quantity:</strong> ${escapeHtml(need.quantity)}</p>
+                        <p><strong>Description:</strong> ${escapeHtml(need.description)}</p>
+                    </div>
+                `;
+                verifyBtn.classList.remove('hidden');
+                rejectBtn.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // Close verification modal
+        function closeVerificationModal() {
+            document.getElementById('verificationModal').classList.add('hidden');
+            currentVerificationNeedId = null;
+        }
+
+        // Handle verify action
+        async function handleVerify() {
+            if (!currentVerificationNeedId) return;
+
+            try {
+                const response = await fetchAPI(`/api/ldrrmo/resource-needs/${currentVerificationNeedId}/verify`, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'verify' })
+                });
+
+                if (response.success) {
+                    alert('✅ Resource need verified successfully!');
+                    closeVerificationModal();
+                    loadResourceNeeds();
+                } else {
+                    alert('❌ Error: ' + response.message);
+                }
+            } catch (error) {
+                console.error('Error verifying need:', error);
+                alert('Failed to verify resource need');
+            }
+        }
+
+        // Handle reject action
+        async function handleReject() {
+            if (!currentVerificationNeedId) return;
+
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('⚠️ Please provide a rejection reason');
+                return;
+            }
+
+            try {
+                const response = await fetchAPI(`/api/ldrrmo/resource-needs/${currentVerificationNeedId}/verify`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'reject',
+                        rejection_reason: reason
+                    })
+                });
+
+                if (response.success) {
+                    alert('✅ Resource need rejected');
+                    closeVerificationModal();
+                    loadResourceNeeds();
+                } else {
+                    alert('❌ Error: ' + response.message);
+                }
+            } catch (error) {
+                console.error('Error rejecting need:', error);
+                alert('Failed to reject resource need');
+            }
+        }
+
+        // Revert verification status
+        async function revertVerification(needId) {
+            if (!confirm('Are you sure you want to revert this to pending status?')) return;
+
+            try {
+                const response = await fetchAPI(`/api/ldrrmo/resource-needs/${needId}/revert`, {
+                    method: 'POST'
+                });
+
+                if (response.success) {
+                    alert('✅ Verification status reverted to pending');
+                    loadResourceNeeds();
+                } else {
+                    alert('❌ Error: ' + response.message);
+                }
+            } catch (error) {
+                console.error('Error reverting verification:', error);
+                alert('Failed to revert verification');
+            }
+        }
+
+        // Find matches for a specific need (renamed to avoid conflict)
+        function findMatchesForNeed(needId) {
+            findMatches(needId);
         }
 
             async function findMatches(needId) {
@@ -898,20 +1229,20 @@ function displayMatches(need, matches) {
                         
                         <p class="font-semibold text-gray-900 mb-1">
                             <i class="fas fa-box mr-1 text-gray-500"></i>
-                            ${escapeHtml(match.donation.items_description)}
+                            ${escapeHtml(match.donation.items_description || match.donation.item_name || 'N/A')}
                         </p>
                         <p class="text-sm text-gray-600 mb-2">
                             <i class="fas fa-cubes mr-1"></i>
-                            Available: <span class="font-semibold">${escapeHtml(match.donation.quantity)}</span>
+                            Available: <span class="font-semibold">${escapeHtml(match.donation.quantity || '0')}</span>
                         </p>
 
                         <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                            <span><i class="fas fa-user mr-1"></i>${escapeHtml(match.donation.donor_name)}</span>
-                            <span><i class="fas fa-calendar mr-1"></i>${match.donation.recorded_at}</span>
+                            <span><i class="fas fa-user mr-1"></i>${escapeHtml(match.donation.donor_name || 'Anonymous')}</span>
+                            <span><i class="fas fa-calendar mr-1"></i>${escapeHtml(match.donation.recorded_at || 'N/A')}</span>
                         </div>
 
                         <div class="mt-2">
-                            ${match.can_fully_fulfill ? 
+                            ${(match.can_fully_fulfill || match.can_fulfill) ?
                                 '<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full"><i class="fas fa-check-circle"></i> Can fully fulfill request</span>' :
                                 '<span class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full"><i class="fas fa-exclamation-triangle"></i> Partial fulfillment only</span>'
                             }
@@ -919,13 +1250,13 @@ function displayMatches(need, matches) {
                     </div>
 
                     <div class="flex flex-col gap-2 flex-shrink-0">
-                        <button onclick="viewMatchDetails(${need.id}, ${match.donation.id})" 
+                        <button onclick="viewMatchDetails(${need.id}, ${match.donation.id})"
                                 class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-semibold">
                             <i class="fas fa-info-circle mr-1"></i> View Details
                         </button>
-                        
+
                         <!-- ✅ UPDATED: Now initiates match request -->
-                        <button onclick="contactBarangay(${need.id}, ${match.donation.id}, '${match.barangay.id}', '${escapeHtml(match.barangay.name)}', ${match.match_score}, ${match.can_fully_fulfill})" 
+                        <button onclick="contactBarangay(${need.id}, ${match.donation.id}, '${match.barangay.id || ''}', '${escapeHtml(match.barangay.name || 'Unknown')}', ${match.match_score || 0}, ${match.can_fully_fulfill || match.can_fulfill || false})"
                                 class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-semibold">
                             <i class="fas fa-handshake mr-1"></i> Initiate Match
                         </button>
@@ -1093,16 +1424,37 @@ function displayMyMatches(matches) {
                 </div>
             ` : ''}
 
-            <div class="flex gap-2 justify-end">
+            <div class="flex gap-2 justify-end items-center">
                 ${match.status === 'pending' ? `
-                    <button onclick="cancelMatch(${match.id})" 
+                    <span class="text-xs text-gray-500 mr-2">
+                        <i class="fas fa-info-circle"></i> Waiting for barangay response
+                    </span>
+                    <button onclick="cancelMatch(${match.id})"
                             class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-semibold">
                         <i class="fas fa-times mr-1"></i> Cancel Request
                     </button>
                 ` : ''}
-                
+
+                ${match.status === 'rejected' ? `
+                    <span class="text-xs text-red-600 mr-2">
+                        <i class="fas fa-ban"></i> Rejected by ${match.donating_barangay.name}
+                    </span>
+                ` : ''}
+
+                ${match.status === 'accepted' ? `
+                    <span class="text-xs text-green-600 mr-2">
+                        <i class="fas fa-check-circle"></i> Accepted - Awaiting completion
+                    </span>
+                ` : ''}
+
+                ${match.status === 'cancelled' ? `
+                    <span class="text-xs text-gray-600 mr-2">
+                        <i class="fas fa-ban"></i> Cancelled by LDRRMO
+                    </span>
+                ` : ''}
+
                 ${match.has_conversation ? `
-                    <button onclick="viewConversation(${match.id})" 
+                    <button onclick="viewConversation(${match.id})"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold">
                         <i class="fas fa-comments mr-1"></i> View Conversation
                     </button>
@@ -1144,29 +1496,273 @@ function filterMyMatches(status) {
 }
 
 async function cancelMatch(matchId) {
-    if (!confirm('Are you sure you want to cancel this match request?')) return;
-    
+    if (!confirm('⚠️ Are you sure you want to cancel this match request?\n\nThis action cannot be undone and both barangays will be notified.')) {
+        return;
+    }
+
+    // Show loading state
+    const cancelBtn = event.target.closest('button');
+    const originalText = cancelBtn.innerHTML;
+    cancelBtn.disabled = true;
+    cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Cancelling...';
+
     try {
         const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/cancel`, {
             method: 'POST'
         });
-        
+
         if (response.success) {
-            alert('✅ Match request cancelled successfully');
+            // Show success message
+            alert('✅ Match request cancelled successfully!\n\nBoth barangays have been notified.');
+            // Reload matches to update the list
             loadMyMatches();
         } else {
-            alert('❌ Error: ' + response.message);
+            // Show error message
+            alert('❌ Error: ' + (response.message || 'Failed to cancel match'));
+            // Restore button
+            cancelBtn.disabled = false;
+            cancelBtn.innerHTML = originalText;
         }
     } catch (error) {
         console.error('Error cancelling match:', error);
-        alert('Failed to cancel match. Please try again.');
+        alert('❌ Failed to cancel match. Please try again.\n\nError: ' + (error.message || 'Network error'));
+        // Restore button
+        cancelBtn.disabled = false;
+        cancelBtn.innerHTML = originalText;
     }
 }
 
-function viewConversation(matchId) {
-    alert('🔜 Conversation feature coming next!\n\nYou will be able to view the conversation between both barangays here.');
-    // This will be implemented in the next part
+// Conversation Modal
+let currentConversationMatchId = null;
+let conversationRefreshInterval = null;
+
+async function viewConversation(matchId) {
+    currentConversationMatchId = matchId;
+
+    // Open modal
+    const modal = document.getElementById('conversationModal');
+    modal.classList.remove('hidden');
+
+    // Load conversation
+    await loadConversation(matchId);
+
+    // Start auto-refresh every 5 seconds
+    if (conversationRefreshInterval) {
+        clearInterval(conversationRefreshInterval);
+    }
+    conversationRefreshInterval = setInterval(() => {
+        loadConversation(matchId, true); // silent refresh
+    }, 5000);
 }
+
+async function loadConversation(matchId, silent = false) {
+    try {
+        const messagesContainer = document.getElementById('conversationMessages');
+
+        if (!silent) {
+            messagesContainer.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                    <p class="text-gray-600">Loading conversation...</p>
+                </div>
+            `;
+        }
+
+        const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/conversation`);
+
+        if (!response.success) {
+            // No conversation yet
+            messagesContainer.innerHTML = `
+                <div class="text-center py-12">
+                    <i class="fas fa-comments-slash text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">No Conversation Yet</h3>
+                    <p class="text-gray-500 mb-4">
+                        The conversation will start once the donating barangay accepts the match request.
+                    </p>
+                    <p class="text-sm text-gray-400">
+                        As LDRRMO, you can monitor and participate in the conversation once it begins.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        // Update match info banner
+        const matchInfo = response.match;
+        document.getElementById('conversationMatchInfo').innerHTML = `
+            <div class="flex items-center justify-between flex-wrap gap-2 text-sm">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle text-blue-600"></i>
+                        <span class="font-semibold">${matchInfo.requesting_barangay}</span>
+                        <span class="text-gray-600">needs</span>
+                        <span class="font-semibold text-blue-700">${matchInfo.resource_need}</span>
+                    </div>
+                    <div class="text-gray-400">↔</div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-hands-helping text-green-600"></i>
+                        <span class="font-semibold">${matchInfo.donating_barangay}</span>
+                        <span class="text-gray-600">offers</span>
+                        <span class="font-semibold text-green-700">${matchInfo.donation}</span>
+                    </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(matchInfo.status)}">
+                    ${matchInfo.status.toUpperCase()}
+                </span>
+            </div>
+        `;
+
+        // Display messages
+        displayConversationMessages(response.conversation.messages);
+
+    } catch (error) {
+        console.error('Error loading conversation:', error);
+        document.getElementById('conversationMessages').innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Error Loading Conversation</h3>
+                <p class="text-gray-500 mb-4">${error.message || 'Failed to load conversation'}</p>
+                <button onclick="loadConversation(${matchId})"
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fas fa-redo mr-2"></i>Try Again
+                </button>
+            </div>
+        `;
+    }
+}
+
+function displayConversationMessages(messages) {
+    const container = document.getElementById('conversationMessages');
+
+    if (!messages || messages.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500">No messages yet. Start the conversation!</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Render messages
+    const html = messages.map(msg => {
+        const isLDRRMO = msg.sender_role === 'ldrrmo';
+        const isRequester = msg.sender_role === 'requester';
+        const isDonor = msg.sender_role === 'donor';
+
+        let bgColor = 'bg-gray-100';
+        let textColor = 'text-gray-900';
+        let iconColor = 'text-gray-600';
+        let icon = 'fas fa-user';
+
+        if (isLDRRMO) {
+            bgColor = 'bg-indigo-100 border border-indigo-300';
+            textColor = 'text-indigo-900';
+            iconColor = 'text-indigo-600';
+            icon = 'fas fa-shield-alt';
+        } else if (isRequester) {
+            bgColor = 'bg-blue-100';
+            textColor = 'text-blue-900';
+            iconColor = 'text-blue-600';
+            icon = 'fas fa-exclamation-circle';
+        } else if (isDonor) {
+            bgColor = 'bg-green-100';
+            textColor = 'text-green-900';
+            iconColor = 'text-green-600';
+            icon = 'fas fa-hands-helping';
+        }
+
+        return `
+            <div class="${bgColor} rounded-lg p-4 ${isLDRRMO ? 'border-l-4 border-indigo-600' : ''}">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${bgColor}">
+                        <i class="${icon} ${iconColor}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-semibold ${textColor}">${msg.sender_name}</span>
+                            <span class="text-xs text-gray-500">${msg.created_at}</span>
+                        </div>
+                        <p class="text-sm ${textColor} whitespace-pre-wrap">${escapeHtml(msg.message)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendConversationMessage(event) {
+    event.preventDefault();
+
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+
+    if (!message || !currentConversationMatchId) {
+        return;
+    }
+
+    // Disable input while sending
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    input.disabled = true;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+
+    try {
+        const response = await fetchAPI(`/api/ldrrmo/matches/${currentConversationMatchId}/messages`, {
+            method: 'POST',
+            body: JSON.stringify({ message })
+        });
+
+        if (response.success) {
+            // Clear input
+            input.value = '';
+
+            // Reload conversation
+            await loadConversation(currentConversationMatchId, true);
+        } else {
+            alert('❌ Error: ' + (response.message || 'Failed to send message'));
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('❌ Failed to send message. Please try again.');
+    } finally {
+        // Re-enable input
+        input.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        input.focus();
+    }
+}
+
+function closeConversationModal() {
+    const modal = document.getElementById('conversationModal');
+    modal.classList.add('hidden');
+    currentConversationMatchId = null;
+
+    // Stop auto-refresh
+    if (conversationRefreshInterval) {
+        clearInterval(conversationRefreshInterval);
+        conversationRefreshInterval = null;
+    }
+}
+
+// Close conversation modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('conversationModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeConversationModal();
+            }
+        });
+    }
+});
 
 // Helper functions
 function getStatusColor(status) {
@@ -1210,6 +1806,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadMyMatches();
         });
     }
+
 });
 
 async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
@@ -1274,6 +1871,335 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
                 closeMatchModal();
             }
         });
+
+        /**
+ * View Match Details Modal Functions
+ * Handles the "View Details" button functionality for resource matches
+ */
+
+// Global variables to store current match details
+let currentMatchDetails = null;
+
+/**
+ * View detailed match information
+ * Called when "View Details" button is clicked
+ * @param {number} needId - Resource need ID
+ * @param {number} donationId - Physical donation ID
+ */
+async function viewMatchDetails(needId, donationId) {
+    try {
+        // Show modal with loading state
+        openMatchDetailsModal();
+
+        // Fetch match details from API
+        const response = await fetchAPI(`/api/ldrrmo/match-details/${needId}/${donationId}`);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to load match details');
+        }
+
+        // Store match details globally (response already contains need, donation, match_analysis)
+        currentMatchDetails = response;
+
+        // Render the match details (pass response directly, not response.data)
+        renderMatchDetails(response);
+        
+    } catch (error) {
+        console.error('Error loading match details:', error);
+        
+        // Show error message
+        document.getElementById('matchDetailsContent').innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Failed to Load Details</h3>
+                <p class="text-gray-500 mb-4">${error.message}</p>
+                <button onclick="viewMatchDetails(${needId}, ${donationId})" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Open the match details modal
+ */
+function openMatchDetailsModal() {
+    const modal = document.getElementById('matchDetailsModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        
+        // Show loading state
+        document.getElementById('matchDetailsContent').innerHTML = `
+            <div class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <p class="text-gray-600">Loading match details...</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Close the match details modal
+ */
+function closeMatchDetailsModal() {
+    const modal = document.getElementById('matchDetailsModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        currentMatchDetails = null;
+    }
+}
+
+/**
+ * Render match details in the modal - SIMPLIFIED VERSION
+ *
+ * @param {Object} data - Match details data from API
+ */
+function renderMatchDetails(data) {
+    const { need, donation, match_analysis } = data;
+
+    // Calculate match score percentage and compatibility label
+    const matchScore = match_analysis.match_score || 0;
+    let compatibility = 'Poor Match';
+    let scoreClass = 'bg-red-100 text-red-700';
+
+    if (matchScore >= 80) {
+        compatibility = 'Excellent Match';
+        scoreClass = 'bg-green-100 text-green-700';
+    } else if (matchScore >= 60) {
+        compatibility = 'Good Match';
+        scoreClass = 'bg-blue-100 text-blue-700';
+    } else if (matchScore >= 40) {
+        compatibility = 'Fair Match';
+        scoreClass = 'bg-yellow-100 text-yellow-700';
+    }
+
+    // Get urgency badge class
+    const urgencyBadges = {
+        'critical': 'bg-red-100 text-red-700',
+        'high': 'bg-orange-100 text-orange-700',
+        'medium': 'bg-yellow-100 text-yellow-700',
+        'low': 'bg-green-100 text-green-700'
+    };
+    const urgencyClass = urgencyBadges[need.urgency] || urgencyBadges['low'];
+
+    // Build simplified HTML
+    const html = `
+        <!-- Match Score Overview -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Match Compatibility</h4>
+                    <span class="px-4 py-2 rounded-full text-sm font-bold ${scoreClass}">
+                        <i class="fas fa-star"></i>
+                        ${matchScore.toFixed(1)}% - ${compatibility}
+                    </span>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600 mb-1">Fulfillment Status</div>
+                    <div class="flex items-center gap-2">
+                        ${match_analysis.can_fully_fulfill
+                            ? '<i class="fas fa-check-circle text-green-600 text-xl"></i><span class="font-semibold text-green-700">Full Fulfillment</span>'
+                            : '<i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i><span class="font-semibold text-yellow-700">Partial Fulfillment</span>'
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Resource Need Card -->
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hand-holding-heart text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-gray-800">Resource Need</h4>
+                        <p class="text-sm text-gray-600">${need.barangay_name || 'Unknown'}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Category:</span>
+                        <span class="font-semibold">${need.category || 'General'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Quantity:</span>
+                        <span class="font-semibold">${need.quantity || 'N/A'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Urgency:</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${urgencyClass}">
+                            ${(need.urgency || 'low').toUpperCase()}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Status:</span>
+                        <span class="font-semibold">${need.status || 'pending'}</span>
+                    </div>
+                </div>
+
+                ${need.description ? `
+                <div class="mt-4 pt-4 border-t border-blue-300">
+                    <p class="text-sm text-gray-700">
+                        <i class="fas fa-info-circle text-blue-600 mr-1"></i>
+                        ${need.description}
+                    </p>
+                </div>
+                ` : ''}
+            </div>
+
+            <!-- Physical Donation Card -->
+            <div class="bg-green-50 border-2 border-green-200 rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-box-open text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-gray-800">Available Donation</h4>
+                        <p class="text-sm text-gray-600">${donation.barangay_name || 'Unknown'}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Category:</span>
+                        <span class="font-semibold">${donation.category || 'General'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Quantity:</span>
+                        <span class="font-semibold">${donation.quantity || 'N/A'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Status:</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                            ${donation.distribution_status || 'available'}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-600">Donor:</span>
+                        <span class="font-semibold">${donation.donor_name || 'Anonymous'}</span>
+                    </div>
+                </div>
+
+                ${donation.items_description ? `
+                <div class="mt-4 pt-4 border-t border-green-300">
+                    <p class="text-sm text-gray-700">
+                        <i class="fas fa-box text-green-600 mr-1"></i>
+                        ${donation.items_description}
+                    </p>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <!-- Action Info -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                Click "Initiate Match" below to send a request to both barangays
+            </p>
+        </div>
+    `;
+
+    // Update modal content
+    document.getElementById('matchDetailsContent').innerHTML = html;
+
+    // Update "Initiate Match" button
+    const initiateBtn = document.getElementById('initiateMatchFromDetails');
+    if (initiateBtn) {
+        initiateBtn.innerHTML = '<i class="fas fa-handshake mr-2"></i>Initiate Match';
+        initiateBtn.onclick = () => {
+            closeMatchDetailsModal();
+            contactBarangay(
+                need.id,
+                donation.id,
+                donation.barangay_id,
+                donation.barangay_name,
+                match_analysis.match_score,
+                match_analysis.can_fully_fulfill
+            );
+        };
+    }
+}
+
+/**
+ * Get CSS class for match score badge
+ * 
+ * @param {number} score - Match score percentage
+ * @returns {string} CSS class name
+ */
+function getMatchScoreBadgeClass(score) {
+    if (score >= 90) return 'match-score-excellent';
+    if (score >= 75) return 'match-score-good';
+    if (score >= 60) return 'match-score-fair';
+    return 'match-score-poor';
+}
+
+/**
+ * Get urgency badge CSS class
+ * 
+ * @param {string} urgency - Urgency level
+ * @returns {string} CSS class name
+ */
+function getUrgencyBadgeClass(urgency) {
+    const classes = {
+        'critical': 'bg-red-100 text-red-700',
+        'high': 'bg-orange-100 text-orange-700',
+        'medium': 'bg-yellow-100 text-yellow-700',
+        'low': 'bg-green-100 text-green-700',
+    };
+    return classes[urgency] || 'bg-gray-100 text-gray-700';
+}
+
+/**
+ * Get icon for match factor
+ * 
+ * @param {string} status - Factor status
+ * @returns {string} Font Awesome icon name
+ */
+function getFactorIcon(status) {
+    const icons = {
+        'match': 'check-circle',
+        'mismatch': 'times-circle',
+        'good': 'smile',
+        'moderate': 'meh',
+        'far': 'frown',
+        'urgent': 'exclamation-triangle',
+        'normal': 'info-circle',
+        'full': 'check-double',
+        'partial': 'minus-circle',
+    };
+    return icons[status] || 'circle';
+}
+
+/**
+ * Escape HTML to prevent XSS
+ * 
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('matchDetailsModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeMatchDetailsModal();
+            }
+        });
+    }
+});
 
         // ============================================
         // ANALYTICS CHARTS
@@ -1393,74 +2319,6 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
             } catch (error) {
                 console.error('Error loading analytics:', error);
                 showError('analytics-tab', 'Failed to load analytics data. Please try again.');
-            }
-        }
-
-        // ============================================
-        // FUNDRAISERS
-        // ============================================
-
-        async function loadFundraisers() {
-            const container = document.getElementById('fundraisersList');
-            if (!container) return;
-
-            try {
-                const fundraisers = await fetchAPI('/api/ldrrmo/fundraisers');
-
-                if (!Array.isArray(fundraisers) || fundraisers.length === 0) {
-                    container.innerHTML = '<div class="col-span-3 text-center py-8 text-gray-500">No active fundraisers</div>';
-                    return;
-                }
-
-                container.innerHTML = fundraisers.map(f => {
-                    const urgentNeeds = Array.isArray(f.urgent_needs) ? f.urgent_needs : [];
-                    const progress = Number(f.progress) || 0;
-
-                    return `
-                        <div class="border rounded-lg p-6 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-4">
-                                <h3 class="text-lg font-semibold">${escapeHtml(f.title)}</h3>
-                                <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">${escapeHtml(f.severity)}</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mb-2">
-                                <i class="fas fa-map-marker-alt mr-1"></i>${escapeHtml(f.barangay)}
-                            </p>
-                            <p class="text-sm text-gray-500 mb-4">${escapeHtml(f.description)}</p>
-
-                            <div class="mb-4">
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-semibold">${formatCurrency(f.raised)}</span>
-                                    <span class="text-gray-600">${formatCurrency(f.goal)}</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-green-600 h-2 rounded-full" style="width: ${Math.min(progress, 100)}%"></div>
-                                </div>
-                                <p class="text-xs text-gray-600 mt-1">${progress}% funded</p>
-                            </div>
-
-                            <div class="flex justify-between text-sm text-gray-600 mb-3">
-                                <span><i class="fas fa-users"></i> ${formatNumber(f.donors_count)} donors</span>
-                                <span><i class="fas fa-calendar"></i> ${formatNumber(f.days_active)} days</span>
-                            </div>
-
-                            ${urgentNeeds.length > 0 ? `
-                                <div class="border-t pt-3">
-                                    <p class="text-xs text-gray-600 mb-2">Urgent Needs:</p>
-                                    <div class="flex flex-wrap gap-1">
-                                        ${urgentNeeds.map(need => `
-                                            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                                                ${escapeHtml(need.type || need)}
-                                            </span>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                console.error('Error loading fundraisers:', error);
-                showError('fundraisersList', 'Failed to load fundraisers. Please try again.');
             }
         }
 
@@ -1832,8 +2690,8 @@ function getNotificationIconColor(type) {
     };
     return colors[type] || 'text-gray-600';
 }
-
 console.log('✅ Notification system loaded');
     </script>
+
 </body>
 </html>

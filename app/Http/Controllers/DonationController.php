@@ -358,42 +358,4 @@ class DonationController extends Controller
         return response()->json($stats);
     }
 
-    /**
-     * Get all urgent needs for resident dashboard
-     */
-   /**
- * Get all urgent needs for resident dashboard
- */
-public function getUrgentNeeds()
-{
-    $needs = ResourceNeed::with(['barangay'])
-        ->whereIn('urgency', ['high', 'critical'])
-        ->where('status', '!=', 'fulfilled')
-        ->orderByRaw("FIELD(urgency, 'critical', 'high')")
-        ->orderBy('created_at', 'desc')
-        ->limit(10)
-        ->get()
-        ->map(function($need) {
-            return [
-                'id' => $need->id,
-                'barangay_id' => $need->barangay_id,
-                'barangay_name' => $need->barangay->name,
-                'category' => $need->category,
-                'description' => $need->description,
-                'quantity' => $need->quantity,
-                'urgency' => $need->urgency,
-                'affected_families' => $need->barangay->affected_families,
-                'disaster_status' => $need->barangay->disaster_status,
-            ];
-        });
-
-    return response()->json($needs);
-}
-}
-        // Not found in either table
-        return response()->json([
-            'success' => false,
-            'message' => 'Donation not found with this tracking code. Please check the code and try again.',
-        ], 404);
-    }
 }
