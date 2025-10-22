@@ -11,6 +11,7 @@ use App\Http\Controllers\ResidentDashboardController;
 use App\Http\Controllers\PublicMapController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentController;
 
 // ==================== PUBLIC ROUTES ====================
 
@@ -79,7 +80,7 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
 
     Route::post('/api/ldrrmo/resource-needs/{needId}/verify', [CityDashboardController::class, 'verifyResourceNeed']);
     Route::post('/api/ldrrmo/resource-needs/{needId}/revert', [CityDashboardController::class, 'revertVerification']);
-    }); 
+    });
     Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::post('/api/ldrrmo/matches/initiate', [CityDashboardController::class, 'initiateMatch']);
     Route::get('/api/ldrrmo/matches', [CityDashboardController::class, 'getMyInitiatedMatches']);
@@ -116,7 +117,7 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // ==================== BDRRMC MATCHING ROUTES ====================
 Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
     // ... existing BDRRMC routes ...
-    
+
     // Incoming Match Requests (Donor Side)
     Route::get('/api/bdrrmc/matches/incoming', [BarangayDashboardController::class, 'getIncomingMatches']);
     Route::post('/api/bdrrmc/matches/{id}/respond', [BarangayDashboardController::class, 'respondToMatch']);
@@ -126,12 +127,12 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
 
     // Active Matches (Both Sides)
     Route::get('/api/bdrrmc/matches/active', [BarangayDashboardController::class, 'getActiveMatches']);
-    
+
     // Conversation & Messaging
     Route::get('/api/bdrrmc/matches/{id}/conversation', [BarangayDashboardController::class, 'getMatchConversation']);
     Route::post('/api/bdrrmc/matches/{id}/messages', [BarangayDashboardController::class, 'sendMessage']);
     Route::post('/api/bdrrmc/matches/{id}/messages/mark-read', [BarangayDashboardController::class, 'markMessagesAsRead']);
-    
+
     // Complete Match
     Route::post('/api/bdrrmc/matches/{id}/complete', [BarangayDashboardController::class, 'completeMatch']);
 });

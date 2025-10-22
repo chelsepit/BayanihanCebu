@@ -11,4 +11,4 @@
 // This file intentionally left empty - functions are already globally accessible
 // because they're defined with 'function' keyword (not const/let) in non-module scripts.
 
-console.log('✅ Globals initialized');
+console.log("✅ Globals initialized");
