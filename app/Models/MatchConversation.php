@@ -178,8 +178,8 @@ class MatchConversation extends Model
     public function addSystemMessage($message)
     {
         return $this->messages()->create([
-            'sender_user_id' => 'SYSTEM',
-            'sender_barangay_id' => 'SYSTEM',
+            'sender_user_id' => null,  // NULL for system messages
+            'sender_barangay_id' => null,  // NULL for system messages
             'message' => $message,
             'message_type' => 'system',
             'is_read_by_requester' => true,
