@@ -205,7 +205,10 @@ Route::middleware(['auth.check'])->group(function () {
 });
 
 // PUBLIC/ANONYMOUS donation route (no auth required)
-Route::post('/donations/create-payment-public', [DonationController::class, 'createPaymentPublic'])->name('donations.create-payment-public');
+// Rate limited to prevent spam (10 requests per minute per IP)
+Route::post('/donations/create-payment-public', [DonationController::class, 'createPaymentPublic'])
+    ->name('donations.create-payment-public')
+    ->middleware('throttle:10,1');
 
 // Public success/cancel routes (no auth required as user might lose session)
 Route::get('/donations/success', [DonationController::class, 'success'])->name('donations.success');
