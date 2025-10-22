@@ -25,24 +25,46 @@ class RecordDonationOnChain implements ShouldQueue
 
     public function handle(): void
     {
-        // Silent early returns for already processed donations
+        // Double-check if already recorded
         if ($this->donation->transaction_hash) {
+            Log::info('Donation already recorded on blockchain', [
+                'donation_id' => $this->donation->id,
+                'tx_hash' => $this->donation->transaction_hash
+            ]);
             return;
         }
 
+        // Verify payment is confirmed
         if ($this->donation->payment_status !== 'paid') {
+            Log::warning('Cannot record unpaid donation on blockchain', [
+                'donation_id' => $this->donation->id,
+                'payment_status' => $this->donation->payment_status
+            ]);
             return;
         }
 
         try {
             $scriptPath = base_path('blockchain-services/scripts/recordDonation.js');
 
+            // Check if script exists
             if (!file_exists($scriptPath)) {
-                throw new \Exception('Blockchain script not found: ' . $scriptPath);
+                Log::error('Blockchain script not found', [
+                    'donation_id' => $this->donation->id,
+                    'path' => $scriptPath
+                ]);
+                throw new \Exception('Blockchain script not found');
             }
 
+            Log::info('Starting blockchain recording', [
+                'donation_id' => $this->donation->id,
+                'tracking_code' => $this->donation->tracking_code,
+                'amount' => $this->donation->amount,
+                'attempt' => $this->attempts()
+            ]);
+
             // PRIVACY: Do NOT store personal data on blockchain
-            // Only store tracking code, amount, barangay ID, and donation type
+            // Only store tracking code, amount, barangay ID (hashed), and donation type
+            // Donor name is completely removed from blockchain for privacy
             $result = Process::path(base_path('blockchain-services'))
                 ->timeout(180) // 3 minutes timeout (allows for retry logic in Node.js script)
                 ->run([
@@ -50,7 +72,7 @@ class RecordDonationOnChain implements ShouldQueue
                     $scriptPath,
                     $this->donation->tracking_code,
                     (string) $this->donation->amount,
-                    $this->donation->barangay_id,
+                    $this->donation->barangay_id,  // Pass barangay ID (privacy enhanced in contract)
                     $this->donation->donation_type === 'monetary' ? 'monetary' : 'in-kind'
                 ]);
 
@@ -67,28 +89,37 @@ class RecordDonationOnChain implements ShouldQueue
                         'status' => 'confirmed'
                     ]);
 
-                    // Only log successful recordings (critical for audit trail)
-                    Log::info('Donation recorded on blockchain', [
+                    Log::info('✅ Donation successfully recorded on blockchain', [
                         'donation_id' => $this->donation->id,
                         'tracking_code' => $this->donation->tracking_code,
                         'tx_hash' => $txHash,
+                        'explorer_url' => "https://sepolia-blockscout.lisk.com/tx/{$txHash}"
                     ]);
                 } else {
-                    throw new \Exception('Transaction hash not found in script output');
+                    Log::error('Transaction hash not found in blockchain script output', [
+                        'donation_id' => $this->donation->id,
+                        'output' => $output
+                    ]);
+                    throw new \Exception('Transaction hash not found in output');
                 }
             } else {
-                throw new \Exception('Blockchain script failed: ' . $result->errorOutput());
+                $errorOutput = $result->errorOutput();
+                Log::error('Blockchain script execution failed', [
+                    'donation_id' => $this->donation->id,
+                    'exit_code' => $result->exitCode(),
+                    'error' => $errorOutput,
+                    'output' => $result->output()
+                ]);
+                throw new \Exception('Blockchain script failed: ' . $errorOutput);
             }
         } catch (\Exception $e) {
-            // Only log on final attempt to reduce log noise
-            if ($this->attempts() >= $this->tries) {
-                Log::error('Blockchain recording failed permanently', [
-                    'donation_id' => $this->donation->id,
-                    'tracking_code' => $this->donation->tracking_code,
-                    'attempts' => $this->attempts(),
-                    'error' => $e->getMessage()
-                ]);
-            }
+            Log::error('Blockchain recording failed', [
+                'donation_id' => $this->donation->id,
+                'tracking_code' => $this->donation->tracking_code,
+                'attempt' => $this->attempts(),
+                'max_tries' => $this->tries,
+                'error' => $e->getMessage()
+            ]);
 
             // Re-throw to trigger retry mechanism
             throw $e;
@@ -100,7 +131,14 @@ class RecordDonationOnChain implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        // Already logged in handle() method on final attempt
-        // This method is here for future admin notifications (email, Slack, etc.)
+        Log::error('❌ Blockchain recording failed permanently after all retries', [
+            'donation_id' => $this->donation->id,
+            'tracking_code' => $this->donation->tracking_code,
+            'attempts' => $this->attempts(),
+            'error' => $exception->getMessage()
+        ]);
+
+        // Optionally notify admin or update donation status
+        // You could send an email, Slack notification, etc.
     }
 }

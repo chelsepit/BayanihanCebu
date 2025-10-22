@@ -6,9 +6,11 @@ node_modules/
 /public/build
 /public/hot
 /public/storage
+/storage/framework
 /storage/framework/views
 /storage/framework/cache
 /storage/logs
+/storage/app
 /storage/*.key
 /storage/pail
 

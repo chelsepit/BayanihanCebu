@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running Pre-commit checks..."
+
+# Step 1: Auto-format JS, CSS, Vue, etc.
+npx prettier --write .
+
+# Step 2: Lint JavaScript/TypeScript
+npx eslint --max-warnings=0 . || (echo "❌ Fix lint errors before committing" && exit 1)
+
+# Step 3: Check for sensitive data leaks (optional - needs ggshield installed)
+# python -m ggshield secret scan repo . || true
+
+# Step 4: Run basic tests
+npm test
+
+echo "✅ All checks passed. Proceeding with commit..."  

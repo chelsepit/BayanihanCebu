@@ -1,18 +1,18 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(php artisan:*)",
-      "Bash(composer require:*)",
-      "WebSearch",
-      "Bash(composer show:*)",
-      "Bash(python -m json.tool:*)",
-      "Bash(node --version:*)",
-      "Bash(npm --version)",
-      "Bash(cat:*)",
-      "Bash(node scripts/recordDonation.js:*)",
-      "Bash(node:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
+    "permissions": {
+        "allow": [
+            "Bash(php artisan:*)",
+            "Bash(composer require:*)",
+            "WebSearch",
+            "Bash(composer show:*)",
+            "Bash(python -m json.tool:*)",
+            "Bash(node --version:*)",
+            "Bash(npm --version)",
+            "Bash(cat:*)",
+            "Bash(node scripts/recordDonation.js:*)",
+            "Bash(node:*)"
+        ],
+        "deny": [],
+        "ask": []
+    }
 }
