@@ -24,12 +24,6 @@
                             Track Donation
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('fundraisers') }}">
-                            <span class="material-symbols-outlined">volunteer_activism</span>
-                            Fundraisers
-                        </a>
-                    </li>
                 </ul>
             </div>
 
