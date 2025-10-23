@@ -13,15 +13,15 @@
 </head>
 <body>
 
-    <!-- Top Header - Dark Blue -->
-    <div class="bg-[#0D47A1] text-white px-6 py-4 flex justify-between items-center">
+    <!-- Top Header -->
+    <div class="bg-[#CA6702] text-white px-6 py-4 flex justify-between items-center">
         <div>
             <h1 class="text-xl font-semibold">BayanihanCebu - BDRRMC</h1>
-            <p class="text-sm text-blue-200">Barangay {{ $barangay->name ?? 'Lahug' }}</p>
+            <p class="text-sm opacity-90">Barangay {{ $barangay->name ?? 'Lahug' }}</p>
         </div>
         <div class="flex items-center gap-4">
             <div class="text-right">
-                <p class="text-sm text-blue-200">Logged in as</p>
+                <p class="text-sm opacity-90">Logged in as</p>
                 <p class="font-medium">{{ session('user_name') }}</p>
             </div>
             <form action="{{ route('logout') }}" method="POST">
@@ -82,8 +82,8 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-box text-blue-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-[#E0F2F1] rounded-lg flex items-center justify-center">
+                        <i class="fas fa-box text-[#005F73] text-xl"></i>
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Active Requests</p>
@@ -112,18 +112,18 @@
                 <button onclick="switchTab('online')" class="tab-btn">Online Donations</button>
                 <button onclick="switchTab('physical')" class="tab-btn">Donations Received</button>
                 <button onclick="showTab('match-requests')"
-                    class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
+                    class="tab-button px-6 py-3 text-gray-600 hover:text-[#CA6702] hover:border-[#CA6702] border-b-2 border-transparent transition font-semibold"
                     data-tab="match-requests">
                 <i class="fas fa-inbox mr-2"></i>Match Requests
                 <span id="incoming-requests-badge" class="hidden ml-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">0</span>
             </button>
             <button onclick="showTab('my-requests')"
-                    class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
+                    class="tab-button px-6 py-3 text-gray-600 hover:text-[#CA6702] hover:border-[#CA6702] border-b-2 border-transparent transition font-semibold"
                     data-tab="my-requests">
                 <i class="fas fa-paper-plane mr-2"></i>Pending Requests
             </button>
             <button onclick="showTab('active-matches')"
-                    class="tab-button px-6 py-3 text-gray-600 hover:text-indigo-600 hover:border-indigo-600 border-b-2 border-transparent transition font-semibold"
+                    class="tab-button px-6 py-3 text-gray-600 hover:text-[#CA6702] hover:border-[#CA6702] border-b-2 border-transparent transition font-semibold"
                     data-tab="active-matches">
                 <i class="fas fa-comments mr-2"></i>Active Matches
                 <span id="active-matches-badge" class="hidden ml-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">0</span>
