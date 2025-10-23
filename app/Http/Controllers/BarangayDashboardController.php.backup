@@ -9,7 +9,7 @@ use App\Models\ResourceNeed;
 use App\Models\PhysicalDonation;
 use App\Models\DistributionLog;
 use App\Models\Barangay;
-use App\Models\Donation;
+use App\Models\OnlineDonation;
 use App\Models\ResourceMatch;
 use App\Models\MatchConversation;
 use App\Models\MatchMessage;
@@ -42,13 +42,15 @@ class BarangayDashboardController extends Controller
         $physicalCount = PhysicalDonation::where('barangay_id', $barangayId)->count();
         $physicalValue = PhysicalDonation::where('barangay_id', $barangayId)->sum('estimated_value');
 
-        $onlineCount = Donation::where('barangay_id', $barangayId)->count();
-        $onlineValue = Donation::where('barangay_id', $barangayId)->sum('amount');
+        $onlineCount = OnlineDonation::where('target_barangay_id', $barangayId)
+            ->where('verification_status', 'verified')->count();
+        $onlineValue = OnlineDonation::where('target_barangay_id', $barangayId)
+            ->where('verification_status', 'verified')->sum('amount');
 
         $activeRequests = ResourceNeed::where('barangay_id', $barangayId)
             ->where('status', 'pending')->count();
 
-        $verifiedDonations = Donation::where('barangay_id', $barangayId)
+        $verifiedDonations = OnlineDonation::where('target_barangay_id', $barangayId)
             ->where('blockchain_status', 'confirmed')->count();
 
         $barangay = Barangay::where('barangay_id', $barangayId)->first();
@@ -619,7 +621,7 @@ public function completeMatch(Request $request, $matchId)
     {
         $barangayId = session('barangay_id');
 
-        $donations = Donation::where('barangay_id', $barangayId)
+        $donations = OnlineDonation::where('target_barangay_id', $barangayId)
             ->with(['verifier'])
             ->orderBy('created_at', 'desc')
             ->get()
@@ -627,7 +629,7 @@ public function completeMatch(Request $request, $matchId)
                 return [
                     'id' => $donation->id,
                     'tracking_code' => $donation->tracking_code,
-                    'donor_name' => $donation->donor_display_name,
+                    'donor_name' => $donation->getDonorDisplayName(),
                     'donor_email' => $donation->is_anonymous ? null : $donation->donor_email,
                     'amount' => $donation->amount,
                     'payment_method' => $donation->payment_method,

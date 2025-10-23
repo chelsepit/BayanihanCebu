@@ -20,45 +20,27 @@ class Donation extends Model
         'status',
         'transaction_hash',
         'paymongo_payment_id',
-        'payment_source_id',
-        'payment_session_id',
-        'payment_id',
-        'checkout_url',
-        'paymongo_payment_intent_id',
-        'payment_method',
+        'payment_source_id', // PayMongo source ID
+        'payment_session_id', // PayMongo checkout session ID
+        'payment_id', // PayMongo payment ID
+        'checkout_url', // PayMongo checkout URL
+        'paymongo_payment_intent_id', // Added
+        'payment_method', // Added
         'payment_status',
-        'paid_at',
+        'paid_at', // Added
         'donor_name',
         'donor_email',
         'donor_phone',
         'is_anonymous',
         'distributed_at',
         'distribution_notes',
-        // Fields from online_donations merge
-        'transaction_id',
-        'source_barangay_id',
-        'disaster_id',
-        'payment_proof_url',
-        'payment_reference',
-        'verification_status',
-        'verified_by',
-        'verified_at',
-        'rejection_reason',
-        'tx_hash',
-        'wallet_address',
-        'explorer_url',
-        'blockchain_tx_hash',
-        'blockchain_status',
-        'blockchain_recorded_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'is_anonymous' => 'boolean',
         'distributed_at' => 'datetime',
-        'paid_at' => 'datetime',
-        'verified_at' => 'datetime',
-        'blockchain_recorded_at' => 'datetime',
+        'paid_at' => 'datetime', // Added
         'items' => 'array',
     ];
 
@@ -92,21 +74,6 @@ class Donation extends Model
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-    public function disaster()
-    {
-        return $this->belongsTo(Disaster::class);
-    }
-
-    public function verifier()
-    {
-        return $this->belongsTo(User::class, 'verified_by', 'user_id');
-    }
-
-    public function sourceBarangay()
-    {
-        return $this->belongsTo(Barangay::class, 'source_barangay_id', 'barangay_id');
-    }
-
     public function getDonorDisplayNameAttribute()
     {
         if ($this->is_anonymous) {
@@ -125,16 +92,6 @@ class Donation extends Model
             'completed' => 'green',
             default => 'gray',
         };
-    }
-
-    public function isVerified()
-    {
-        return $this->verification_status === 'verified';
-    }
-
-    public function isBlockchainVerified()
-    {
-        return $this->blockchain_status === 'confirmed';
     }
 
     public function confirm($transactionHash = null)
@@ -180,15 +137,5 @@ class Donation extends Model
     public function scopeRecent($query, $days = 30)
     {
         return $query->where('created_at', '>=', now()->subDays($days));
-    }
-
-    public function scopeVerified($query)
-    {
-        return $query->where('verification_status', 'verified');
-    }
-
-    public function scopePendingVerification($query)
-    {
-        return $query->where('verification_status', 'pending');
     }
 }

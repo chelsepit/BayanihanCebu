@@ -1045,7 +1045,7 @@
                         </div>
                     </div>
 
-                    ${donation.blockchain_tx_hash && donation.blockchain_status === 'confirmed' ? `
+                    ${donation.transaction_hash ? `
                         <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #d1fae5; color: #065f46; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 12px;">
                             <i class="fas fa-shield-alt"></i>
                             Blockchain Verified
@@ -1070,7 +1070,7 @@
                         </div>
                     `}
 
-                    ${donation.blockchain_tx_hash && donation.blockchain_status === 'confirmed' ? `
+                    ${donation.transaction_hash ? `
                         <div style="margin-top: 12px; padding: 10px; background: #f0f9ff; border-left: 3px solid #0ea5e9; border-radius: 4px;">
                             <div style="display: flex; align-items: start; gap: 8px;">
                                 <i class="fas fa-info-circle" style="color: #0ea5e9; margin-top: 2px; font-size: 14px;"></i>
@@ -1081,7 +1081,7 @@
                                     <p style="font-size: 11px; color: #075985; margin: 0 0 8px 0; line-height: 1.4;">
                                         Your donation is permanently recorded on Lisk Sepolia blockchain for full transparency. Anyone can verify this transaction.
                                     </p>
-                                    <a href="${donation.explorer_url}"
+                                    <a href="https://sepolia-blockscout.lisk.com/tx/${donation.transaction_hash}"
                                        target="_blank"
                                        style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #0284c7; text-decoration: none; font-weight: 600; padding: 4px 8px; background: white; border-radius: 4px; border: 1px solid #bae6fd;">
                                         <i class="fas fa-external-link-alt" style="font-size: 10px;"></i>

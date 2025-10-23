@@ -23,6 +23,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'), // Disable SSL verification in debug mode
+                ])
                 ->post("{$this->baseUrl}/sources", [
                     'data' => [
                         'attributes' => [
@@ -57,6 +60,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'),
+                ])
                 ->get("{$this->baseUrl}/sources/{$sourceId}");
 
             if ($response->failed()) {
@@ -77,6 +83,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'),
+                ])
                 ->post("{$this->baseUrl}/payment_intents", [
                     'data' => [
                         'attributes' => [
@@ -112,6 +121,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'),
+                ])
                 ->get("{$this->baseUrl}/payments/{$paymentId}");
 
             if ($response->failed()) {
@@ -132,6 +144,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'), // Disable SSL verification in debug mode
+                ])
                 ->post("{$this->baseUrl}/checkout_sessions", [
                     'data' => [
                         'attributes' => [
@@ -171,6 +186,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'),
+                ])
                 ->get("{$this->baseUrl}/checkout_sessions/{$sessionId}");
 
             if ($response->failed()) {
@@ -191,6 +209,9 @@ class PaymongoService
     {
         try {
             $response = Http::withBasicAuth($this->secretKey, '')
+                ->withOptions([
+                    'verify' => !config('app.debug'),
+                ])
                 ->post("{$this->baseUrl}/webhooks", [
                     'data' => [
                         'attributes' => [
