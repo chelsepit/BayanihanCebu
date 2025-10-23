@@ -105,42 +105,71 @@ async function loadOnlineDonations() {
         const data = await response.json();
 
         if (!data.success || !data.donations || data.donations.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-globe text-5xl mb-4 text-gray-300"></i><p class="text-lg">No online donations yet.</p><p class="text-sm mt-2">Online donations from residents will appear here.</p></td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="6" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-globe text-5xl mb-4 text-gray-300"></i><p class="text-lg">No online donations yet.</p><p class="text-sm mt-2">Online donations from residents will appear here.</p></td></tr>';
             return;
         }
 
-        tbody.innerHTML = data.donations.map(donation => {
-            const amount = parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2});
-            const paymentMethod = donation.payment_method ? '<span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">' + donation.payment_method + '</span>' : '<span class="text-gray-400">-</span>';
-            
-            let verificationBadge = '';
-            if (donation.verification_status === 'verified') {
-                verificationBadge = '<span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800">Verified</span>';
-            } else if (donation.verification_status === 'pending') {
-                verificationBadge = '<span class="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">Pending</span>';
-            } else {
-                verificationBadge = '<span class="px-2 py-1 rounded text-xs bg-red-100 text-red-800">Rejected</span>';
-            }
-            
-            const blockchain = donation.blockchain_verified ? 
-                '<a href="' + donation.explorer_url + '" target="_blank" class="text-green-600 hover:text-green-800"><i class="fas fa-check-circle"></i> Verified</a>' : 
-                '<span class="text-gray-400"><i class="fas fa-clock"></i> Pending</span>';
+        tbody.innerHTML = data.donations
+            .map((donation) => {
+                const amount = parseFloat(donation.amount).toLocaleString(
+                    "en-PH",
+                    { minimumFractionDigits: 2 },
+                );
+                const paymentMethod = donation.payment_method
+                    ? '<span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">' +
+                      donation.payment_method +
+                      "</span>"
+                    : '<span class="text-gray-400">-</span>';
 
-            return '<tr class="border-b hover:bg-gray-50">' +
-                '<td class="px-4 py-3 text-sm">' + donation.created_at + '</td>' +
-                '<td class="px-4 py-3 text-sm">' + donation.donor_name + '</td>' +
-                '<td class="px-4 py-3 text-sm font-semibold">₱' + amount + '</td>' +
-                '<td class="px-4 py-3 text-sm">' + paymentMethod + '</td>' +
-                '<td class="px-4 py-3 text-sm">' + verificationBadge + '</td>' +
-                '<td class="px-4 py-3 text-sm">' + blockchain + '</td>' +
-                '</tr>';
-        }).join('');
+                let verificationBadge = "";
+                if (donation.verification_status === "verified") {
+                    verificationBadge =
+                        '<span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800">Verified</span>';
+                } else if (donation.verification_status === "pending") {
+                    verificationBadge =
+                        '<span class="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">Pending</span>';
+                } else {
+                    verificationBadge =
+                        '<span class="px-2 py-1 rounded text-xs bg-red-100 text-red-800">Rejected</span>';
+                }
+
+                const blockchain = donation.blockchain_verified
+                    ? '<a href="' +
+                      donation.explorer_url +
+                      '" target="_blank" class="text-green-600 hover:text-green-800"><i class="fas fa-check-circle"></i> Verified</a>'
+                    : '<span class="text-gray-400"><i class="fas fa-clock"></i> Pending</span>';
+
+                return (
+                    '<tr class="border-b hover:bg-gray-50">' +
+                    '<td class="px-4 py-3 text-sm">' +
+                    donation.created_at +
+                    "</td>" +
+                    '<td class="px-4 py-3 text-sm">' +
+                    donation.donor_name +
+                    "</td>" +
+                    '<td class="px-4 py-3 text-sm font-semibold">₱' +
+                    amount +
+                    "</td>" +
+                    '<td class="px-4 py-3 text-sm">' +
+                    paymentMethod +
+                    "</td>" +
+                    '<td class="px-4 py-3 text-sm">' +
+                    verificationBadge +
+                    "</td>" +
+                    '<td class="px-4 py-3 text-sm">' +
+                    blockchain +
+                    "</td>" +
+                    "</tr>"
+                );
+            })
+            .join("");
     } catch (error) {
         console.error("Error loading online donations:", error);
-        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-6 text-center text-red-500"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading donations. Please try again.</p></td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="6" class="px-4 py-6 text-center text-red-500"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading donations. Please try again.</p></td></tr>';
     }
 }
-
 
 /**
  * Views detailed information about a donation (redirects to distribution details)

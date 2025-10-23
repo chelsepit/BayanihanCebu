@@ -16,20 +16,16 @@
                 <div class="legend-title">📍 Urgency Levels</div>
                 <div class="legend-items">
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #3b82f6;"></span>
-                        <span>Low</span>
-                    </div>
-                    <div class="legend-item">
                         <span class="legend-dot" style="background: #f59e0b;"></span>
-                        <span>Medium</span>
+                        <span>Warning</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #f97316;"></span>
-                        <span>High</span>
+                        <span>Critical</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #ef4444;"></span>
-                        <span>Critical</span>
+                        <span>Emergency</span>
                     </div>
                 </div>
             </div>
