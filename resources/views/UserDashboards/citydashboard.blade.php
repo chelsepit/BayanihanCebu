@@ -46,6 +46,235 @@
         .modal.hidden {
             display: none;
         }
+
+        /* Map Section Styles */
+        .city-map-container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            height: 700px;
+            overflow: visible;
+            position: relative;
+            z-index: 1;
+        }
+
+        .city-map-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #cityBarangayMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Map Legend */
+        .city-map-legend-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .city-legend-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .city-legend-items {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .city-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .city-legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* Summary Panel */
+        .city-summary-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: visible;
+            height: 100%;
+        }
+
+        .city-summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .city-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .city-card-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #1D4ED8 0%, #1e40af 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* Stats Grid */
+        .city-stats-grid-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .city-stat-box {
+            text-align: center;
+            padding: 12px 8px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .city-stat-box .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .city-stat-box .stat-label {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Barangay List */
+        .city-barangay-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .city-barangay-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .city-barangay-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .city-barangay-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .city-barangay-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .city-barangay-item {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .city-barangay-item:hover {
+            border-color: #1D4ED8;
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.1);
+            transform: translateX(2px);
+        }
+
+        .city-barangay-info-summary {
+            flex: 1;
+        }
+
+        .city-barangay-name-summary {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .city-barangay-meta {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .city-status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .city-status-badge.safe {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .city-status-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .city-status-badge.critical {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .city-status-badge.emergency {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Ensure no horizontal scroll */
+        #map-tab {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
     </style>
 
 
@@ -70,35 +299,21 @@
                 </button>
             </form>
 
-            <div class="flex items-center gap-4">
-    <!-- Notification Bell -->
-    <div class="relative">
-        <button id="notification-bell"
-                onclick="toggleNotifications()"
-                class="relative p-2 text-gray-600 hover:text-indigo-600 transition">
-            <i class="fas fa-bell text-xl"></i>
-            <!-- Unread Badge -->
-            <span id="notification-badge"
-                  class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                0
-            </span>
-        </button>
+                <!-- Notifications Dropdown -->
+                <div id="notifications-dropdown"
+                     class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border max-h-96 overflow-hidden" style="z-index: 9999;">
 
-        <!-- Notifications Dropdown -->
-        <div id="notifications-dropdown"
-             class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-hidden">
-
-            <!-- Header -->
-            <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
-                <h3 class="font-bold text-gray-900">Notifications</h3>
-                <div class="flex items-center gap-2">
-                    <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
-                    <button onclick="markAllAsRead()"
-                            class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">
-                        Mark all read
-                    </button>
-                </div>
-            </div>
+                    <!-- Header -->
+                    <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+                        <h3 class="font-bold text-gray-900">Notifications</h3>
+                        <div class="flex items-center gap-2">
+                            <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
+                            <button onclick="markAllAsRead()"
+                                    class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">
+                                Mark all read
+                            </button>
+                        </div>
+                    </div>
 
             <!-- Filter Tabs -->
             <div class="flex border-b bg-gray-50">
@@ -294,24 +509,79 @@
 
         <!-- TAB 1: Interactive Map -->
         <div id="map-tab" class="tab-content active bg-white rounded-b-xl shadow-sm p-6">
-            <h2 class="text-2xl font-bold mb-4">Interactive Cebu Map</h2>
-            <div id="cityMap" class="rounded-lg border"></div>
-            <div class="mt-4 flex gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                    <span class="text-sm">Safe</span>
+            <h2 class="text-2xl font-bold mb-4">Live Disaster Map of Cebu</h2>
+            <p class="text-gray-600 text-sm mb-6">Real-time status of all barangays across Cebu City</p>
+
+            {{-- Map Container with Summary Panel --}}
+            <div class="city-map-container">
+                {{-- Interactive Map --}}
+                <div class="city-map-wrapper">
+                    <div id="cityBarangayMap"></div>
+
+                    {{-- Map Legend Overlay --}}
+                    <div class="city-map-legend-overlay">
+                        <div class="city-legend-title">📍 Disaster Status</div>
+                        <div class="city-legend-items">
+                            <div class="city-legend-item">
+                                <span class="city-legend-dot" style="background: #10b981;"></span>
+                                <span>Safe</span>
+                            </div>
+                            <div class="city-legend-item">
+                                <span class="city-legend-dot" style="background: #f59e0b;"></span>
+                                <span>Warning</span>
+                            </div>
+                            <div class="city-legend-item">
+                                <span class="city-legend-dot" style="background: #f97316;"></span>
+                                <span>Critical</span>
+                            </div>
+                            <div class="city-legend-item">
+                                <span class="city-legend-dot" style="background: #ef4444;"></span>
+                                <span>Emergency</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full bg-yellow-500"></div>
-                    <span class="text-sm">Warning</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full bg-orange-500"></div>
-                    <span class="text-sm">Critical</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full bg-red-500"></div>
-                    <span class="text-sm">Emergency</span>
+
+                {{-- Summary Panel --}}
+                <div class="city-summary-panel">
+                    {{-- City Statistics --}}
+                    <div class="city-summary-card">
+                        <div class="city-card-title">
+                            <div class="city-card-icon">📊</div>
+                            City Overview
+                        </div>
+                        <div class="city-stats-grid-summary">
+                            <div class="city-stat-box">
+                                <div class="stat-number" id="cityTotalDonations">₱0</div>
+                                <div class="stat-label">Total Donations</div>
+                            </div>
+                            <div class="city-stat-box">
+                                <div class="stat-number" id="cityAffectedFamilies">0</div>
+                                <div class="stat-label">Affected Families</div>
+                            </div>
+                            <div class="city-stat-box">
+                                <div class="stat-number" id="cityAffectedBarangays">0</div>
+                                <div class="stat-label">Barangays Affected</div>
+                            </div>
+                            <div class="city-stat-box">
+                                <div class="stat-number" id="cityTotalDonors">0</div>
+                                <div class="stat-label">Donors</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Barangays List (Needing Help + Safe) --}}
+                    <div class="city-summary-card" style="flex: 1; min-height: 0;">
+                        <div class="city-card-title">
+                            <div class="city-card-icon">⚠️</div>
+                            All Barangays Status
+                        </div>
+                        <div class="city-barangay-list" id="cityBarangayList">
+                            <div style="text-align: center; padding: 20px; color: #6b7280;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -785,30 +1055,10 @@
         // ============================================
 
         function initMap() {
-            const mapContainer = document.getElementById('cityMap');
-            if (!mapContainer) {
-                console.error('Map container not found');
-                return false;
-            }
-
-            if (cityMap) {
-                console.warn('Map already initialized');
-                return true;
-            }
-
-            try {
-                cityMap = L.map('cityMap').setView([10.3157, 123.8854], 12);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 18
-                }).addTo(cityMap);
-
-                return true;
-            } catch (error) {
-                console.error('Error initializing map:', error);
-                showError('cityMap', 'Failed to initialize map');
-                return false;
-            }
+            // Note: Map is now handled by city-dashboard-map.js
+            // This function is kept for compatibility but does nothing
+            console.log('initMap called - map initialization handled by city-dashboard-map.js');
+            return true;
         }
 
      async function loadMapData() {
@@ -873,6 +1123,10 @@
         console.error('Error loading map data:', error);
         showError('cityMap', 'Failed to load map data. Please refresh.');
     }
+    // Note: Map data loading is now handled by city-dashboard-map.js
+    // This function is kept for compatibility but does nothing
+    console.log('loadMapData called - map data loading handled by city-dashboard-map.js');
+    return;
 }
 
         // ============================================
@@ -3034,6 +3288,9 @@ function getNotificationIconColor(type) {
 }
 console.log('✅ Notification system loaded');
     </script>
+
+    <!-- City Dashboard Map Script -->
+    <script src="{{ asset('js/city/city-dashboard-map.js') }}"></script>
 
     </div> <!-- Close Main Content Area -->
     </div> <!-- Close Main Layout with Sidebar -->
