@@ -1064,4 +1064,148 @@ public function completeMatch(Request $request, $matchId)
             ], 500);
         }
     }
+
+    /**
+     * Verify online donation (monetary)
+     */
+    public function verifyOnlineDonation(Request $request, $donationId)
+    {
+        try {
+            $userId = session('user_id');
+            $barangayId = session('barangay_id');
+
+            $donation = Donation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            // Validate status
+            if ($donation->verification_status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This donation has already been processed'
+                ], 400);
+            }
+
+            $request->validate([
+                'action' => 'required|in:verify,reject',
+                'rejection_reason' => 'required_if:action,reject|max:500'
+            ]);
+
+            if ($request->action === 'verify') {
+                $donation->verification_status = 'verified';
+                $donation->verified_by = $userId; // Fixed: use user_id instead of barangay_id
+                $donation->verified_at = now();
+                $donation->status = 'confirmed';
+                $message = 'Donation verified successfully';
+            } else {
+                $donation->verification_status = 'rejected';
+                $donation->verified_by = $userId; // Fixed: use user_id instead of barangay_id
+                $donation->verified_at = now();
+                $donation->rejection_reason = $request->rejection_reason;
+                $message = 'Donation rejected';
+            }
+
+            $donation->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'donation' => $donation
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error verifying donation: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify donation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Record physical donation to blockchain
+     */
+    public function recordPhysicalDonationToBlockchain($donationId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $donation = PhysicalDonation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            // Record to blockchain
+            $result = $donation->recordToBlockchain();
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Error recording to blockchain: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record to blockchain',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify physical donation blockchain integrity
+     */
+    public function verifyPhysicalDonationBlockchain($donationId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $donation = PhysicalDonation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            // Verify blockchain integrity
+            $result = $donation->verifyBlockchainIntegrity();
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Error verifying blockchain: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify blockchain',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get physical donation verification status
+     */
+    public function getPhysicalDonationVerificationStatus($donationId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $donation = PhysicalDonation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            return response()->json([
+                'success' => true,
+                'verification_status' => $donation->verification_status,
+                'offchain_hash' => $donation->offchain_hash,
+                'onchain_hash' => $donation->onchain_hash,
+                'verified_at' => $donation->verified_at,
+                'last_check' => $donation->last_verification_check,
+                'blockchain_status' => $donation->blockchain_status,
+                'blockchain_tx_hash' => $donation->blockchain_tx_hash
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get verification status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

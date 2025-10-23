@@ -6,15 +6,28 @@ contract DonationRecorder {
     bool public paused = false;
 
     mapping(address => bool) public admins;
+    mapping(string => DonationProof) private donations;
 
     enum DonationType { Money, Goods }
+
+    struct DonationProof {
+        string trackingCode;
+        DonationType donationType;
+        string offChainHash;
+        uint256 timestamp;
+        address donor;
+        uint256 amount;
+        string barangay;
+    }
 
     event DonationRecorded(
         string trackingCode,
         uint256 amount,
-        string barangayId,
+        string barangay,
         DonationType donationType,
-        uint256 timestamp
+        address donor,
+        uint256 timestamp,
+        string offChainHash
     );
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -43,21 +56,40 @@ contract DonationRecorder {
 
     function recordDonation(
         string memory trackingCode,
+        DonationType donationType,
+        string memory offChainHash,
         uint256 amount,
-        string memory barangayId,
-        DonationType donationType
+        string memory barangay
     ) public onlyAdmin whenNotPaused {
         require(bytes(trackingCode).length > 0, "Tracking code required");
-        require(bytes(barangayId).length > 0, "Barangay ID required");
+        require(bytes(barangay).length > 0, "Barangay required");
         require(amount > 0, "Amount must be greater than 0");
+        require(donations[trackingCode].timestamp == 0, "Donation already recorded");
+
+        donations[trackingCode] = DonationProof({
+            trackingCode: trackingCode,
+            donationType: donationType,
+            offChainHash: offChainHash,
+            timestamp: block.timestamp,
+            donor: msg.sender,
+            amount: amount,
+            barangay: barangay
+        });
 
         emit DonationRecorded(
             trackingCode,
             amount,
-            barangayId,
+            barangay,
             donationType,
-            block.timestamp
+            msg.sender,
+            block.timestamp,
+            offChainHash
         );
+    }
+
+    function getDonation(string memory trackingCode) public view returns (DonationProof memory) {
+        require(donations[trackingCode].timestamp != 0, "Donation not found");
+        return donations[trackingCode];
     }
 
     function transferOwnership(address newOwner) public onlyOwner {

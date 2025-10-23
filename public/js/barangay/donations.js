@@ -106,7 +106,7 @@ async function loadOnlineDonations() {
 
         if (!data.success || !data.donations || data.donations.length === 0) {
             tbody.innerHTML =
-                '<tr><td colspan="6" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-globe text-5xl mb-4 text-gray-300"></i><p class="text-lg">No online donations yet.</p><p class="text-sm mt-2">Online donations from residents will appear here.</p></td></tr>';
+                '<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-globe text-5xl mb-4 text-gray-300"></i><p class="text-lg">No online donations yet.</p><p class="text-sm mt-2">Online donations from residents will appear here.</p></td></tr>';
             return;
         }
 
@@ -140,6 +140,15 @@ async function loadOnlineDonations() {
                       '" target="_blank" class="text-green-600 hover:text-green-800"><i class="fas fa-check-circle"></i> Verified</a>'
                     : '<span class="text-gray-400"><i class="fas fa-clock"></i> Pending</span>';
 
+                let actionButton = '';
+                if (donation.verification_status === 'pending') {
+                    actionButton = '<button onclick="openVerificationModal(' + donation.id + ')" class="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>';
+                } else if (donation.verification_status === 'verified') {
+                    actionButton = '<span class="text-xs text-gray-500">Verified</span>';
+                } else {
+                    actionButton = '<span class="text-xs text-red-500">Rejected</span>';
+                }
+
                 return (
                     '<tr class="border-b hover:bg-gray-50">' +
                     '<td class="px-4 py-3 text-sm">' +
@@ -160,6 +169,9 @@ async function loadOnlineDonations() {
                     '<td class="px-4 py-3 text-sm">' +
                     blockchain +
                     "</td>" +
+                    '<td class="px-4 py-3 text-sm">' +
+                    actionButton +
+                    "</td>" +
                     "</tr>"
                 );
             })
@@ -167,7 +179,63 @@ async function loadOnlineDonations() {
     } catch (error) {
         console.error("Error loading online donations:", error);
         tbody.innerHTML =
-            '<tr><td colspan="6" class="px-4 py-6 text-center text-red-500"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading donations. Please try again.</p></td></tr>';
+            '<tr><td colspan="7" class="px-4 py-6 text-center text-red-500"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading donations. Please try again.</p></td></tr>';
+    }
+}
+
+// Verification Modal Functions
+let currentDonationId = null;
+
+function openVerificationModal(donationId) {
+    currentDonationId = donationId;
+    document.getElementById('verificationModal').classList.remove('hidden');
+}
+
+function closeVerificationModal() {
+    currentDonationId = null;
+    document.getElementById('verificationModal').classList.add('hidden');
+    document.getElementById('rejectionForm').classList.add('hidden');
+    document.getElementById('rejectionReason').value = '';
+}
+
+function showRejectionForm() {
+    document.getElementById('rejectionForm').classList.remove('hidden');
+}
+
+function hideRejectionForm() {
+    document.getElementById('rejectionForm').classList.add('hidden');
+    document.getElementById('rejectionReason').value = '';
+}
+
+async function confirmVerification(action) {
+    if (!currentDonationId) return;
+
+    try {
+        const data = { action };
+        if (action === 'reject') {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection');
+                return;
+            }
+            data.rejection_reason = reason;
+        }
+
+        const response = await fetchAPI(`/api/bdrrmc/donations/${currentDonationId}/verify`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+
+        if (response.success) {
+            alert(response.message);
+            closeVerificationModal();
+            loadOnlineDonations(); // Reload the list
+        } else {
+            alert('Error: ' + response.message);
+        }
+    } catch (error) {
+        console.error('Error verifying donation:', error);
+        alert('Failed to verify donation. Please try again.');
     }
 }
 

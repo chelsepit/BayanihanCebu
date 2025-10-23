@@ -145,6 +145,14 @@ Route::middleware(['auth.check', 'role:bdrrmc'])->group(function () {
 
     // Complete Match
     Route::post('/api/bdrrmc/matches/{id}/complete', [BarangayDashboardController::class, 'completeMatch']);
+
+    // Online Donation Verification
+    Route::post('/api/bdrrmc/donations/{id}/verify', [BarangayDashboardController::class, 'verifyOnlineDonation']);
+
+    // Physical Donation Blockchain
+    Route::post('/api/bdrrmc/physical-donations/{id}/record-blockchain', [BarangayDashboardController::class, 'recordPhysicalDonationToBlockchain']);
+    Route::post('/api/bdrrmc/physical-donations/{id}/verify-blockchain', [BarangayDashboardController::class, 'verifyPhysicalDonationBlockchain']);
+    Route::get('/api/bdrrmc/physical-donations/{id}/verification-status', [BarangayDashboardController::class, 'getPhysicalDonationVerificationStatus']);
 });
 });
 
