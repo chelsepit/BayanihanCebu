@@ -1025,7 +1025,7 @@ public function getMatchConversation($matchId)
             } elseif ($message->sender_barangay_id === $match->donating_barangay_id) {
                 $senderName = $match->donatingBarangay->name . ' (Donating)';
                 $senderRole = 'donor';
-            } elseif ($message->sender_user_id) {
+            } elseif ($message->sender_user_id && !$message->sender_barangay_id) {
                 $senderName = 'LDRRMO';
                 $senderRole = 'ldrrmo';
             }
@@ -1033,8 +1033,10 @@ public function getMatchConversation($matchId)
             return [
                 'id' => $message->id,
                 'message' => $message->message,
+                'message_type' => $message->message_type,
                 'sender_name' => $senderName,
                 'sender_role' => $senderRole,
+                'is_mine' => $senderRole === 'ldrrmo', // LDRRMO's own messages
                 'created_at' => $message->created_at->format('M d, Y h:i A'),
                 'timestamp' => $message->created_at->toIso8601String(),
             ];

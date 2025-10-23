@@ -812,7 +812,7 @@
         </div>
 
         <!-- Chat Body (Messages) -->
-        <div class="chat-body flex-1 overflow-y-auto p-3 bg-gray-50 space-y-2" style="height: 400px;">
+        <div class="chat-body overflow-y-auto p-3 bg-gray-50 space-y-2" style="height: 400px; max-height: 400px; min-height: 400px;">
             <div class="text-center py-12">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
                 <p class="text-xs text-gray-600">Loading conversation...</p>
@@ -975,11 +975,15 @@
                     }
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // Try to get error message from response body
+                    const errorMessage = data.message || data.error || response.statusText;
+                    throw new Error(errorMessage);
                 }
 
-                return await response.json();
+                return data;
             } catch (error) {
                 console.error(`API Error (${url}):`, error);
                 throw error;
@@ -1084,67 +1088,6 @@
         }
 
      async function loadMapData() {
-    if (!cityMap && !initMap()) {
-        return;
-    }
-
-    try {
-        const barangays = await fetchAPI('/api/ldrrmo/barangays-map');
-
-        barangays.forEach(barangay => {
-            const colorMap = {
-                'safe': '#10b981',
-                'warning': '#eab308',
-                'critical': '#f97316',
-                'emergency': '#ef4444'
-            };
-            const color = colorMap[barangay.status] || '#9ca3af';
-
-            const marker = L.circleMarker([barangay.lat, barangay.lng], {
-                radius: 8,
-                fillColor: color,
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(cityMap);
-
-            // Build needs list from resource_needs table
-            let needsHtml = '';
-            if (barangay.status !== 'safe' && barangay.resource_needs && barangay.resource_needs.length > 0) {
-                needsHtml = '<div class="mt-2"><strong>Resource Needs:</strong><ul class="mt-1 text-sm">';
-
-                // Group by urgency or show top 3
-                barangay.resource_needs.slice(0, 3).forEach(need => {
-                    const urgencyBadge = need.urgency === 'critical' ? '🔴' :
-                                       need.urgency === 'high' ? '🟠' :
-                                       need.urgency === 'medium' ? '🟡' : '🔵';
-                    needsHtml += `<li>${urgencyBadge} ${escapeHtml(need.category)}: ${escapeHtml(need.quantity)}</li>`;
-                });
-
-                if (barangay.resource_needs.length > 3) {
-                    needsHtml += `<li class="text-gray-600">...and ${barangay.resource_needs.length - 3} more</li>`;
-                }
-                needsHtml += '</ul></div>';
-            }
-
-            marker.bindPopup(`
-                <div style="min-width: 250px;">
-                    <strong style="font-size: 16px;">${escapeHtml(barangay.name)}</strong><br>
-                    <span class="px-2 py-1 text-xs rounded" style="background-color: ${color}20; color: ${color}; font-weight: 600;">
-                        ${escapeHtml(String(barangay.status).toUpperCase())}
-                    </span><br>
-                    <div class="mt-2">
-                        <strong>Affected:</strong> ${formatNumber(barangay.affected_families)} families
-                    </div>
-                    ${needsHtml}
-                </div>
-            `);
-        });
-    } catch (error) {
-        console.error('Error loading map data:', error);
-        showError('cityMap', 'Failed to load map data. Please refresh.');
-    }
     // Note: Map data loading is now handled by city-dashboard-map.js
     // This function is kept for compatibility but does nothing
     console.log('loadMapData called - map data loading handled by city-dashboard-map.js');
@@ -2196,6 +2139,14 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
         // Get the need details to extract quantity
         const needData = currentResourceNeeds.find(n => n.id === needId);
 
+        console.log('Initiating match with data:', {
+            resource_need_id: needId,
+            physical_donation_id: donationId,
+            match_score: matchScore,
+            quantity_requested: needData?.quantity || '',
+            can_fully_fulfill: canFullyFulfill
+        });
+
         const response = await fetchAPI('/api/ldrrmo/matches/initiate', {
             method: 'POST',
             body: JSON.stringify({
@@ -2229,7 +2180,9 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
         }
     } catch (error) {
         console.error('Error initiating match:', error);
-        alert('❌ Failed to initiate match request. Please try again.');
+        // Show more detailed error message if available
+        const errorMsg = error.message || 'Failed to initiate match request. Please try again.';
+        alert('❌ ' + errorMsg);
     }
 }
 
@@ -3364,7 +3317,7 @@ console.log('✅ Notification system loaded');
             </div>
 
             <!-- Chat Body (Messages) -->
-            <div class="chat-body flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+            <div class="chat-body overflow-y-auto p-4 space-y-3 bg-gray-50" style="height: 400px; max-height: 400px; min-height: 400px;">
                 <!-- Messages will be loaded here -->
             </div>
 
@@ -3494,7 +3447,7 @@ console.log('✅ Notification system loaded');
         }
 
         // Match Success Modal System
-        function showMatchSuccessModal(matchData) {
+        window.showMatchSuccessModal = function(matchData) {
             const modal = document.getElementById('matchSuccessModal');
 
             // Update match ID
@@ -3508,7 +3461,7 @@ console.log('✅ Notification system loaded');
             modal.classList.remove('hidden');
         }
 
-        function closeMatchSuccessModal() {
+        window.closeMatchSuccessModal = function() {
             document.getElementById('matchSuccessModal').classList.add('hidden');
         }
 
@@ -3673,16 +3626,26 @@ console.log('✅ Notification system loaded');
 
             // Render messages (Messenger-style bubbles)
             const html = messages.map(msg => {
-                const isLDRRMO = msg.sender_role === 'ldrrmo';
-                const isRequester = msg.sender_role === 'requester';
-                const isDonor = msg.sender_role === 'donor';
+                // Handle system messages differently
+                if (msg.message_type === 'system') {
+                    return `
+                        <div class="flex justify-center mb-3">
+                            <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
+                                <p class="text-xs text-gray-600 text-center">${escapeHtml(msg.message)}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Use is_mine flag from API to determine if message is from current user
+                const isMe = msg.is_mine === true;
 
                 let bgColor, textColor, initial;
-                if (isLDRRMO) {
+                if (msg.sender_role === 'ldrrmo') {
                     bgColor = 'bg-indigo-600';
                     textColor = 'text-white';
                     initial = 'L';
-                } else if (isRequester) {
+                } else if (msg.sender_role === 'requester') {
                     bgColor = 'bg-blue-500';
                     textColor = 'text-white';
                     initial = 'R';
@@ -3692,8 +3655,8 @@ console.log('✅ Notification system loaded');
                     initial = 'D';
                 }
 
-                // LDRRMO messages on the right, others on the left (Messenger style)
-                if (isLDRRMO) {
+                // My messages on the right, others on the left (Messenger style)
+                if (isMe) {
                     return `
                         <div class="flex items-start gap-2 justify-end mb-3">
                             <div class="flex flex-col items-end max-w-[85%]">

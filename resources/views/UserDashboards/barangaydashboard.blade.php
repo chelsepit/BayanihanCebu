@@ -156,9 +156,9 @@
 
     <!-- Chat Box Template -->
     <template id="chat-box-template">
-        <div class="chat-box bg-white rounded-t-lg shadow-2xl w-80 flex flex-col pointer-events-auto" style="height: 450px;">
+        <div class="chat-box bg-white rounded-t-lg shadow-2xl w-80 flex flex-col pointer-events-auto" style="height: 500px;">
             <!-- Chat Header -->
-            <div class="chat-header bg-[#CA6702] text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+            <div class="chat-header bg-[#CA6702] text-white px-4 py-3 rounded-t-lg flex items-center justify-between flex-shrink-0">
                 <div class="flex-1 min-w-0">
                     <h3 class="chat-title font-bold text-sm truncate">Loading...</h3>
                     <p class="chat-subtitle text-xs opacity-90 truncate">Conversation</p>
@@ -179,7 +179,7 @@
             </div>
 
             <!-- Chat Footer (Input) -->
-            <div class="chat-footer border-t bg-white px-3 py-3">
+            <div class="chat-footer border-t bg-white px-3 py-3 flex-shrink-0">
                 <form onsubmit="sendChatMessage(event, this)" class="flex items-center gap-2">
                     <input type="text"
                            class="message-input flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#CA6702]"
