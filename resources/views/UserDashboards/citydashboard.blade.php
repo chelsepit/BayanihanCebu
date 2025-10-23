@@ -293,6 +293,21 @@
                 <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
             </div>
 
+            <!-- Messages Toggle Button -->
+            <div class="relative">
+                <button id="conversations-toggle"
+                        onclick="toggleConversationsSidebar()"
+                        class="relative bg-white/20 hover:bg-white/30 p-3 rounded-lg transition"
+                        title="Messages">
+                    <i class="fas fa-comments text-xl"></i>
+                    <!-- Active Conversations Badge -->
+                    <span id="conversations-badge-header"
+                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        0
+                    </span>
+                </button>
+            </div>
+
             <!-- Notification Bell -->
             <div class="relative">
                 <button id="notification-bell"
@@ -1419,7 +1434,8 @@
 
         // Revert verification status
         async function revertVerification(needId) {
-            if (!confirm('Are you sure you want to revert this to pending status?')) return;
+            const confirmed = await confirm('Are you sure you want to revert this to pending status?');
+            if (!confirmed) return;
 
             try {
                 const response = await fetchAPI(`/api/ldrrmo/resource-needs/${needId}/revert`, {
@@ -1640,7 +1656,7 @@ function updateMyMatchesCounts(matches) {
         (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
     ).length;
 
-    const conversationBadge = document.getElementById('conversations-badge');
+    const conversationBadge = document.getElementById('conversations-badge-header');
     if (conversationBadge) {
         if (activeMatches > 0) {
             conversationBadge.textContent = activeMatches;
@@ -1825,7 +1841,8 @@ function filterMyMatches(status) {
 }
 
 async function cancelMatch(matchId) {
-    if (!confirm('⚠️ Are you sure you want to cancel this match request?\n\nThis action cannot be undone and both barangays will be notified.')) {
+    const confirmed = await confirm('⚠️ Are you sure you want to cancel this match request?\n\nThis action cannot be undone and both barangays will be notified.');
+    if (!confirmed) {
         return;
     }
 
@@ -2163,7 +2180,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
     // Show confirmation modal
-    const confirmed = confirm(
+    const confirmed = await confirm(
         `🤝 Initiate Match Request\n\n` +
         `You are about to connect:\n` +
         `• Requesting Barangay: (with this need)\n` +
@@ -2191,17 +2208,15 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
         });
 
         if (response.success) {
-            alert(
-                `✅ Match Request Sent!\n\n` +
-                `Match ID: ${response.data.match_id}\n` +
-                `Status: ${response.data.status}\n\n` +
-                `Both barangays have been notified:\n` +
-                `• ${response.data.requesting_barangay} (FYI)\n` +
-                `• ${response.data.donating_barangay} (Action Required)\n\n` +
-                `You can track this match in the "My Matches" tab.`
-            );
+            // Show custom match success modal
+            showMatchSuccessModal({
+                match_id: response.data.match_id,
+                status: response.data.status,
+                requesting_barangay: response.data.requesting_barangay,
+                donating_barangay: response.data.donating_barangay
+            });
 
-            // Close the modal and refresh
+            // Close the suggested matches modal
             closeMatchModal();
 
             // Refresh the resource needs list
@@ -2210,7 +2225,7 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
             // TODO: Update notification bell count
             // loadNotifications();
         } else {
-            alert('❌ Error: ' + response.message);
+            showAlert('Error: ' + response.message, '❌ Error');
         }
     } catch (error) {
         console.error('Error initiating match:', error);
@@ -2890,7 +2905,7 @@ async function updateConversationBadge() {
             (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
         ).length;
 
-        const badge = document.getElementById('conversations-badge');
+        const badge = document.getElementById('conversations-badge-header');
         if (!badge) return;
 
         if (activeConversations > 0) {
@@ -3301,6 +3316,167 @@ console.log('✅ Notification system loaded');
 
     </div> <!-- Close Main Content Area -->
     </div> <!-- Close Main Layout with Sidebar -->
+
+    <!-- Simple Alert Modal -->
+    <div id="alertModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div id="alertModalHeader" class="px-6 py-4 border-b">
+                <h3 id="alertModalTitle" class="text-lg font-bold text-gray-900"></h3>
+            </div>
+            <div class="px-6 py-4">
+                <p id="alertModalMessage" class="text-gray-700 whitespace-pre-wrap"></p>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3">
+                <button id="alertModalCancelBtn" onclick="closeAlert(false)"
+                        class="hidden px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Cancel
+                </button>
+                <button id="alertModalOkBtn" onclick="closeAlert(true)"
+                        class="px-4 py-2 bg-[#CA6702] text-white rounded-lg hover:bg-[#BB3E03] transition">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Success Modal -->
+    <div id="matchSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <!-- Success Icon -->
+            <div class="flex justify-center pt-8 pb-4">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="text-center px-6 pb-4">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Match Request Sent!</h2>
+                <p class="text-gray-600 text-sm">Both barangays have been notified</p>
+            </div>
+
+            <!-- Details Box -->
+            <div class="px-6 pb-4">
+                <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Match ID:</span>
+                        <span id="matchSuccessId" class="font-bold text-gray-900">#7</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Status:</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barangays List -->
+            <div class="px-6 pb-4">
+                <div class="space-y-2">
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p id="matchSuccessRequesting" class="text-sm font-semibold text-gray-900">Basak San Nicolas</p>
+                            <p class="text-xs text-gray-500">(Notified)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p id="matchSuccessDonating" class="text-sm font-semibold text-gray-900">Apas</p>
+                            <p class="text-xs text-gray-500">(Action Required)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Banner -->
+            <div class="px-6 pb-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="text-xs text-blue-800">Track this match in the "My Matches" tab</p>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="px-6 pb-6">
+                <button onclick="closeMatchSuccessModal()"
+                        class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-base">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Alert Modal System
+        let alertCallback = null;
+
+        function showAlert(message, title = 'Notice', showCancel = false) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('alertModal');
+                const titleEl = document.getElementById('alertModalTitle');
+                const messageEl = document.getElementById('alertModalMessage');
+                const cancelBtn = document.getElementById('alertModalCancelBtn');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                if (showCancel) {
+                    cancelBtn.classList.remove('hidden');
+                } else {
+                    cancelBtn.classList.add('hidden');
+                }
+
+                modal.classList.remove('hidden');
+                alertCallback = resolve;
+            });
+        }
+
+        function closeAlert(result) {
+            document.getElementById('alertModal').classList.add('hidden');
+            if (alertCallback) {
+                alertCallback(result);
+                alertCallback = null;
+            }
+        }
+
+        // Match Success Modal System
+        function showMatchSuccessModal(matchData) {
+            const modal = document.getElementById('matchSuccessModal');
+
+            // Update match ID
+            document.getElementById('matchSuccessId').textContent = `#${matchData.match_id}`;
+
+            // Update barangay names
+            document.getElementById('matchSuccessRequesting').textContent = matchData.requesting_barangay;
+            document.getElementById('matchSuccessDonating').textContent = matchData.donating_barangay;
+
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeMatchSuccessModal() {
+            document.getElementById('matchSuccessModal').classList.add('hidden');
+        }
+
+        // Override native alert with modal
+        window.alert = function(message) {
+            return showAlert(message);
+        };
+
+        // Override native confirm with modal
+        window.confirm = function(message) {
+            return showAlert(message, 'Confirm', true);
+        };
+    </script>
 
 </body>
 </html>~
