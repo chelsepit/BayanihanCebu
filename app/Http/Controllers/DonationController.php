@@ -97,10 +97,11 @@ class DonationController extends Controller
                 ],
             ]);
 
-            // Save checkout session ID
+            // Save checkout session ID and payment method
             $donation->update([
                 'payment_session_id' => $checkoutData['id'],
                 'checkout_url' => $checkoutData['attributes']['checkout_url'],
+                'payment_method' => $validated['payment_method'], // FIXED: Save payment method!
             ]);
 
             DB::commit();
@@ -109,6 +110,7 @@ class DonationController extends Controller
                 'donation_id' => $donation->id,
                 'tracking_code' => $trackingCode,
                 'session_id' => $checkoutData['id'],
+                'payment_method' => $validated['payment_method'], // Log payment method
             ]);
 
             return response()->json([
@@ -204,10 +206,11 @@ class DonationController extends Controller
                 ],
             ]);
 
-            // Save checkout session ID
+            // Save checkout session ID and payment method
             $donation->update([
                 'payment_session_id' => $checkoutData['id'],
                 'checkout_url' => $checkoutData['attributes']['checkout_url'],
+                'payment_method' => $validated['payment_method'], // FIXED: Save payment method!
             ]);
 
             DB::commit();
@@ -216,6 +219,7 @@ class DonationController extends Controller
                 'donation_id' => $donation->id,
                 'tracking_code' => $trackingCode,
                 'session_id' => $checkoutData['id'],
+                'payment_method' => $validated['payment_method'], // Log payment method
             ]);
 
             return response()->json([

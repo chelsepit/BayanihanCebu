@@ -44,8 +44,18 @@ Route::get('/donation/track', function () {
 // Track donation (POST)
 Route::post('/donation/track', [PublicMapController::class, 'trackDonation'])->name('donation.track');
 
-// Donation Routes
+// Donation Routes (Public - No Auth Required)
 Route::get('/donate/{barangay:barangay_id}', [PublicMapController::class, 'showDonateForm'])->name('barangay.donate');
+
+// PayMongo Payment Routes (Public API - No Auth)
+Route::post('/api/donations/create-payment-public', [DonationController::class, 'createPaymentPublic'])->name('donations.create.public');
+
+// PayMongo Payment Routes (Authenticated Users)
+Route::post('/donations/create-payment', [DonationController::class, 'createPayment'])->name('donations.create');
+Route::get('/donations/success', [DonationController::class, 'success'])->name('donations.success');
+Route::get('/donations/cancel', [DonationController::class, 'cancel'])->name('donations.cancel');
+
+// Legacy route for backward compatibility (redirects to new flow)
 Route::post('/donate/{barangay:barangay_id}', [PublicMapController::class, 'processDonation'])->name('donation.process');
 Route::get('/donation/success/{trackingCode}', [PublicMapController::class, 'donationSuccess'])->name('donation.success');
 

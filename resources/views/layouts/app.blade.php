@@ -18,7 +18,7 @@
     @stack('styles')
 </head>
 <body class="font-sans antialiased bg-gray-50">
-    
+
     <!-- Navigation -->
     <nav class="bg-white shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4">
@@ -45,7 +45,7 @@
                     <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">
                         Contact
                     </a>
-                    
+
                     @auth
                         <div class="relative">
                             <button class="flex items-center text-gray-700 hover:text-blue-600 font-medium">

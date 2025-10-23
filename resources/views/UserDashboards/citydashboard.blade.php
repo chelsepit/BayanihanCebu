@@ -277,7 +277,7 @@
         }
     </style>
 
-    
+
 </head>
 <body class="bg-gray-50">
 
@@ -288,18 +288,16 @@
             <p class="text-sm text-blue-100">Cebu City Disaster Management / Public Works</p>
         </div>
         <div class="flex items-center gap-4">
-            <!-- Notification Bell -->
-            <div class="relative">
-                <button id="notification-bell"
-                        onclick="toggleNotifications()"
-                        class="relative p-2 text-white hover:bg-white/20 rounded-lg transition">
-                    <i class="fas fa-bell text-xl"></i>
-                    <!-- Unread Badge -->
-                    <span id="notification-badge"
-                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        0
-                    </span>
+            <div class="text-right">
+                <p class="text-sm text-blue-100">Logged in as LDRRMO</p>
+                <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
+            </div>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
+            </form>
 
                 <!-- Notifications Dropdown -->
                 <div id="notifications-dropdown"
@@ -317,29 +315,29 @@
                         </div>
                     </div>
 
-                    <!-- Filter Tabs -->
-                    <div class="flex border-b bg-gray-50">
-                        <button onclick="filterNotifications('all')"
-                                id="notif-filter-all"
-                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">
-                            All
-                        </button>
-                        <button onclick="filterNotifications('match_request')"
-                                id="notif-filter-match_request"
-                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
-                            Matches
-                        </button>
-                        <button onclick="filterNotifications('match_accepted')"
-                                id="notif-filter-match_accepted"
-                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
-                            Accepted
-                        </button>
-                        <button onclick="filterNotifications('message')"
-                                id="notif-filter-message"
-                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
-                            Messages
-                        </button>
-                    </div>
+            <!-- Filter Tabs -->
+            <div class="flex border-b bg-gray-50">
+                <button onclick="filterNotifications('all')"
+                        id="notif-filter-all"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">
+                    All
+                </button>
+                <button onclick="filterNotifications('match_request')"
+                        id="notif-filter-match_request"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                    Matches
+                </button>
+                <button onclick="filterNotifications('match_accepted')"
+                        id="notif-filter-match_accepted"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                    Accepted
+                </button>
+                <button onclick="filterNotifications('message')"
+                        id="notif-filter-message"
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                    Messages
+                </button>
+            </div>
 
                     <!-- Notifications List -->
                     <div id="notifications-list" class="overflow-y-auto max-h-80">
@@ -349,46 +347,21 @@
                         </div>
                     </div>
 
-                    <!-- Footer -->
-                    <div class="px-4 py-3 border-t bg-gray-50 text-center">
-                        <button onclick="viewAllNotifications()"
-                                class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
-                            View All Notifications
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Messages Toggle Button -->
-            <div class="relative">
-                <button id="conversations-toggle"
-                        onclick="toggleConversationsSidebar()"
-                        class="relative p-2 text-white hover:bg-white/20 rounded-full transition"
-                        title="Messages">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3.293 3.293 3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                    </svg>
-                    <!-- Active Conversations Badge -->
-                    <span id="conversations-badge-header"
-                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        0
-                    </span>
+            <!-- Footer -->
+            <div class="px-4 py-3 border-t bg-gray-50 text-center">
+                <button onclick="viewAllNotifications()"
+                        class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
+                    View All Notifications
                 </button>
             </div>
-
-            <!-- User Info -->
-            <div class="text-right">
-                <p class="text-sm text-blue-100">Logged in as LDRRMO</p>
-                <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
-            </div>
-
-            <!-- Logout Button -->
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
-                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
-                </button>
-            </form>
         </div>
+    </div>
+
+    <!-- User Info & Logout (existing) -->
+    <div class="flex items-center gap-3">
+        <!-- Your existing user dropdown here -->
+    </div>
+</div>
         </div>
     </div>
 
@@ -672,27 +645,27 @@
 
         <!-- Filter Tabs -->
         <div class="flex gap-2">
-            <button onclick="filterMyMatches('all')" 
+            <button onclick="filterMyMatches('all')"
                     id="my-matches-filter-all"
                     class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-indigo-600 text-white">
                 All (<span id="my-matches-count-all">0</span>)
             </button>
-            <button onclick="filterMyMatches('pending')" 
+            <button onclick="filterMyMatches('pending')"
                     id="my-matches-filter-pending"
                     class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
                 Pending (<span id="my-matches-count-pending">0</span>)
             </button>
-            <button onclick="filterMyMatches('accepted')" 
+            <button onclick="filterMyMatches('accepted')"
                     id="my-matches-filter-accepted"
                     class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
                 Accepted (<span id="my-matches-count-accepted">0</span>)
             </button>
-            <button onclick="filterMyMatches('completed')" 
+            <button onclick="filterMyMatches('completed')"
                     id="my-matches-filter-completed"
                     class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
                 Completed (<span id="my-matches-count-completed">0</span>)
             </button>
-            <button onclick="filterMyMatches('rejected')" 
+            <button onclick="filterMyMatches('rejected')"
                     id="my-matches-filter-rejected"
                     class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-gray-200 text-gray-700 hover:bg-gray-300">
                 Rejected (<span id="my-matches-count-rejected">0</span>)
@@ -1089,6 +1062,67 @@
         }
 
      async function loadMapData() {
+    if (!cityMap && !initMap()) {
+        return;
+    }
+
+    try {
+        const barangays = await fetchAPI('/api/ldrrmo/barangays-map');
+
+        barangays.forEach(barangay => {
+            const colorMap = {
+                'safe': '#10b981',
+                'warning': '#eab308',
+                'critical': '#f97316',
+                'emergency': '#ef4444'
+            };
+            const color = colorMap[barangay.status] || '#9ca3af';
+
+            const marker = L.circleMarker([barangay.lat, barangay.lng], {
+                radius: 8,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(cityMap);
+
+            // Build needs list from resource_needs table
+            let needsHtml = '';
+            if (barangay.status !== 'safe' && barangay.resource_needs && barangay.resource_needs.length > 0) {
+                needsHtml = '<div class="mt-2"><strong>Resource Needs:</strong><ul class="mt-1 text-sm">';
+
+                // Group by urgency or show top 3
+                barangay.resource_needs.slice(0, 3).forEach(need => {
+                    const urgencyBadge = need.urgency === 'critical' ? '🔴' :
+                                       need.urgency === 'high' ? '🟠' :
+                                       need.urgency === 'medium' ? '🟡' : '🔵';
+                    needsHtml += `<li>${urgencyBadge} ${escapeHtml(need.category)}: ${escapeHtml(need.quantity)}</li>`;
+                });
+
+                if (barangay.resource_needs.length > 3) {
+                    needsHtml += `<li class="text-gray-600">...and ${barangay.resource_needs.length - 3} more</li>`;
+                }
+                needsHtml += '</ul></div>';
+            }
+
+            marker.bindPopup(`
+                <div style="min-width: 250px;">
+                    <strong style="font-size: 16px;">${escapeHtml(barangay.name)}</strong><br>
+                    <span class="px-2 py-1 text-xs rounded" style="background-color: ${color}20; color: ${color}; font-weight: 600;">
+                        ${escapeHtml(String(barangay.status).toUpperCase())}
+                    </span><br>
+                    <div class="mt-2">
+                        <strong>Affected:</strong> ${formatNumber(barangay.affected_families)} families
+                    </div>
+                    ${needsHtml}
+                </div>
+            `);
+        });
+    } catch (error) {
+        console.error('Error loading map data:', error);
+        showError('cityMap', 'Failed to load map data. Please refresh.');
+    }
     // Note: Map data loading is now handled by city-dashboard-map.js
     // This function is kept for compatibility but does nothing
     console.log('loadMapData called - map data loading handled by city-dashboard-map.js');
@@ -1405,7 +1439,7 @@
             async function findMatches(needId) {
                 document.getElementById('suggestedMatchesModal').classList.remove('hidden');
                 const modalBody = document.getElementById('matchesModalBody');
-                
+
                 modalBody.innerHTML = `
                     <div class="text-center py-12">
                         <i class="fas fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
@@ -1415,7 +1449,7 @@
 
                 try {
                     const data = await fetchAPI(`/api/ldrrmo/find-matches/${needId}`, { method: 'POST' });
-                    
+
                     if (data.success) {
                         displayMatches(data.need, data.matches);
                     } else {
@@ -1439,7 +1473,7 @@
 
 function displayMatches(need, matches) {
     const modalBody = document.getElementById('matchesModalBody');
-    
+
     if (!matches || matches.length === 0) {
         modalBody.innerHTML = `
             <div class="text-center py-12">
@@ -1486,7 +1520,7 @@ function displayMatches(need, matches) {
         </div>
 
         <h3 class="font-bold text-lg mb-4">Suggested Matches (${matches.length})</h3>
-        
+
         ${matches.map(match => `
             <div class="border rounded-lg p-4 mb-4 hover:shadow-md transition">
                 <div class="flex items-start justify-between gap-4">
@@ -1499,7 +1533,7 @@ function displayMatches(need, matches) {
                                 <i class="fas fa-map-marker-alt"></i> ${escapeHtml(match.barangay.name)}
                             </span>
                         </div>
-                        
+
                         <p class="font-semibold text-gray-900 mb-1">
                             <i class="fas fa-box mr-1 text-gray-500"></i>
                             ${escapeHtml(match.donation.items_description || match.donation.item_name || 'N/A')}
@@ -1555,18 +1589,18 @@ let allMyMatches = [];
 async function loadMyMatches() {
     try {
         const data = await fetchAPI(`/api/ldrrmo/matches?status=${currentMyMatchesFilter}`);
-        
+
         allMyMatches = data;
-        
+
         // Update counts
         updateMyMatchesCounts(data);
-        
+
         // Display matches
         displayMyMatches(data);
-        
+
         // Load statistics
         loadMatchStatistics();
-        
+
     } catch (error) {
         console.error('Error loading matches:', error);
         document.getElementById('my-matches-list').innerHTML = `
@@ -1612,22 +1646,22 @@ function updateMyMatchesCounts(matches) {
 
 function displayMyMatches(matches) {
     const container = document.getElementById('my-matches-list');
-    
+
     if (!matches || matches.length === 0) {
         container.innerHTML = `
             <div class="text-center py-12">
                 <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">No Matches Found</h3>
                 <p class="text-gray-500">
-                    ${currentMyMatchesFilter === 'all' 
-                        ? 'You haven\'t initiated any matches yet.' 
+                    ${currentMyMatchesFilter === 'all'
+                        ? 'You haven\'t initiated any matches yet.'
                         : `No ${currentMyMatchesFilter} matches.`}
                 </p>
             </div>
         `;
         return;
     }
-    
+
     const html = matches.map(match => `
         <div class="border rounded-lg p-5 hover:shadow-md transition bg-white">
             <div class="flex items-start justify-between mb-4">
@@ -1648,7 +1682,7 @@ function displayMyMatches(matches) {
                             </span>
                         ` : ''}
                     </div>
-                    
+
                     <h3 class="text-lg font-bold text-gray-900 mb-2">
                         Match #${match.id}
                         ${match.match_score ? `
@@ -1695,7 +1729,7 @@ function displayMyMatches(matches) {
                     <p class="text-sm text-gray-700">
                         <span class="font-semibold">Available:</span> ${match.physical_donation.quantity}
                     </p>
-                    ${match.can_fully_fulfill ? 
+                    ${match.can_fully_fulfill ?
                         '<span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mt-1"><i class="fas fa-check"></i> Can Fulfill</span>' :
                         '<span class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full mt-1"><i class="fas fa-exclamation-triangle"></i> Partial</span>'
                     }
@@ -1750,19 +1784,19 @@ function displayMyMatches(matches) {
             </div>
         </div>
     `).join('');
-    
+
     container.innerHTML = html;
 }
 
 async function loadMatchStatistics() {
     try {
         const stats = await fetchAPI('/api/ldrrmo/matches/statistics');
-        
+
         document.getElementById('stats-total-matches').textContent = stats.total_matches || 0;
         document.getElementById('stats-pending-matches').textContent = stats.pending_matches || 0;
         document.getElementById('stats-accepted-matches').textContent = stats.accepted_matches || 0;
         document.getElementById('stats-success-rate').textContent = (stats.success_rate || 0) + '%';
-        
+
     } catch (error) {
         console.error('Error loading statistics:', error);
     }
@@ -1770,7 +1804,7 @@ async function loadMatchStatistics() {
 
 function filterMyMatches(status) {
     currentMyMatchesFilter = status;
-    
+
     // Update active button
     document.querySelectorAll('[id^="my-matches-filter-"]').forEach(btn => {
         btn.classList.remove('bg-indigo-600', 'text-white');
@@ -1778,7 +1812,7 @@ function filterMyMatches(status) {
     });
     document.getElementById(`my-matches-filter-${status}`).classList.remove('bg-gray-200', 'text-gray-700');
     document.getElementById(`my-matches-filter-${status}`).classList.add('bg-indigo-600', 'text-white');
-    
+
     // Reload matches
     loadMyMatches();
 }
@@ -2121,62 +2155,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
-    // Get the need details
-    const needData = currentResourceNeeds.find(n => n.id === needId);
+    // Show confirmation modal
+    const confirmed = confirm(
+        `🤝 Initiate Match Request\n\n` +
+        `You are about to connect:\n` +
+        `• Requesting Barangay: (with this need)\n` +
+        `• Donating Barangay: ${barangayName}\n\n` +
+        `Match Score: ${matchScore}%\n` +
+        `Can Fully Fulfill: ${canFullyFulfill ? 'Yes ✅' : 'Partial ⚠️'}\n\n` +
+        `Both barangays will be notified. Continue?`
+    );
 
-    // Create confirmation modal content
-    const confirmHtml = `
-        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" id="confirmMatchModal">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-                <div class="text-center mb-4">
-                    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-handshake text-3xl text-indigo-600"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Initiate Match Request?</h3>
-                    <p class="text-gray-600">You are about to connect these barangays</p>
-                </div>
-
-                <div class="space-y-3 mb-6">
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p class="text-sm font-semibold text-blue-900 mb-1">Requesting Barangay</p>
-                        <p class="text-sm text-blue-700">${needData?.barangay_name || 'Unknown'}</p>
-                        <p class="text-xs text-blue-600 mt-1">Needs: ${needData?.category || 'General'} (${needData?.quantity || 'N/A'})</p>
-                    </div>
-
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <p class="text-sm font-semibold text-green-900 mb-1">Donating Barangay</p>
-                        <p class="text-sm text-green-700">${barangayName}</p>
-                        <p class="text-xs text-green-600 mt-1">Match Score: ${matchScore}% • ${canFullyFulfill ? 'Full Fulfillment ✅' : 'Partial Fulfillment ⚠️'}</p>
-                    </div>
-                </div>
-
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
-                    <p class="text-xs text-yellow-800">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Both barangays will be notified via the system
-                    </p>
-                </div>
-
-                <div class="flex gap-3">
-                    <button onclick="document.getElementById('confirmMatchModal').remove()"
-                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold">
-                        Cancel
-                    </button>
-                    <button onclick="confirmInitiateMatch(${needId}, ${donationId}, ${matchScore}, ${canFullyFulfill})"
-                            class="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
-                        Initiate Match
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.insertAdjacentHTML('beforeend', confirmHtml);
-}
-
-async function confirmInitiateMatch(needId, donationId, matchScore, canFullyFulfill) {
-    // Remove confirmation modal
-    document.getElementById('confirmMatchModal').remove();
+    if (!confirmed) return;
 
     try {
         // Get the need details to extract quantity
@@ -2194,67 +2184,24 @@ async function confirmInitiateMatch(needId, donationId, matchScore, canFullyFulf
         });
 
         if (response.success) {
-            // Show success modal
-            const successHtml = `
-                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" id="successMatchModal">
-                    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-                        <div class="text-center mb-4">
-                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-check-circle text-3xl text-green-600"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Match Request Sent!</h3>
-                            <p class="text-gray-600">Both barangays have been notified</p>
-                        </div>
+            alert(
+                `✅ Match Request Sent!\n\n` +
+                `Match ID: ${response.data.match_id}\n` +
+                `Status: ${response.data.status}\n\n` +
+                `Both barangays have been notified:\n` +
+                `• ${response.data.requesting_barangay} (FYI)\n` +
+                `• ${response.data.donating_barangay} (Action Required)\n\n` +
+                `You can track this match in the "My Matches" tab.`
+            );
 
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                            <div class="text-sm space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Match ID:</span>
-                                    <span class="font-semibold text-gray-900">#${response.data.match_id}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Status:</span>
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold">${response.data.status}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2 mb-6 text-sm">
-                            <div class="flex items-center gap-2 text-gray-700">
-                                <i class="fas fa-check text-green-600"></i>
-                                <span>${response.data.requesting_barangay} (Notified)</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-gray-700">
-                                <i class="fas fa-check text-green-600"></i>
-                                <span>${response.data.donating_barangay} (Action Required)</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                            <p class="text-xs text-blue-800">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Track this match in the "My Matches" tab
-                            </p>
-                        </div>
-
-                        <button onclick="closeSuccessModal()"
-                                class="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
-                            Got it!
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            document.body.insertAdjacentHTML('beforeend', successHtml);
-
-            // Close the suggested matches modal
+            // Close the modal and refresh
             closeMatchModal();
 
             // Refresh the resource needs list
             loadResourceNeeds();
 
-            // Update notification count
-            loadNotifications();
+            // TODO: Update notification bell count
+            // loadNotifications();
         } else {
             alert('❌ Error: ' + response.message);
         }
@@ -2306,17 +2253,17 @@ async function viewMatchDetails(needId, donationId) {
 
         // Render the match details (pass response directly, not response.data)
         renderMatchDetails(response);
-        
+
     } catch (error) {
         console.error('Error loading match details:', error);
-        
+
         // Show error message
         document.getElementById('matchDetailsContent').innerHTML = `
             <div class="text-center py-12">
                 <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">Failed to Load Details</h3>
                 <p class="text-gray-500 mb-4">${error.message}</p>
-                <button onclick="viewMatchDetails(${needId}, ${donationId})" 
+                <button onclick="viewMatchDetails(${needId}, ${donationId})"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     Try Again
                 </button>
@@ -2332,7 +2279,7 @@ function openMatchDetailsModal() {
     const modal = document.getElementById('matchDetailsModal');
     if (modal) {
         modal.classList.remove('hidden');
-        
+
         // Show loading state
         document.getElementById('matchDetailsContent').innerHTML = `
             <div class="text-center py-12">
@@ -2532,7 +2479,7 @@ function renderMatchDetails(data) {
 
 /**
  * Get CSS class for match score badge
- * 
+ *
  * @param {number} score - Match score percentage
  * @returns {string} CSS class name
  */
@@ -2545,7 +2492,7 @@ function getMatchScoreBadgeClass(score) {
 
 /**
  * Get urgency badge CSS class
- * 
+ *
  * @param {string} urgency - Urgency level
  * @returns {string} CSS class name
  */
@@ -2561,7 +2508,7 @@ function getUrgencyBadgeClass(urgency) {
 
 /**
  * Get icon for match factor
- * 
+ *
  * @param {string} status - Factor status
  * @returns {string} Font Awesome icon name
  */
@@ -2582,7 +2529,7 @@ function getFactorIcon(status) {
 
 /**
  * Escape HTML to prevent XSS
- * 
+ *
  * @param {string} text - Text to escape
  * @returns {string} Escaped text
  */
@@ -2748,7 +2695,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 tbody.innerHTML = barangays.map(b => {
-                    const urgentNeeds = Array.isArray(b.urgent_needs) ? b.urgent_needs : 
+                    const urgentNeeds = Array.isArray(b.urgent_needs) ? b.urgent_needs :
                                        Array.isArray(b.resource_needs) ? b.resource_needs : [];
                     const blockchainRate = Number(b.blockchain_verification_rate) || 0;
 
@@ -2857,25 +2804,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load notifications immediately
     loadNotifications();
 
-    // Poll for new notifications every 10 seconds (more frequent for better real-time feel)
-    setInterval(loadNotifications, 10000);
+    // Poll for new notifications every 30 seconds
+    setInterval(loadNotifications, 30000);
 
-    // Also poll for unread count every 5 seconds (lightweight check)
-    setInterval(updateUnreadCount, 5000);
-
-    // Update conversation badge every 15 seconds
-    updateConversationBadge();
-    setInterval(updateConversationBadge, 15000);
-
-    // Close dropdowns when clicking outside
+    // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
-        const notifDropdown = document.getElementById('notifications-dropdown');
-        const notifBell = document.getElementById('notification-bell');
+        const dropdown = document.getElementById('notifications-dropdown');
+        const bell = document.getElementById('notification-bell');
 
-        // Close notifications dropdown
         if (notificationDropdownOpen &&
-            !notifDropdown.contains(event.target) &&
-            !notifBell.contains(event.target)) {
+            !dropdown.contains(event.target) &&
+            !bell.contains(event.target)) {
             closeNotifications();
         }
     });
@@ -2884,17 +2823,14 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadNotifications() {
     try {
         const data = await fetchAPI('/api/notifications');
+        allNotifications = data;
 
-        if (data && Array.isArray(data)) {
-            allNotifications = data;
+        // Update unread count
+        updateUnreadCount();
 
-            // Update unread count
-            updateUnreadCount();
-
-            // If dropdown is open, display notifications
-            if (notificationDropdownOpen) {
-                displayNotifications();
-            }
+        // If dropdown is open, display notifications
+        if (notificationDropdownOpen) {
+            displayNotifications();
         }
     } catch (error) {
         console.error('Error loading notifications:', error);
@@ -2924,6 +2860,10 @@ async function updateUnreadCount() {
             badge.classList.add('hidden');
             countText.textContent = 'No unread';
         }
+
+        // Update count text
+        document.getElementById('notification-count').textContent =
+            count === 0 ? 'No unread' : `${count} unread`;
 
     } catch (error) {
         console.error('Error updating unread count:', error);
@@ -3180,13 +3120,13 @@ function closeNotifications() {
 
 function displayNotifications() {
     const container = document.getElementById('notifications-list');
-    
+
     // Filter notifications
     let filtered = allNotifications;
     if (currentNotificationFilter !== 'all') {
         filtered = allNotifications.filter(n => n.type === currentNotificationFilter);
     }
-    
+
     if (!filtered || filtered.length === 0) {
         container.innerHTML = `
             <div class="text-center py-8 text-gray-400">
@@ -3196,11 +3136,11 @@ function displayNotifications() {
         `;
         return;
     }
-    
+
     const html = filtered.map(notif => `
-        <div onclick="handleNotificationClick(${notif.id}, '${notif.action_url || ''}')" 
+        <div onclick="handleNotificationClick(${notif.id}, '${notif.action_url || ''}')"
              class="px-4 py-3 border-b hover:bg-gray-50 cursor-pointer transition ${notif.is_read ? 'opacity-60' : 'bg-blue-50'}">
-            
+
             <div class="flex items-start gap-3">
                 <!-- Icon -->
                 <div class="flex-shrink-0 mt-1">
@@ -3208,7 +3148,7 @@ function displayNotifications() {
                         <i class="${getNotificationIcon(notif.type)} ${getNotificationIconColor(notif.type)}"></i>
                     </div>
                 </div>
-                
+
                 <!-- Content -->
                 <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-2 mb-1">
@@ -3217,15 +3157,15 @@ function displayNotifications() {
                         </h4>
                         ${!notif.is_read ? '<span class="w-2 h-2 bg-blue-600 rounded-full"></span>' : ''}
                     </div>
-                    
+
                     <p class="text-xs text-gray-600 mb-2">${notif.message}</p>
-                    
+
                     <div class="flex items-center justify-between">
                         <span class="text-xs text-gray-400">
                             <i class="fas fa-clock mr-1"></i>
                             ${notif.created_at}
                         </span>
-                        
+
                         ${notif.action_url ? `
                             <span class="text-xs text-indigo-600 font-semibold">
                                 Click to view <i class="fas fa-arrow-right ml-1"></i>
@@ -3236,7 +3176,7 @@ function displayNotifications() {
             </div>
         </div>
     `).join('');
-    
+
     container.innerHTML = html;
 }
 
@@ -3246,14 +3186,14 @@ async function handleNotificationClick(notificationId, actionUrl) {
         await fetchAPI(`/api/notifications/${notificationId}/read`, {
             method: 'POST'
         });
-        
+
         // Update counts
         await loadNotifications();
-        
+
         // Navigate if there's an action URL
         if (actionUrl) {
             closeNotifications();
-            
+
             // Parse action (e.g., "view-match-123" or "view-conversation-5")
             if (actionUrl.includes('view-match-')) {
                 const matchId = actionUrl.replace('view-match-', '');
@@ -3268,7 +3208,7 @@ async function handleNotificationClick(notificationId, actionUrl) {
                 viewConversation(matchId);
             }
         }
-        
+
     } catch (error) {
         console.error('Error handling notification click:', error);
     }
@@ -3279,10 +3219,10 @@ async function markAllAsRead() {
         await fetchAPI('/api/notifications/mark-all-read', {
             method: 'POST'
         });
-        
+
         await loadNotifications();
         displayNotifications();
-        
+
     } catch (error) {
         console.error('Error marking all as read:', error);
     }
@@ -3290,17 +3230,17 @@ async function markAllAsRead() {
 
 function filterNotifications(type) {
     currentNotificationFilter = type;
-    
+
     // Update active button
     document.querySelectorAll('[id^="notif-filter-"]').forEach(btn => {
         btn.classList.remove('border-indigo-600', 'text-indigo-600');
         btn.classList.add('border-transparent', 'text-gray-600');
     });
-    
+
     const activeBtn = document.getElementById(`notif-filter-${type}`);
     activeBtn.classList.remove('border-transparent', 'text-gray-600');
     activeBtn.classList.add('border-indigo-600', 'text-indigo-600');
-    
+
     displayNotifications();
 }
 
@@ -3356,4 +3296,4 @@ console.log('✅ Notification system loaded');
     </div> <!-- Close Main Layout with Sidebar -->
 
 </body>
-</html>
+</html>~

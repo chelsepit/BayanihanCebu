@@ -24,6 +24,12 @@
                             Track Donation
                         </a>
                     </li>
+                    <li>
+                        <a href="#">
+                            <span class="material-symbols-outlined">volunteer_activism</span>
+                            Fundraisers
+                        </a>
+                    </li>
                 </ul>
             </div>
 
