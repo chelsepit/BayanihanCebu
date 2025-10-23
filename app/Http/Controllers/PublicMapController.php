@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barangay;
-use App\Models\OnlineDonation;
+use App\Models\Donation;
 use App\Models\PhysicalDonation;
 use App\Models\ResourceNeed;
 use Illuminate\Http\Request;
@@ -36,7 +36,7 @@ class PublicMapController extends Controller
         $trackingCode = $request->tracking_code;
 
         // Try online donations first
-        $onlineDonation = OnlineDonation::where('tracking_code', $trackingCode)
+        $onlineDonation = Donation::where('tracking_code', $trackingCode)
             ->with(['barangay', 'disaster', 'verifier'])
             ->first();
 
@@ -90,8 +90,8 @@ class PublicMapController extends Controller
             'wallet_address' => 'nullable|string|max:42',
         ]);
 
-        $donation = OnlineDonation::create([
-            'target_barangay_id' => $barangay->barangay_id,
+        $donation = Donation::create([
+            'barangay_id' => $barangay->barangay_id,
             'donor_name' => $validated['is_anonymous'] ?? false ? 'Anonymous' : $validated['donor_name'],
             'donor_email' => $validated['is_anonymous'] ?? false ? null : $validated['donor_email'],
             'donor_phone' => $validated['donor_phone'] ?? null,
@@ -116,7 +116,7 @@ class PublicMapController extends Controller
     public function donationSuccess($trackingCode)
     {
         // Try online donations first
-        $onlineDonation = OnlineDonation::where('tracking_code', $trackingCode)
+        $onlineDonation = Donation::where('tracking_code', $trackingCode)
             ->with(['barangay', 'disaster'])
             ->first();
 
@@ -151,9 +151,9 @@ class PublicMapController extends Controller
         $stats = [
             'total_barangays' => Barangay::count(),
             'affected_barangays' => Barangay::where('disaster_status', '!=', 'safe')->count(),
-            'total_online_donations' => OnlineDonation::where('verification_status', 'verified')->sum('amount'),
+            'total_online_donations' => Donation::where('verification_status', 'verified')->sum('amount'),
             'total_physical_donations' => PhysicalDonation::sum('estimated_value'),
-            'total_donors' => OnlineDonation::distinct('donor_email')->count() + PhysicalDonation::distinct('donor_email')->count(),
+            'total_donors' => Donation::distinct('donor_email')->count() + PhysicalDonation::distinct('donor_email')->count(),
             'urgent_needs' => ResourceNeed::whereIn('urgency', ['critical', 'high'])->count(),
         ];
 

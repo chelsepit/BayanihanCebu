@@ -136,7 +136,7 @@ public function getBarangaysMap()
             $userImpact = 0;
 
             if ($userEmail) {
-                $userImpact = \App\Models\OnlineDonation::where('donor_email', $userEmail)
+                $userImpact = \App\Models\Donation::where('donor_email', $userEmail)
                     ->where('verification_status', 'verified')
                     ->sum('amount');
             }

@@ -1,0 +1,8 @@
+Line 29: if ($this->donation->blockchain_tx_hash && $this->donation->blockchain_status === 'confirmed') {
+Line 32: 'tx_hash' => $this->donation->blockchain_tx_hash
+Lines 87-90: $this->donation->update([
+    'blockchain_tx_hash' => $txHash,
+    'blockchain_status' => 'confirmed',
+    'blockchain_recorded_at' => now(),
+    'explorer_url' => "https://sepolia-blockscout.lisk.com/tx/{$txHash}"
+]);
