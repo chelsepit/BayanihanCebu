@@ -5,9 +5,8 @@
   "scripts": {
     "dev": "vite",
     "serve": "php artisan serve",
-    "start": "concurrently \"php artisan serve\" \"npm run dev\"",
-    "prepare": "husky",
-    "test": "echo \"No tests specified\" && exit 0"
+    "start": "concurrently \"php artisan serve\" \"npm run dev\" \"start-queue-worker.bat\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",

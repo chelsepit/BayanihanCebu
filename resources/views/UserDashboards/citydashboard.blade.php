@@ -293,6 +293,21 @@
                 <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
             </div>
 
+            <!-- Messages Toggle Button -->
+            <div class="relative">
+                <button id="conversations-toggle"
+                        onclick="toggleConversationsSidebar()"
+                        class="relative bg-white/20 hover:bg-white/30 p-3 rounded-lg transition"
+                        title="Messages">
+                    <i class="fas fa-comments text-xl"></i>
+                    <!-- Active Conversations Badge -->
+                    <span id="conversations-badge-header"
+                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        0
+                    </span>
+                </button>
+            </div>
+
             <!-- Notification Bell -->
             <div class="relative">
                 <button id="notification-bell"
@@ -1419,7 +1434,8 @@
 
         // Revert verification status
         async function revertVerification(needId) {
-            if (!confirm('Are you sure you want to revert this to pending status?')) return;
+            const confirmed = await confirm('Are you sure you want to revert this to pending status?');
+            if (!confirmed) return;
 
             try {
                 const response = await fetchAPI(`/api/ldrrmo/resource-needs/${needId}/revert`, {
@@ -1640,7 +1656,7 @@ function updateMyMatchesCounts(matches) {
         (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
     ).length;
 
-    const conversationBadge = document.getElementById('conversations-badge');
+    const conversationBadge = document.getElementById('conversations-badge-header');
     if (conversationBadge) {
         if (activeMatches > 0) {
             conversationBadge.textContent = activeMatches;
@@ -1825,7 +1841,8 @@ function filterMyMatches(status) {
 }
 
 async function cancelMatch(matchId) {
-    if (!confirm('⚠️ Are you sure you want to cancel this match request?\n\nThis action cannot be undone and both barangays will be notified.')) {
+    const confirmed = await confirm('⚠️ Are you sure you want to cancel this match request?\n\nThis action cannot be undone and both barangays will be notified.');
+    if (!confirmed) {
         return;
     }
 
@@ -2163,7 +2180,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
     // Show confirmation modal
-    const confirmed = confirm(
+    const confirmed = await confirm(
         `🤝 Initiate Match Request\n\n` +
         `You are about to connect:\n` +
         `• Requesting Barangay: (with this need)\n` +
@@ -2191,17 +2208,15 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
         });
 
         if (response.success) {
-            alert(
-                `✅ Match Request Sent!\n\n` +
-                `Match ID: ${response.data.match_id}\n` +
-                `Status: ${response.data.status}\n\n` +
-                `Both barangays have been notified:\n` +
-                `• ${response.data.requesting_barangay} (FYI)\n` +
-                `• ${response.data.donating_barangay} (Action Required)\n\n` +
-                `You can track this match in the "My Matches" tab.`
-            );
+            // Show custom match success modal
+            showMatchSuccessModal({
+                match_id: response.data.match_id,
+                status: response.data.status,
+                requesting_barangay: response.data.requesting_barangay,
+                donating_barangay: response.data.donating_barangay
+            });
 
-            // Close the modal and refresh
+            // Close the suggested matches modal
             closeMatchModal();
 
             // Refresh the resource needs list
@@ -2210,7 +2225,7 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
             // TODO: Update notification bell count
             // loadNotifications();
         } else {
-            alert('❌ Error: ' + response.message);
+            showAlert('Error: ' + response.message, '❌ Error');
         }
     } catch (error) {
         console.error('Error initiating match:', error);
@@ -2890,7 +2905,7 @@ async function updateConversationBadge() {
             (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
         ).length;
 
-        const badge = document.getElementById('conversations-badge');
+        const badge = document.getElementById('conversations-badge-header');
         if (!badge) return;
 
         if (activeConversations > 0) {
@@ -3301,6 +3316,473 @@ console.log('✅ Notification system loaded');
 
     </div> <!-- Close Main Content Area -->
     </div> <!-- Close Main Layout with Sidebar -->
+
+    <!-- Simple Alert Modal -->
+    <div id="alertModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div id="alertModalHeader" class="px-6 py-4 border-b">
+                <h3 id="alertModalTitle" class="text-lg font-bold text-gray-900"></h3>
+            </div>
+            <div class="px-6 py-4">
+                <p id="alertModalMessage" class="text-gray-700 whitespace-pre-wrap"></p>
+            </div>
+            <div class="px-6 py-4 border-t flex justify-end gap-3">
+                <button id="alertModalCancelBtn" onclick="closeAlert(false)"
+                        class="hidden px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Cancel
+                </button>
+                <button id="alertModalOkBtn" onclick="closeAlert(true)"
+                        class="px-4 py-2 bg-[#CA6702] text-white rounded-lg hover:bg-[#BB3E03] transition">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messenger-Style Chat Boxes Container -->
+    <div id="chat-boxes-container" class="fixed bottom-0 right-20 flex items-end gap-4 z-[9999] pointer-events-none">
+        <!-- Chat boxes will be appended here -->
+    </div>
+
+    <!-- Chat Box Template -->
+    <template id="chat-box-template">
+        <div class="chat-box bg-white rounded-t-lg shadow-2xl w-80 flex flex-col pointer-events-auto" style="height: 450px;">
+            <!-- Chat Header -->
+            <div class="chat-header bg-indigo-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                    <h3 class="chat-title font-bold text-sm truncate">Loading...</h3>
+                    <p class="chat-subtitle text-xs opacity-90 truncate">Conversation</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="minimizeChatBox(this)" class="hover:bg-indigo-700 p-1 rounded transition">
+                        <i class="fas fa-minus text-xs"></i>
+                    </button>
+                    <button onclick="closeChatBox(this)" class="hover:bg-indigo-700 p-1 rounded transition">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Body (Messages) -->
+            <div class="chat-body flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <!-- Chat Footer (Input) -->
+            <div class="chat-footer border-t bg-white px-3 py-3">
+                <form onsubmit="sendChatMessage(event, this)" class="flex items-center gap-2">
+                    <input type="text"
+                           class="message-input flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Type a message..."
+                           required>
+                    <button type="submit"
+                            class="bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition w-9 h-9 flex items-center justify-center">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Match Success Modal -->
+    <div id="matchSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <!-- Success Icon -->
+            <div class="flex justify-center pt-8 pb-4">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="text-center px-6 pb-4">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Match Request Sent!</h2>
+                <p class="text-gray-600 text-sm">Both barangays have been notified</p>
+            </div>
+
+            <!-- Details Box -->
+            <div class="px-6 pb-4">
+                <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Match ID:</span>
+                        <span id="matchSuccessId" class="font-bold text-gray-900">#7</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Status:</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barangays List -->
+            <div class="px-6 pb-4">
+                <div class="space-y-2">
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p id="matchSuccessRequesting" class="text-sm font-semibold text-gray-900">Basak San Nicolas</p>
+                            <p class="text-xs text-gray-500">(Notified)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p id="matchSuccessDonating" class="text-sm font-semibold text-gray-900">Apas</p>
+                            <p class="text-xs text-gray-500">(Action Required)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Banner -->
+            <div class="px-6 pb-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="text-xs text-blue-800">Track this match in the "My Matches" tab</p>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="px-6 pb-6">
+                <button onclick="closeMatchSuccessModal()"
+                        class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-base">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Alert Modal System
+        let alertCallback = null;
+
+        function showAlert(message, title = 'Notice', showCancel = false) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('alertModal');
+                const titleEl = document.getElementById('alertModalTitle');
+                const messageEl = document.getElementById('alertModalMessage');
+                const cancelBtn = document.getElementById('alertModalCancelBtn');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                if (showCancel) {
+                    cancelBtn.classList.remove('hidden');
+                } else {
+                    cancelBtn.classList.add('hidden');
+                }
+
+                modal.classList.remove('hidden');
+                alertCallback = resolve;
+            });
+        }
+
+        function closeAlert(result) {
+            document.getElementById('alertModal').classList.add('hidden');
+            if (alertCallback) {
+                alertCallback(result);
+                alertCallback = null;
+            }
+        }
+
+        // Match Success Modal System
+        function showMatchSuccessModal(matchData) {
+            const modal = document.getElementById('matchSuccessModal');
+
+            // Update match ID
+            document.getElementById('matchSuccessId').textContent = `#${matchData.match_id}`;
+
+            // Update barangay names
+            document.getElementById('matchSuccessRequesting').textContent = matchData.requesting_barangay;
+            document.getElementById('matchSuccessDonating').textContent = matchData.donating_barangay;
+
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeMatchSuccessModal() {
+            document.getElementById('matchSuccessModal').classList.add('hidden');
+        }
+
+        // Override native alert with modal
+        window.alert = function(message) {
+            return showAlert(message);
+        };
+
+        // Override native confirm with modal
+        window.confirm = function(message) {
+            return showAlert(message, 'Confirm', true);
+        };
+
+        // ============================================
+        // MESSENGER-STYLE CHAT BOXES
+        // ============================================
+
+        let openChatBoxes = new Map(); // matchId -> { element, interval }
+
+        function viewConversation(matchId) {
+            // Check if chat box already exists
+            if (openChatBoxes.has(matchId)) {
+                // If minimized, maximize it
+                const existingBox = openChatBoxes.get(matchId).element;
+                const chatBody = existingBox.querySelector('.chat-body');
+                const chatFooter = existingBox.querySelector('.chat-footer');
+                if (chatBody.classList.contains('hidden')) {
+                    chatBody.classList.remove('hidden');
+                    chatFooter.classList.remove('hidden');
+                }
+                // Bring to front by re-appending
+                existingBox.parentElement.appendChild(existingBox);
+                return;
+            }
+
+            // Create new chat box from template
+            const template = document.getElementById('chat-box-template');
+            const chatBox = template.content.cloneNode(true).querySelector('.chat-box');
+            chatBox.setAttribute('data-match-id', matchId);
+
+            // Add to container
+            const container = document.getElementById('chat-boxes-container');
+            container.appendChild(chatBox);
+
+            // Load conversation
+            loadChatConversation(matchId, chatBox);
+
+            // Start auto-refresh
+            const refreshInterval = setInterval(() => {
+                loadChatConversation(matchId, chatBox, true);
+            }, 5000);
+
+            // Store reference
+            openChatBoxes.set(matchId, {
+                element: chatBox,
+                interval: refreshInterval
+            });
+        }
+
+        function closeChatBox(button) {
+            const chatBox = button.closest('.chat-box');
+            const matchId = parseInt(chatBox.getAttribute('data-match-id'));
+
+            // Clear interval
+            if (openChatBoxes.has(matchId)) {
+                clearInterval(openChatBoxes.get(matchId).interval);
+                openChatBoxes.delete(matchId);
+            }
+
+            // Remove element
+            chatBox.remove();
+        }
+
+        function minimizeChatBox(button) {
+            const chatBox = button.closest('.chat-box');
+            const chatBody = chatBox.querySelector('.chat-body');
+            const chatFooter = chatBox.querySelector('.chat-footer');
+            const icon = button.querySelector('i');
+
+            if (chatBody.classList.contains('hidden')) {
+                // Maximize
+                chatBody.classList.remove('hidden');
+                chatFooter.classList.remove('hidden');
+                icon.classList.remove('fa-window-maximize');
+                icon.classList.add('fa-minus');
+            } else {
+                // Minimize
+                chatBody.classList.add('hidden');
+                chatFooter.classList.add('hidden');
+                icon.classList.remove('fa-minus');
+                icon.classList.add('fa-window-maximize');
+            }
+        }
+
+        async function loadChatConversation(matchId, chatBox, silent = false) {
+            try {
+                const messagesContainer = chatBox.querySelector('.chat-body');
+
+                if (!silent) {
+                    messagesContainer.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                            <p class="text-gray-600">Loading conversation...</p>
+                        </div>
+                    `;
+                }
+
+                const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/conversation`);
+
+                if (!response.success) {
+                    // No conversation yet
+                    messagesContainer.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-comments-slash text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Conversation Yet</h3>
+                            <p class="text-gray-500 mb-4">
+                                The conversation will start once the donating barangay accepts the match request.
+                            </p>
+                            <p class="text-sm text-gray-400">
+                                As LDRRMO, you can monitor and participate in the conversation once it begins.
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Update chat header
+                const matchInfo = response.match;
+                const chatTitle = chatBox.querySelector('.chat-title');
+                const chatSubtitle = chatBox.querySelector('.chat-subtitle');
+
+                chatTitle.textContent = `${matchInfo.requesting_barangay} ↔ ${matchInfo.donating_barangay}`;
+                chatSubtitle.textContent = matchInfo.resource_need;
+
+                // Display messages
+                displayChatMessages(chatBox, response.conversation.messages);
+
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+                const messagesContainer = chatBox.querySelector('.chat-body');
+                messagesContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-2"></i>
+                        <p class="text-xs text-gray-500">${error.message || 'Failed to load'}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayChatMessages(chatBox, messages) {
+            const container = chatBox.querySelector('.chat-body');
+
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-inbox text-3xl text-gray-300 mb-2"></i>
+                        <p class="text-xs text-gray-500">No messages yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render messages (Messenger-style bubbles)
+            const html = messages.map(msg => {
+                const isLDRRMO = msg.sender_role === 'ldrrmo';
+                const isRequester = msg.sender_role === 'requester';
+                const isDonor = msg.sender_role === 'donor';
+
+                let bgColor, textColor, initial;
+                if (isLDRRMO) {
+                    bgColor = 'bg-indigo-600';
+                    textColor = 'text-white';
+                    initial = 'L';
+                } else if (isRequester) {
+                    bgColor = 'bg-blue-500';
+                    textColor = 'text-white';
+                    initial = 'R';
+                } else {
+                    bgColor = 'bg-green-500';
+                    textColor = 'text-white';
+                    initial = 'D';
+                }
+
+                // LDRRMO messages on the right, others on the left (Messenger style)
+                if (isLDRRMO) {
+                    return `
+                        <div class="flex items-start gap-2 justify-end mb-3">
+                            <div class="flex flex-col items-end max-w-[85%]">
+                                <p class="text-xs text-gray-600 mb-1">You</p>
+                                <div class="${bgColor} ${textColor} rounded-2xl px-4 py-2">
+                                    <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message)}</p>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">${formatTimeSimple(msg.created_at)}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex items-start gap-2 mb-3">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold">
+                                ${initial}
+                            </div>
+                            <div class="flex flex-col max-w-[85%]">
+                                <p class="text-xs text-gray-600 mb-1">${escapeHtml(msg.sender_name)}</p>
+                                <div class="${bgColor} ${textColor} rounded-2xl px-4 py-2">
+                                    <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message)}</p>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">${formatTimeSimple(msg.created_at)}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            container.innerHTML = html;
+
+            // Scroll to bottom
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        function formatTimeSimple(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        async function sendChatMessage(event, form) {
+            event.preventDefault();
+
+            const chatBox = form.closest('.chat-box');
+            const matchId = parseInt(chatBox.getAttribute('data-match-id'));
+            const input = form.querySelector('.message-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Disable input while sending
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            input.disabled = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/messages`, {
+                    method: 'POST',
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.success) {
+                    // Clear input
+                    input.value = '';
+
+                    // Reload conversation
+                    await loadChatConversation(matchId, chatBox, true);
+                } else {
+                    alert('❌ Error: ' + (response.message || 'Failed to send message'));
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('❌ Failed to send message. Please try again.');
+            } finally {
+                // Re-enable input
+                input.disabled = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                input.focus();
+            }
+        }
+
+        console.log('✅ Messenger-style chat boxes loaded');
+    </script>
 
 </body>
 </html>~
