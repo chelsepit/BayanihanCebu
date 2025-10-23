@@ -2,7 +2,7 @@
 <section class="hero-section">
     <div class="hero-header">
         <div class="hero-logo">
-            <div class="logo-icon">🛡️</div>
+            <div class="logo-icon"><img src="{{ Vite::asset('resources/images/logo-icon.png') }}" alt="Logo Icon"></div>
             <div class="logo-text">
                 <h1>BayanihanCebu</h1>
                 <p>Philippines Disaster Relief</p>
