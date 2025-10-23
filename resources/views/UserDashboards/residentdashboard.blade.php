@@ -424,8 +424,8 @@
         }
 
         .tab-button.active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
+            color: #CA6702;
+            border-bottom-color: #CA6702;
         }
 
         .tab-content {
@@ -476,7 +476,7 @@
             width: 40px;
             height: 40px;
             border: 4px solid #f3f4f6;
-            border-top: 4px solid #3b82f6;
+            border-top: 4px solid #CA6702;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -507,16 +507,16 @@
 <body class="bg-gray-50">
 
     <!-- Top Navigation Bar -->
-    <nav class="bg-blue-700 text-white shadow-md">
+    <nav class="bg-[#CA6702] text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-4">
-                    <button class="md:hidden text-white hover:text-blue-200">
+                    <button class="md:hidden text-white hover:opacity-80">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                     <div>
                         <h1 class="text-xl font-bold">BayanihanCebu</h1>
-                        <p class="text-xs text-blue-200">Resident Dashboard</p>
+                        <p class="text-xs opacity-90">Resident Dashboard</p>
                     </div>
                 </div>
 
@@ -529,7 +529,7 @@
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit"
-                                class="px-4 py-2 bg-white text-blue-700 rounded-lg hover:bg-blue-50 transition text-sm font-medium">
+                                class="px-4 py-2 bg-white text-[#CA6702] rounded-lg hover:bg-orange-50 transition text-sm font-medium">
                                 <i class="fas fa-sign-out-alt mr-1"></i> Sign Out
                             </button>
                         </form>
@@ -562,12 +562,12 @@
         <!-- Barangays Tab Content -->
         <div id="content-barangays" class="tab-content">
             <!-- Alert Banner -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+            <div class="bg-orange-50 border-l-4 border-[#CA6702] p-4 mb-6 rounded-r-lg">
                 <div class="flex items-start">
-                    <i class="fas fa-exclamation-triangle text-blue-500 text-xl mt-1 mr-3"></i>
+                    <i class="fas fa-exclamation-triangle text-[#CA6702] text-xl mt-1 mr-3"></i>
                     <div>
-                        <h3 class="text-blue-900 font-semibold text-lg mb-1">Help Disaster-Affected Barangays</h3>
-                        <p class="text-blue-800 text-sm">View what barangays need and donate to help affected families.
+                        <h3 class="text-[#001219] font-semibold text-lg mb-1">Help Disaster-Affected Barangays</h3>
+                        <p class="text-gray-700 text-sm">View what barangays need and donate to help affected families.
                             All
                             donations are verified on the blockchain for transparency.</p>
                     </div>
@@ -846,7 +846,7 @@
                         </div>
                         <p class="text-lg font-semibold text-gray-800">Error Loading Barangays</p>
                         <p class="text-sm text-gray-600 mt-2">${error.message}</p>
-                        <button onclick="loadBarangays()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <button onclick="loadBarangays()" class="mt-4 px-6 py-2 bg-[#CA6702] text-white rounded-lg hover:bg-[#BB3E03] transition">
                             <i class="fas fa-redo mr-2"></i>Try Again
                         </button>
                     </div>

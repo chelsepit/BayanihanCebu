@@ -33,6 +33,7 @@ auth.json
 .phpactor.json
 .phpunit.result.cache
 /.phpunit.cache
+.cache_ggshield
 
 # Blockchain / Hardhat Artifacts
 cache/

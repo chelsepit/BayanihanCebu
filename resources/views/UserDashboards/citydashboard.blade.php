@@ -15,8 +15,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .tab-btn.active {
-            border-bottom: 3px solid #1D4ED8;
-            color: #1D4ED8;
+            border-bottom: 3px solid #CA6702;
+            color: #CA6702;
         }
         #cityMap { height: 600px; }
         .error-message {
@@ -143,7 +143,7 @@
         .city-card-icon {
             width: 28px;
             height: 28px;
-            background: linear-gradient(135deg, #1D4ED8 0%, #1e40af 100%);
+            background: #CA6702;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -221,8 +221,8 @@
         }
 
         .city-barangay-item:hover {
-            border-color: #1D4ED8;
-            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.1);
+            border-color: #CA6702;
+            box-shadow: 0 2px 8px rgba(202, 103, 2, 0.1);
             transform: translateX(2px);
         }
 
@@ -282,22 +282,28 @@
 <body class="bg-gray-50">
 
     <!-- Top Header -->
-    <div class="bg-[#1D4ED8] text-white px-6 py-4 flex justify-between items-center">
+    <div class="bg-[#CA6702] text-white px-6 py-4 flex justify-between items-center">
         <div>
             <h1 class="text-2xl font-bold">City Dashboard (LDRRMO)</h1>
-            <p class="text-sm text-blue-100">Cebu City Disaster Management / Public Works</p>
+            <p class="text-sm opacity-90">Cebu City Disaster Management / Public Works</p>
         </div>
         <div class="flex items-center gap-4">
             <div class="text-right">
-                <p class="text-sm text-blue-100">Logged in as LDRRMO</p>
+                <p class="text-sm opacity-90">Logged in as LDRRMO</p>
                 <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
             </div>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
-                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+
+            <!-- Notification Bell -->
+            <div class="relative">
+                <button id="notification-bell"
+                        onclick="toggleNotifications()"
+                        class="relative bg-white/20 hover:bg-white/30 p-3 rounded-lg transition">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span id="notification-badge"
+                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        0
+                    </span>
                 </button>
-            </form>
 
                 <!-- Notifications Dropdown -->
                 <div id="notifications-dropdown"
@@ -309,7 +315,7 @@
                         <div class="flex items-center gap-2">
                             <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
                             <button onclick="markAllAsRead()"
-                                    class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">
+                                    class="text-xs text-[#CA6702] hover:text-[#BB3E03] font-semibold">
                                 Mark all read
                             </button>
                         </div>
@@ -319,22 +325,22 @@
             <div class="flex border-b bg-gray-50">
                 <button onclick="filterNotifications('all')"
                         id="notif-filter-all"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-[#CA6702] text-[#CA6702]">
                     All
                 </button>
                 <button onclick="filterNotifications('match_request')"
                         id="notif-filter-match_request"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#CA6702]">
                     Matches
                 </button>
                 <button onclick="filterNotifications('match_accepted')"
                         id="notif-filter-match_accepted"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#CA6702]">
                     Accepted
                 </button>
                 <button onclick="filterNotifications('message')"
                         id="notif-filter-message"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#CA6702]">
                     Messages
                 </button>
             </div>
@@ -350,18 +356,19 @@
             <!-- Footer -->
             <div class="px-4 py-3 border-t bg-gray-50 text-center">
                 <button onclick="viewAllNotifications()"
-                        class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
+                        class="text-sm text-[#CA6702] hover:text-[#BB3E03] font-semibold">
                     View All Notifications
                 </button>
             </div>
         </div>
-    </div>
+            </div>
 
-    <!-- User Info & Logout (existing) -->
-    <div class="flex items-center gap-3">
-        <!-- Your existing user dropdown here -->
-    </div>
-</div>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </button>
+            </form>
         </div>
     </div>
 
@@ -395,7 +402,7 @@
             <!-- Conversations List -->
             <div id="conversations-sidebar-list" class="flex-1 overflow-y-auto">
                 <div class="text-center py-12 text-gray-500">
-                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#CA6702] mb-3"></div>
                     <p class="text-sm">Loading conversations...</p>
                 </div>
             </div>
@@ -403,7 +410,7 @@
             <!-- Sidebar Footer -->
             <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
                 <button onclick="switchTab('my-matches', event)"
-                        class="w-full text-center text-indigo-600 hover:text-indigo-700 font-semibold text-sm py-2 hover:bg-indigo-50 rounded transition">
+                        class="w-full text-center text-[#CA6702] hover:text-[#BB3E03] font-semibold text-sm py-2 hover:bg-orange-50 rounded transition">
                     <i class="fas fa-th-large mr-2"></i>View All Matches
                 </button>
             </div>
@@ -598,7 +605,7 @@
             <!-- Filter Tabs -->
             <div class="mb-6 border-b border-gray-200">
                 <nav class="flex space-x-8">
-                    <button onclick="filterResourceNeeds('all')" id="resource-tab-all" class="resource-filter-tab pb-4 px-1 border-b-2 font-medium text-sm border-blue-600 text-blue-600">
+                    <button onclick="filterResourceNeeds('all')" id="resource-tab-all" class="resource-filter-tab pb-4 px-1 border-b-2 font-medium text-sm border-[#CA6702] text-[#CA6702]">
                         All Requests
                         <span id="resource-count-all" class="ml-2 px-2 py-0.5 bg-gray-200 rounded-full text-xs">0</span>
                     </button>
@@ -647,7 +654,7 @@
         <div class="flex gap-2">
             <button onclick="filterMyMatches('all')"
                     id="my-matches-filter-all"
-                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-indigo-600 text-white">
+                    class="px-4 py-2 rounded-lg font-semibold text-sm transition bg-[#CA6702] text-white">
                 All (<span id="my-matches-count-all">0</span>)
             </button>
             <button onclick="filterMyMatches('pending')"
@@ -675,10 +682,10 @@
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+        <div class="bg-gradient-to-br from-[#CA6702] to-[#BB3E03] rounded-lg p-4 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm">Total Matches</p>
+                    <p class="opacity-90 text-sm">Total Matches</p>
                     <p class="text-3xl font-bold" id="stats-total-matches">0</p>
                 </div>
                 <i class="fas fa-handshake text-4xl opacity-20"></i>
@@ -1167,7 +1174,7 @@
                         'critical': 'bg-red-100 text-red-800 border-red-300',
                         'high': 'bg-orange-100 text-orange-800 border-orange-300',
                         'medium': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                        'low': 'bg-blue-100 text-blue-800 border-blue-300'
+                        'low': 'bg-green-100 text-green-800 border-green-300'
                     };
 
                     const verificationBadges = {
@@ -1278,13 +1285,13 @@
 
             // Update active tab styling
             document.querySelectorAll('.resource-filter-tab').forEach(btn => {
-                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.remove('border-[#CA6702]', 'text-[#CA6702]');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
 
             const activeTab = document.getElementById(`resource-tab-${filter}`);
             if (activeTab) {
-                activeTab.classList.add('border-blue-600', 'text-blue-600');
+                activeTab.classList.add('border-[#CA6702]', 'text-[#CA6702]');
                 activeTab.classList.remove('border-transparent', 'text-gray-500');
             }
 
@@ -1807,11 +1814,11 @@ function filterMyMatches(status) {
 
     // Update active button
     document.querySelectorAll('[id^="my-matches-filter-"]').forEach(btn => {
-        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.remove('bg-[#CA6702]', 'text-white');
         btn.classList.add('bg-gray-200', 'text-gray-700');
     });
     document.getElementById(`my-matches-filter-${status}`).classList.remove('bg-gray-200', 'text-gray-700');
-    document.getElementById(`my-matches-filter-${status}`).classList.add('bg-indigo-600', 'text-white');
+    document.getElementById(`my-matches-filter-${status}`).classList.add('bg-[#CA6702]', 'text-white');
 
     // Reload matches
     loadMyMatches();
@@ -3233,13 +3240,13 @@ function filterNotifications(type) {
 
     // Update active button
     document.querySelectorAll('[id^="notif-filter-"]').forEach(btn => {
-        btn.classList.remove('border-indigo-600', 'text-indigo-600');
+        btn.classList.remove('border-[#CA6702]', 'text-[#CA6702]');
         btn.classList.add('border-transparent', 'text-gray-600');
     });
 
     const activeBtn = document.getElementById(`notif-filter-${type}`);
     activeBtn.classList.remove('border-transparent', 'text-gray-600');
-    activeBtn.classList.add('border-indigo-600', 'text-indigo-600');
+    activeBtn.classList.add('border-[#CA6702]', 'text-[#CA6702]');
 
     displayNotifications();
 }

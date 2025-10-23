@@ -18,11 +18,11 @@
 
         <!-- Tabs -->
         <div class="flex mb-6 border border-gray-200 rounded-lg overflow-hidden">
-            <a href="{{ route('login') }}" 
+            <a href="{{ route('login') }}"
                class="w-1/2 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 text-center">
                 Staff Login
             </a>
-            <button class="w-1/2 py-2 text-sm font-medium bg-white text-green-700 border-b-2 border-green-500">
+            <button class="w-1/2 py-2 text-sm font-medium bg-white text-[#CA6702] border-b-2 border-[#CA6702]">
                 Register
             </button>
         </div>
@@ -59,7 +59,7 @@
                 <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input type="text" id="full_name" name="full_name" required
                        value="{{ old('full_name') }}"
-                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                       class="w-full border-gray-300 rounded-lg focus:ring-[#CA6702] focus:border-[#CA6702]"
                        placeholder="Juan Dela Cruz">
                 @error('full_name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -71,7 +71,7 @@
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input type="email" id="email" name="email" required
                        value="{{ old('email') }}"
-                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                       class="w-full border-gray-300 rounded-lg focus:ring-[#CA6702] focus:border-[#CA6702]"
                        placeholder="juan@donortrack.ph">
                 @error('email')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -83,7 +83,7 @@
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <div class="relative">
                     <input type="password" id="password" name="password" required
-                           class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10"
+                           class="w-full border-gray-300 rounded-lg focus:ring-[#CA6702] focus:border-[#CA6702] pr-10"
                            placeholder="••••••••">
                     <button type="button" onclick="togglePassword('password', 'togglePasswordIcon')"
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
@@ -105,7 +105,7 @@
                 </label>
                 <div class="relative">
                     <input type="password" id="password_confirmation" name="password_confirmation" required
-                           class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10"
+                           class="w-full border-gray-300 rounded-lg focus:ring-[#CA6702] focus:border-[#CA6702] pr-10"
                            placeholder="••••••••">
                     <button type="button" onclick="togglePassword('password_confirmation', 'togglePasswordConfirmIcon')"
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
@@ -121,7 +121,7 @@
             <div class="mb-6">
                 <label for="barangay_id" class="block text-sm font-medium text-gray-700 mb-1">Barangay</label>
                 <select id="barangay_id" name="barangay_id" required
-                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full border-gray-300 rounded-lg focus:ring-[#CA6702] focus:border-[#CA6702]">
                     <option value="">Select your barangay</option>
                     @foreach($barangays as $barangay)
                         <option value="{{ $barangay->barangay_id }}" {{ old('barangay_id') == $barangay->barangay_id ? 'selected' : '' }}>
@@ -136,7 +136,7 @@
 
             <!-- Submit Button -->
             <button type="submit"
-                    class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2">
+                    class="w-full py-2 bg-[#CA6702] text-white rounded-lg hover:bg-[#BB3E03] flex items-center justify-center space-x-2">
                 <span>Register</span>
             </button>
         </form>
