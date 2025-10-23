@@ -575,7 +575,7 @@
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center">
@@ -583,22 +583,12 @@
                         </div>
                         <div>
                             <p class="text-gray-600 text-sm">Active Needs</p>
-                            <h3 class="text-3xl font-bold text-gray-900" id="activeNeedsCount">0</h3>
+                            <h3 class="text-3xl font-bold text-gray-900" id="activeNeedsCount">{{ $activeNeedsCount }}</h3>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-map-marker-alt text-orange-600 text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-gray-600 text-sm">Affected Barangays</p>
-                            <h3 class="text-3xl font-bold text-gray-900" id="affectedBarangaysCount">0</h3>
-                        </div>
-                    </div>
-                </div>
+
 
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <div class="flex items-center gap-4">
@@ -607,7 +597,7 @@
                         </div>
                         <div>
                             <p class="text-gray-600 text-sm">Your Impact</p>
-                            <h3 class="text-xl font-bold text-green-600">Help Now</h3>
+                            <h3 class="text-xl font-bold text-green-600">PHP {{ number_format($userImpact, 2) }}</h3>
                         </div>
                     </div>
                 </div>

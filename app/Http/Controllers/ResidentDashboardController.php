@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Barangay;
 use App\Models\ResourceNeed;
 use App\Models\Disaster;
+use App\Models\Donation;
 
 /**
  * Resident Dashboard Controller
@@ -30,7 +31,35 @@ class ResidentDashboardController extends Controller
                 ->sum('amount');
         });
 
-        return view('UserDashboards.residentdashboard', compact('barangays'));
+        // Calculate statistics
+        // Active Needs: Count barangays where needs_summary has data (is not null/empty)
+        $activeNeedsCount = Barangay::whereNotNull('needs_summary')
+            ->where('needs_summary', '!=', '')
+            ->count();
+
+        // Affected Barangays: Count barangays with disaster_status of 'critical', 'warning', or 'emergency'
+        $affectedBarangaysCount = Barangay::whereIn('disaster_status', ['critical', 'warning', 'emergency'])->count();
+
+        // User Impact: Sum total donations by the logged-in user where payment_status is 'paid'
+        $userId = session('user_id') ?? auth()->id();
+        $userImpact = 0;
+
+        if ($userId) {
+            $userImpact = Donation::where('user_id', $userId)
+                ->where('payment_status', 'paid')
+                ->sum('amount');
+        }
+
+
+
+        // dd('Active Needs:', $activeNeedsCount);
+        // dd('Affected Barangays:', $affectedBarangaysCount);
+        // dd('User Impact:', $userImpact);
+        // dd('Authenticated User ID:', auth()->id());
+        // dd('Session User Email:', session('user_email'));
+        // dd('Barangays Data:', $barangays);
+
+        return view('UserDashboards.residentdashboard', compact('barangays', 'activeNeedsCount', 'userImpact'));
     }
 
     /**
