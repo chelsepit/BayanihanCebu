@@ -394,16 +394,16 @@ public function getResourceNeeds(Request $request)
 {
     try {
         $filter = $request->query('filter', 'all');
-        
+
         \Log::info('=== GET RESOURCE NEEDS ===');
         \Log::info('Filter: ' . $filter);
-        
+
         $query = ResourceNeed::with('barangay')
             ->where(function($q) {
                 $q->where('status', 'pending')
                   ->orWhere('status', 'partially_fulfilled');
             });
-        
+
         // ✅ FIX: Handle NULL verification_status
         if ($filter === 'pending') {
             $query->where(function($q) {
@@ -416,11 +416,16 @@ public function getResourceNeeds(Request $request)
             $query->where('verification_status', 'rejected');
         }
         // If 'all', don't filter by verification_status
-        
+
         $needs = $query->orderByRaw("FIELD(urgency, 'critical', 'high', 'medium', 'low')")
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function($need) {
+                // Check if this need has an active match (pending or accepted)
+                $hasActiveMatch = ResourceMatch::where('resource_need_id', $need->id)
+                    ->whereIn('status', ['pending', 'accepted'])
+                    ->exists();
+
                 return [
                     'id' => $need->id,
                     'barangay_id' => $need->barangay_id,
@@ -437,8 +442,14 @@ public function getResourceNeeds(Request $request)
                     'rejection_reason' => $need->rejection_reason ?? null, // ✅ Add this
                     'affected_families' => $need->barangay->affected_families ?? 0,
                     'created_at' => $need->created_at ? $need->created_at->format('Y-m-d H:i:s') : null,
+                    'has_active_match' => $hasActiveMatch, // ✅ NEW: Indicate if this need already has an active match
                 ];
-            });
+            })
+            ->filter(function($need) {
+                // ✅ Filter out needs that already have active matches
+                return !$need['has_active_match'];
+            })
+            ->values(); // Reset array keys
 
         \Log::info('Total needs found: ' . $needs->count());
 
@@ -446,7 +457,7 @@ public function getResourceNeeds(Request $request)
     } catch (\Exception $e) {
         \Log::error('Error loading resource needs: ' . $e->getMessage());
         \Log::error($e->getTraceAsString());
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Error loading resource needs',

@@ -59,97 +59,161 @@
             <p class="text-sm text-blue-100">Cebu City Disaster Management / Public Works</p>
         </div>
         <div class="flex items-center gap-4">
+            <!-- Notification Bell -->
+            <div class="relative">
+                <button id="notification-bell"
+                        onclick="toggleNotifications()"
+                        class="relative p-2 text-white hover:bg-white/20 rounded-lg transition">
+                    <i class="fas fa-bell text-xl"></i>
+                    <!-- Unread Badge -->
+                    <span id="notification-badge"
+                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        0
+                    </span>
+                </button>
+
+                <!-- Notifications Dropdown -->
+                <div id="notifications-dropdown"
+                     class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-hidden">
+
+                    <!-- Header -->
+                    <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+                        <h3 class="font-bold text-gray-900">Notifications</h3>
+                        <div class="flex items-center gap-2">
+                            <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
+                            <button onclick="markAllAsRead()"
+                                    class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">
+                                Mark all read
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="flex border-b bg-gray-50">
+                        <button onclick="filterNotifications('all')"
+                                id="notif-filter-all"
+                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">
+                            All
+                        </button>
+                        <button onclick="filterNotifications('match_request')"
+                                id="notif-filter-match_request"
+                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                            Matches
+                        </button>
+                        <button onclick="filterNotifications('match_accepted')"
+                                id="notif-filter-match_accepted"
+                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                            Accepted
+                        </button>
+                        <button onclick="filterNotifications('message')"
+                                id="notif-filter-message"
+                                class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
+                            Messages
+                        </button>
+                    </div>
+
+                    <!-- Notifications List -->
+                    <div id="notifications-list" class="overflow-y-auto max-h-80">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p class="text-sm">Loading notifications...</p>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-4 py-3 border-t bg-gray-50 text-center">
+                        <button onclick="viewAllNotifications()"
+                                class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
+                            View All Notifications
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Messages Toggle Button -->
+            <div class="relative">
+                <button id="conversations-toggle"
+                        onclick="toggleConversationsSidebar()"
+                        class="relative p-2 text-white hover:bg-white/20 rounded-full transition"
+                        title="Messages">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3.293 3.293 3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                    </svg>
+                    <!-- Active Conversations Badge -->
+                    <span id="conversations-badge-header"
+                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        0
+                    </span>
+                </button>
+            </div>
+
+            <!-- User Info -->
             <div class="text-right">
                 <p class="text-sm text-blue-100">Logged in as LDRRMO</p>
                 <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
             </div>
+
+            <!-- Logout Button -->
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
             </form>
-
-            <div class="flex items-center gap-4">
-    <!-- Notification Bell -->
-    <div class="relative">
-        <button id="notification-bell" 
-                onclick="toggleNotifications()" 
-                class="relative p-2 text-gray-600 hover:text-indigo-600 transition">
-            <i class="fas fa-bell text-xl"></i>
-            <!-- Unread Badge -->
-            <span id="notification-badge" 
-                  class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                0
-            </span>
-        </button>
-
-        <!-- Notifications Dropdown -->
-        <div id="notifications-dropdown" 
-             class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-hidden">
-            
-            <!-- Header -->
-            <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
-                <h3 class="font-bold text-gray-900">Notifications</h3>
-                <div class="flex items-center gap-2">
-                    <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
-                    <button onclick="markAllAsRead()" 
-                            class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">
-                        Mark all read
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="flex border-b bg-gray-50">
-                <button onclick="filterNotifications('all')" 
-                        id="notif-filter-all"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600">
-                    All
-                </button>
-                <button onclick="filterNotifications('match_request')" 
-                        id="notif-filter-match_request"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
-                    Matches
-                </button>
-                <button onclick="filterNotifications('match_accepted')" 
-                        id="notif-filter-match_accepted"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
-                    Accepted
-                </button>
-                <button onclick="filterNotifications('message')" 
-                        id="notif-filter-message"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-indigo-600">
-                    Messages
-                </button>
-            </div>
-
-            <!-- Notifications List -->
-            <div id="notifications-list" class="overflow-y-auto max-h-80">
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <p class="text-sm">Loading notifications...</p>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="px-4 py-3 border-t bg-gray-50 text-center">
-                <button onclick="viewAllNotifications()" 
-                        class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
-                    View All Notifications
-                </button>
-            </div>
+        </div>
         </div>
     </div>
 
-    <!-- User Info & Logout (existing) -->
-    <div class="flex items-center gap-3">
-        <!-- Your existing user dropdown here -->
-    </div>
-</div>
-        </div>
-    </div>
+    <!-- Main Layout with Sidebar -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Right Sidebar - Conversations (Facebook-style) -->
+        <div id="conversations-sidebar"
+             class="w-80 bg-white border-l border-gray-200 flex-shrink-0 flex flex-col transition-all duration-300 translate-x-full fixed right-0 z-[9999] h-full">
 
+            <!-- Sidebar Header -->
+            <div class="px-4 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
+                <h2 class="text-xl font-bold text-gray-900">Messages</h2>
+                <span id="conversations-badge-sidebar"
+                      class="hidden px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                    0
+                </span>
+            </div>
+
+            <!-- Search Bar (Optional) -->
+            <div class="px-3 py-2 border-b border-gray-100">
+                <div class="relative">
+                    <input type="text"
+                           id="conversation-search"
+                           placeholder="Search conversations..."
+                           onkeyup="filterConversations()"
+                           class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Conversations List -->
+            <div id="conversations-sidebar-list" class="flex-1 overflow-y-auto">
+                <div class="text-center py-12 text-gray-500">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
+                    <p class="text-sm">Loading conversations...</p>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                <button onclick="switchTab('my-matches', event)"
+                        class="w-full text-center text-indigo-600 hover:text-indigo-700 font-semibold text-sm py-2 hover:bg-indigo-50 rounded transition">
+                    <i class="fas fa-th-large mr-2"></i>View All Matches
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay"
+             onclick="toggleConversationsSidebar()"
+             class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9998]"></div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-y-auto bg-gray-50">
     <div class="max-w-7xl mx-auto px-6 py-6">
 
         <!-- Statistics Cards -->
@@ -439,60 +503,62 @@
     </div>
 </div>
 
-<!-- Conversation Modal -->
-<div id="conversationModal" class="modal hidden">
-    <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
-        <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center rounded-t-lg">
-            <div>
-                <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-comments"></i>
-                    Match Conversation
-                </h3>
-                <p class="text-sm text-indigo-100 mt-1" id="conversationSubtitle">Group chat between barangays</p>
+<!-- Messenger-Style Chat Boxes Container (Bottom Right) -->
+<div id="chat-boxes-container" class="fixed bottom-0 right-0 flex flex-row-reverse gap-2 p-4 z-[9999] pointer-events-none">
+    <!-- Chat boxes will be dynamically inserted here -->
+</div>
+
+<!-- Chat Box Template (Hidden) -->
+<template id="chat-box-template">
+    <div class="chat-box w-80 bg-white rounded-t-lg shadow-2xl flex flex-col pointer-events-auto" data-match-id="">
+        <!-- Chat Header -->
+        <div class="chat-header bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 flex items-center justify-between rounded-t-lg cursor-pointer">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="chat-title text-sm font-semibold text-white truncate">Loading...</p>
+                    <p class="chat-subtitle text-xs text-indigo-100 truncate">Group chat</p>
+                </div>
             </div>
-            <button onclick="closeConversationModal()" class="text-white hover:text-gray-200 transition">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="minimizeChatBox(this)" class="minimize-btn text-white hover:bg-white/20 p-1 rounded transition">
+                    <i class="fas fa-minus text-sm"></i>
+                </button>
+                <button onclick="closeChatBox(this)" class="close-btn text-white hover:bg-white/20 p-1 rounded transition">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
         </div>
 
-        <!-- Match Info Banner -->
-        <div id="conversationMatchInfo" class="bg-blue-50 border-b border-blue-200 px-6 py-3">
-            <!-- Match details will be inserted here -->
-        </div>
-
-        <!-- Messages Container -->
-        <div id="conversationMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50" style="max-height: 400px;">
+        <!-- Chat Body (Messages) -->
+        <div class="chat-body flex-1 overflow-y-auto p-3 bg-gray-50 space-y-2" style="height: 400px;">
             <div class="text-center py-12">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                <p class="text-gray-600">Loading conversation...</p>
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
+                <p class="text-xs text-gray-600">Loading conversation...</p>
             </div>
         </div>
 
-        <!-- Message Input -->
-        <div class="border-t bg-white px-6 py-4 rounded-b-lg">
-            <form id="sendMessageForm" onsubmit="sendConversationMessage(event)" class="flex gap-3">
+        <!-- Chat Footer (Input) -->
+        <div class="chat-footer border-t bg-white p-3 rounded-b-lg">
+            <form class="send-message-form flex gap-2" onsubmit="sendChatMessage(event, this)">
                 <input
                     type="text"
-                    id="messageInput"
-                    placeholder="Type your message as LDRRMO..."
-                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    class="message-input flex-1 px-3 py-2 text-sm border border-gray-300 rounded-full focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Type a message..."
                     required
                     maxlength="1000"
                 />
                 <button
                     type="submit"
-                    class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold flex items-center gap-2">
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition text-sm font-semibold">
                     <i class="fas fa-paper-plane"></i>
-                    Send
                 </button>
             </form>
-            <p class="text-xs text-gray-500 mt-2">
-                <i class="fas fa-info-circle"></i> You're participating as LDRRMO. Messages are visible to both barangays.
-            </p>
         </div>
     </div>
-</div>
+</template>
 
 
         <!-- TAB 3: Analytics -->
@@ -1314,12 +1380,27 @@ function updateMyMatchesCounts(matches) {
         completed: matches.filter(m => m.status === 'completed').length,
         rejected: matches.filter(m => m.status === 'rejected').length
     };
-    
+
     // Update count badges
     Object.keys(counts).forEach(status => {
         const countEl = document.getElementById(`my-matches-count-${status}`);
         if (countEl) countEl.textContent = counts[status];
     });
+
+    // Update conversation icon badge (show active matches with conversations)
+    const activeMatches = matches.filter(m =>
+        (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
+    ).length;
+
+    const conversationBadge = document.getElementById('conversations-badge');
+    if (conversationBadge) {
+        if (activeMatches > 0) {
+            conversationBadge.textContent = activeMatches;
+            conversationBadge.classList.remove('hidden');
+        } else {
+            conversationBadge.classList.add('hidden');
+        }
+    }
 }
 
 function displayMyMatches(matches) {
@@ -1532,32 +1613,87 @@ async function cancelMatch(matchId) {
     }
 }
 
-// Conversation Modal
-let currentConversationMatchId = null;
-let conversationRefreshInterval = null;
+// Messenger-Style Chat Boxes
+let openChatBoxes = new Map(); // matchId -> { element, interval }
 
-async function viewConversation(matchId) {
-    currentConversationMatchId = matchId;
+function viewConversation(matchId) {
+    // Check if chat box already exists
+    if (openChatBoxes.has(matchId)) {
+        // If minimized, maximize it
+        const existingBox = openChatBoxes.get(matchId).element;
+        const chatBody = existingBox.querySelector('.chat-body');
+        const chatFooter = existingBox.querySelector('.chat-footer');
+        if (chatBody.classList.contains('hidden')) {
+            chatBody.classList.remove('hidden');
+            chatFooter.classList.remove('hidden');
+        }
+        // Bring to front by re-appending
+        existingBox.parentElement.appendChild(existingBox);
+        return;
+    }
 
-    // Open modal
-    const modal = document.getElementById('conversationModal');
-    modal.classList.remove('hidden');
+    // Create new chat box from template
+    const template = document.getElementById('chat-box-template');
+    const chatBox = template.content.cloneNode(true).querySelector('.chat-box');
+    chatBox.setAttribute('data-match-id', matchId);
+
+    // Add to container
+    const container = document.getElementById('chat-boxes-container');
+    container.appendChild(chatBox);
 
     // Load conversation
-    await loadConversation(matchId);
+    loadChatConversation(matchId, chatBox);
 
-    // Start auto-refresh every 5 seconds
-    if (conversationRefreshInterval) {
-        clearInterval(conversationRefreshInterval);
-    }
-    conversationRefreshInterval = setInterval(() => {
-        loadConversation(matchId, true); // silent refresh
+    // Start auto-refresh
+    const refreshInterval = setInterval(() => {
+        loadChatConversation(matchId, chatBox, true);
     }, 5000);
+
+    // Store reference
+    openChatBoxes.set(matchId, {
+        element: chatBox,
+        interval: refreshInterval
+    });
 }
 
-async function loadConversation(matchId, silent = false) {
+function closeChatBox(button) {
+    const chatBox = button.closest('.chat-box');
+    const matchId = parseInt(chatBox.getAttribute('data-match-id'));
+
+    // Clear interval
+    if (openChatBoxes.has(matchId)) {
+        clearInterval(openChatBoxes.get(matchId).interval);
+        openChatBoxes.delete(matchId);
+    }
+
+    // Remove element
+    chatBox.remove();
+}
+
+function minimizeChatBox(button) {
+    const chatBox = button.closest('.chat-box');
+    const chatBody = chatBox.querySelector('.chat-body');
+    const chatFooter = chatBox.querySelector('.chat-footer');
+    const icon = button.querySelector('i');
+
+    if (chatBody.classList.contains('hidden')) {
+        // Maximize
+        chatBody.classList.remove('hidden');
+        chatFooter.classList.remove('hidden');
+        icon.classList.remove('fa-window-maximize');
+        icon.classList.add('fa-minus');
+    } else {
+        // Minimize
+        chatBody.classList.add('hidden');
+        chatFooter.classList.add('hidden');
+        icon.classList.remove('fa-minus');
+        icon.classList.add('fa-window-maximize');
+    }
+}
+
+async function loadChatConversation(matchId, chatBox, silent = false) {
     try {
-        const messagesContainer = document.getElementById('conversationMessages');
+        const messagesContainer = chatBox.querySelector('.chat-body');
 
         if (!silent) {
             messagesContainer.innerHTML = `
@@ -1587,134 +1723,124 @@ async function loadConversation(matchId, silent = false) {
             return;
         }
 
-        // Update match info banner
+        // Update chat header
         const matchInfo = response.match;
-        document.getElementById('conversationMatchInfo').innerHTML = `
-            <div class="flex items-center justify-between flex-wrap gap-2 text-sm">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-exclamation-circle text-blue-600"></i>
-                        <span class="font-semibold">${matchInfo.requesting_barangay}</span>
-                        <span class="text-gray-600">needs</span>
-                        <span class="font-semibold text-blue-700">${matchInfo.resource_need}</span>
-                    </div>
-                    <div class="text-gray-400">↔</div>
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-hands-helping text-green-600"></i>
-                        <span class="font-semibold">${matchInfo.donating_barangay}</span>
-                        <span class="text-gray-600">offers</span>
-                        <span class="font-semibold text-green-700">${matchInfo.donation}</span>
-                    </div>
-                </div>
-                <span class="px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(matchInfo.status)}">
-                    ${matchInfo.status.toUpperCase()}
-                </span>
-            </div>
-        `;
+        const chatTitle = chatBox.querySelector('.chat-title');
+        const chatSubtitle = chatBox.querySelector('.chat-subtitle');
+
+        chatTitle.textContent = `${matchInfo.requesting_barangay} ↔ ${matchInfo.donating_barangay}`;
+        chatSubtitle.textContent = matchInfo.resource_need;
 
         // Display messages
-        displayConversationMessages(response.conversation.messages);
+        displayChatMessages(chatBox, response.conversation.messages);
 
     } catch (error) {
         console.error('Error loading conversation:', error);
-        document.getElementById('conversationMessages').innerHTML = `
-            <div class="text-center py-12">
-                <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Error Loading Conversation</h3>
-                <p class="text-gray-500 mb-4">${error.message || 'Failed to load conversation'}</p>
-                <button onclick="loadConversation(${matchId})"
-                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-redo mr-2"></i>Try Again
-                </button>
+        const messagesContainer = chatBox.querySelector('.chat-body');
+        messagesContainer.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-2"></i>
+                <p class="text-xs text-gray-500">${error.message || 'Failed to load'}</p>
             </div>
         `;
     }
 }
 
-function displayConversationMessages(messages) {
-    const container = document.getElementById('conversationMessages');
+function displayChatMessages(chatBox, messages) {
+    const container = chatBox.querySelector('.chat-body');
 
     if (!messages || messages.length === 0) {
         container.innerHTML = `
             <div class="text-center py-8">
-                <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                <p class="text-gray-500">No messages yet. Start the conversation!</p>
+                <i class="fas fa-inbox text-3xl text-gray-300 mb-2"></i>
+                <p class="text-xs text-gray-500">No messages yet</p>
             </div>
         `;
         return;
     }
 
-    // Render messages
+    // Render messages (Messenger-style bubbles)
     const html = messages.map(msg => {
         const isLDRRMO = msg.sender_role === 'ldrrmo';
         const isRequester = msg.sender_role === 'requester';
         const isDonor = msg.sender_role === 'donor';
 
-        let bgColor = 'bg-gray-100';
-        let textColor = 'text-gray-900';
-        let iconColor = 'text-gray-600';
-        let icon = 'fas fa-user';
-
+        let bgColor, textColor;
         if (isLDRRMO) {
-            bgColor = 'bg-indigo-100 border border-indigo-300';
-            textColor = 'text-indigo-900';
-            iconColor = 'text-indigo-600';
-            icon = 'fas fa-shield-alt';
+            bgColor = 'bg-indigo-600';
+            textColor = 'text-white';
         } else if (isRequester) {
-            bgColor = 'bg-blue-100';
-            textColor = 'text-blue-900';
-            iconColor = 'text-blue-600';
-            icon = 'fas fa-exclamation-circle';
-        } else if (isDonor) {
-            bgColor = 'bg-green-100';
-            textColor = 'text-green-900';
-            iconColor = 'text-green-600';
-            icon = 'fas fa-hands-helping';
+            bgColor = 'bg-blue-500';
+            textColor = 'text-white';
+        } else {
+            bgColor = 'bg-green-500';
+            textColor = 'text-white';
         }
 
-        return `
-            <div class="${bgColor} rounded-lg p-4 ${isLDRRMO ? 'border-l-4 border-indigo-600' : ''}">
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${bgColor}">
-                        <i class="${icon} ${iconColor}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-semibold ${textColor}">${msg.sender_name}</span>
-                            <span class="text-xs text-gray-500">${msg.created_at}</span>
+        // LDRRMO messages on the right, others on the left (Messenger style)
+        if (isLDRRMO) {
+            return `
+                <div class="flex items-start gap-2 justify-end">
+                    <div class="flex-1 flex flex-col items-end">
+                        <p class="text-xs text-gray-600 mb-0.5">You</p>
+                        <div class="${bgColor} ${textColor} rounded-2xl px-3 py-2 inline-block max-w-[85%]">
+                            <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message)}</p>
                         </div>
-                        <p class="text-sm ${textColor} whitespace-pre-wrap">${escapeHtml(msg.message)}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">${formatTimeSimple(msg.created_at)}</p>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            return `
+                <div class="flex items-start gap-2">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold">
+                        ${msg.sender_name.substring(0, 1)}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600 mb-0.5">${msg.sender_name}</p>
+                        <div class="${bgColor} ${textColor} rounded-2xl px-3 py-2 inline-block max-w-[85%]">
+                            <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message)}</p>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-0.5">${formatTimeSimple(msg.created_at)}</p>
+                    </div>
+                </div>
+            `;
+        }
     }).join('');
 
     container.innerHTML = html;
 
     // Scroll to bottom
-    container.scrollTop = container.scrollHeight;
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 100);
 }
 
-async function sendConversationMessage(event) {
+function formatTimeSimple(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+async function sendChatMessage(event, form) {
     event.preventDefault();
 
-    const input = document.getElementById('messageInput');
+    const chatBox = form.closest('.chat-box');
+    const matchId = parseInt(chatBox.getAttribute('data-match-id'));
+    const input = form.querySelector('.message-input');
     const message = input.value.trim();
 
-    if (!message || !currentConversationMatchId) {
-        return;
-    }
+    if (!message) return;
 
     // Disable input while sending
-    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const submitBtn = form.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.innerHTML;
     input.disabled = true;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
     try {
-        const response = await fetchAPI(`/api/ldrrmo/matches/${currentConversationMatchId}/messages`, {
+        const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/messages`, {
             method: 'POST',
             body: JSON.stringify({ message })
         });
@@ -1724,7 +1850,7 @@ async function sendConversationMessage(event) {
             input.value = '';
 
             // Reload conversation
-            await loadConversation(currentConversationMatchId, true);
+            await loadChatConversation(matchId, chatBox, true);
         } else {
             alert('❌ Error: ' + (response.message || 'Failed to send message'));
         }
@@ -1740,29 +1866,7 @@ async function sendConversationMessage(event) {
     }
 }
 
-function closeConversationModal() {
-    const modal = document.getElementById('conversationModal');
-    modal.classList.add('hidden');
-    currentConversationMatchId = null;
-
-    // Stop auto-refresh
-    if (conversationRefreshInterval) {
-        clearInterval(conversationRefreshInterval);
-        conversationRefreshInterval = null;
-    }
-}
-
-// Close conversation modal when clicking outside
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('conversationModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeConversationModal();
-            }
-        });
-    }
-});
+// Chat boxes are ready to use - no additional setup needed
 
 // Helper functions
 function getStatusColor(status) {
@@ -1810,23 +1914,67 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
-    // Show confirmation modal
-    const confirmed = confirm(
-        `🤝 Initiate Match Request\n\n` +
-        `You are about to connect:\n` +
-        `• Requesting Barangay: (with this need)\n` +
-        `• Donating Barangay: ${barangayName}\n\n` +
-        `Match Score: ${matchScore}%\n` +
-        `Can Fully Fulfill: ${canFullyFulfill ? 'Yes ✅' : 'Partial ⚠️'}\n\n` +
-        `Both barangays will be notified. Continue?`
-    );
-    
-    if (!confirmed) return;
+    // Get the need details
+    const needData = currentResourceNeeds.find(n => n.id === needId);
+
+    // Create confirmation modal content
+    const confirmHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" id="confirmMatchModal">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                <div class="text-center mb-4">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-handshake text-3xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Initiate Match Request?</h3>
+                    <p class="text-gray-600">You are about to connect these barangays</p>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p class="text-sm font-semibold text-blue-900 mb-1">Requesting Barangay</p>
+                        <p class="text-sm text-blue-700">${needData?.barangay_name || 'Unknown'}</p>
+                        <p class="text-xs text-blue-600 mt-1">Needs: ${needData?.category || 'General'} (${needData?.quantity || 'N/A'})</p>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p class="text-sm font-semibold text-green-900 mb-1">Donating Barangay</p>
+                        <p class="text-sm text-green-700">${barangayName}</p>
+                        <p class="text-xs text-green-600 mt-1">Match Score: ${matchScore}% • ${canFullyFulfill ? 'Full Fulfillment ✅' : 'Partial Fulfillment ⚠️'}</p>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
+                    <p class="text-xs text-yellow-800">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Both barangays will be notified via the system
+                    </p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('confirmMatchModal').remove()"
+                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold">
+                        Cancel
+                    </button>
+                    <button onclick="confirmInitiateMatch(${needId}, ${donationId}, ${matchScore}, ${canFullyFulfill})"
+                            class="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
+                        Initiate Match
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', confirmHtml);
+}
+
+async function confirmInitiateMatch(needId, donationId, matchScore, canFullyFulfill) {
+    // Remove confirmation modal
+    document.getElementById('confirmMatchModal').remove();
 
     try {
         // Get the need details to extract quantity
         const needData = currentResourceNeeds.find(n => n.id === needId);
-        
+
         const response = await fetchAPI('/api/ldrrmo/matches/initiate', {
             method: 'POST',
             body: JSON.stringify({
@@ -1839,31 +1987,79 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
         });
 
         if (response.success) {
-            alert(
-                `✅ Match Request Sent!\n\n` +
-                `Match ID: ${response.data.match_id}\n` +
-                `Status: ${response.data.status}\n\n` +
-                `Both barangays have been notified:\n` +
-                `• ${response.data.requesting_barangay} (FYI)\n` +
-                `• ${response.data.donating_barangay} (Action Required)\n\n` +
-                `You can track this match in the "My Matches" tab.`
-            );
-            
-            // Close the modal and refresh
+            // Show success modal
+            const successHtml = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" id="successMatchModal">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                        <div class="text-center mb-4">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-check-circle text-3xl text-green-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Match Request Sent!</h3>
+                            <p class="text-gray-600">Both barangays have been notified</p>
+                        </div>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="text-sm space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Match ID:</span>
+                                    <span class="font-semibold text-gray-900">#${response.data.match_id}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold">${response.data.status}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 mb-6 text-sm">
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-check text-green-600"></i>
+                                <span>${response.data.requesting_barangay} (Notified)</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-check text-green-600"></i>
+                                <span>${response.data.donating_barangay} (Action Required)</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                            <p class="text-xs text-blue-800">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Track this match in the "My Matches" tab
+                            </p>
+                        </div>
+
+                        <button onclick="closeSuccessModal()"
+                                class="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', successHtml);
+
+            // Close the suggested matches modal
             closeMatchModal();
-            
+
             // Refresh the resource needs list
             loadResourceNeeds();
-            
-            // TODO: Update notification bell count
-            // loadNotifications();
+
+            // Update notification count
+            loadNotifications();
         } else {
             alert('❌ Error: ' + response.message);
         }
     } catch (error) {
         console.error('Error initiating match:', error);
-        alert('Failed to initiate match request. Please try again.');
+        alert('❌ Failed to initiate match request. Please try again.');
     }
+}
+
+function closeSuccessModal() {
+    const modal = document.getElementById('successMatchModal');
+    if (modal) modal.remove();
 }
         document.addEventListener('click', function(e) {
             const modal = document.getElementById('suggestedMatchesModal');
@@ -2451,19 +2647,28 @@ let notificationDropdownOpen = false;
 
 // Initialize notifications on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Load notifications immediately
     loadNotifications();
-    
-    // Poll for new notifications every 30 seconds
-    setInterval(loadNotifications, 30000);
-    
-    // Close dropdown when clicking outside
+
+    // Poll for new notifications every 10 seconds (more frequent for better real-time feel)
+    setInterval(loadNotifications, 10000);
+
+    // Also poll for unread count every 5 seconds (lightweight check)
+    setInterval(updateUnreadCount, 5000);
+
+    // Update conversation badge every 15 seconds
+    updateConversationBadge();
+    setInterval(updateConversationBadge, 15000);
+
+    // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('notifications-dropdown');
-        const bell = document.getElementById('notification-bell');
-        
-        if (notificationDropdownOpen && 
-            !dropdown.contains(event.target) && 
-            !bell.contains(event.target)) {
+        const notifDropdown = document.getElementById('notifications-dropdown');
+        const notifBell = document.getElementById('notification-bell');
+
+        // Close notifications dropdown
+        if (notificationDropdownOpen &&
+            !notifDropdown.contains(event.target) &&
+            !notifBell.contains(event.target)) {
             closeNotifications();
         }
     });
@@ -2472,17 +2677,21 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadNotifications() {
     try {
         const data = await fetchAPI('/api/notifications');
-        allNotifications = data;
-        
-        // Update unread count
-        updateUnreadCount();
-        
-        // If dropdown is open, display notifications
-        if (notificationDropdownOpen) {
-            displayNotifications();
+
+        if (data && Array.isArray(data)) {
+            allNotifications = data;
+
+            // Update unread count
+            updateUnreadCount();
+
+            // If dropdown is open, display notifications
+            if (notificationDropdownOpen) {
+                displayNotifications();
+            }
         }
     } catch (error) {
         console.error('Error loading notifications:', error);
+        // Don't show error to user, just log it (fail silently for better UX)
     }
 }
 
@@ -2490,27 +2699,264 @@ async function updateUnreadCount() {
     try {
         const data = await fetchAPI('/api/notifications/unread-count');
         const count = data.count || 0;
-        
+
         const badge = document.getElementById('notification-badge');
+        const countText = document.getElementById('notification-count');
+
+        if (!badge || !countText) return;
+
         if (count > 0) {
             badge.classList.remove('hidden');
             badge.textContent = count > 99 ? '99+' : count;
+            countText.textContent = `${count} unread`;
+
+            // Add subtle animation when count increases
+            badge.classList.add('animate-pulse');
+            setTimeout(() => badge.classList.remove('animate-pulse'), 1000);
+        } else {
+            badge.classList.add('hidden');
+            countText.textContent = 'No unread';
+        }
+
+    } catch (error) {
+        console.error('Error updating unread count:', error);
+        // Fail silently
+    }
+}
+
+async function updateConversationBadge() {
+    try {
+        // Fetch active matches with conversations (lightweight query)
+        const data = await fetchAPI('/api/ldrrmo/matches?status=all');
+
+        if (!data || !Array.isArray(data)) return;
+
+        // Count active matches with conversations
+        const activeConversations = data.filter(m =>
+            (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
+        ).length;
+
+        const badge = document.getElementById('conversations-badge');
+        if (!badge) return;
+
+        if (activeConversations > 0) {
+            badge.textContent = activeConversations > 99 ? '99+' : activeConversations;
+            badge.classList.remove('hidden');
         } else {
             badge.classList.add('hidden');
         }
-        
-        // Update count text
-        document.getElementById('notification-count').textContent = 
-            count === 0 ? 'No unread' : `${count} unread`;
-            
+
     } catch (error) {
-        console.error('Error updating unread count:', error);
+        console.error('Error updating conversation badge:', error);
+        // Fail silently
     }
+}
+
+// Conversations Sidebar (Facebook-style)
+let conversationsSidebarOpen = false;
+let activeConversationsData = [];
+
+function toggleConversationsSidebar() {
+    const sidebar = document.getElementById('conversations-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    conversationsSidebarOpen = !conversationsSidebarOpen;
+
+    if (conversationsSidebarOpen) {
+        sidebar.classList.remove('translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        overlay.classList.remove('hidden');
+        // Load conversations when opening
+        loadSidebarConversations();
+    } else {
+        sidebar.classList.add('translate-x-full');
+        sidebar.classList.remove('translate-x-0');
+        overlay.classList.add('hidden');
+    }
+}
+
+// Refresh conversations every 20 seconds (only if sidebar is open)
+setInterval(() => {
+    if (conversationsSidebarOpen) {
+        loadSidebarConversations();
+    }
+}, 20000);
+
+async function loadSidebarConversations() {
+    try {
+        const container = document.getElementById('conversations-sidebar-list');
+
+        if (!container) return;
+
+        // Fetch active matches with conversations
+        const data = await fetchAPI('/api/ldrrmo/matches?status=all');
+
+        if (!data || !Array.isArray(data)) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
+                    <p class="text-sm text-xs">Failed to load</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Filter active conversations
+        activeConversationsData = data.filter(m =>
+            (m.status === 'pending' || m.status === 'accepted') && m.has_conversation
+        );
+
+        displaySidebarConversations(activeConversationsData);
+        updateConversationBadges(activeConversationsData.length);
+
+    } catch (error) {
+        console.error('Error loading conversations:', error);
+        const container = document.getElementById('conversations-sidebar-list');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
+                    <p class="text-sm text-xs">Error loading</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function displaySidebarConversations(conversations) {
+    const container = document.getElementById('conversations-sidebar-list');
+
+    if (!container) return;
+
+    if (!conversations || conversations.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12 px-4 text-gray-400">
+                <i class="fas fa-comments-slash text-4xl mb-3"></i>
+                <p class="text-sm font-semibold text-gray-700 mb-1">No Conversations</p>
+                <p class="text-xs text-gray-500">Start a match to begin</p>
+            </div>
+        `;
+        return;
+    }
+
+    const html = conversations.map(convo => {
+        const statusDots = {
+            'pending': 'bg-yellow-400',
+            'accepted': 'bg-green-400',
+            'completed': 'bg-blue-400',
+            'rejected': 'bg-red-400'
+        };
+
+        // Safely get barangay names from object or string
+        const requestingName = convo.requesting_barangay?.name || convo.requesting_barangay || 'Unknown';
+        const donatingName = convo.donating_barangay?.name || convo.donating_barangay || 'Unknown';
+        const categoryName = convo.resource_need?.category || convo.category || 'Resource Match';
+        const initials = String(requestingName).substring(0, 2).toUpperCase();
+
+        return `
+            <div onclick="openConversationFromSidebar(${convo.id})"
+                 class="px-3 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
+
+                <div class="flex items-center gap-3">
+                    <!-- Avatar with Status Dot -->
+                    <div class="relative flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                            ${initials}
+                        </div>
+                        <div class="absolute bottom-0 right-0 w-3 h-3 ${statusDots[convo.status] || 'bg-gray-400'} rounded-full border-2 border-white"></div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 text-sm truncate mb-0.5">
+                            ${requestingName}
+                        </p>
+                        <p class="text-xs text-gray-600 truncate mb-0.5">
+                            ↔ ${donatingName}
+                        </p>
+                        <p class="text-xs text-gray-500 truncate">
+                            ${categoryName}
+                        </p>
+                    </div>
+
+                    <!-- Notification Badge -->
+                    ${convo.unread_messages ? `
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full font-bold">
+                                ${convo.unread_messages > 9 ? '9+' : convo.unread_messages}
+                            </span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
+function updateConversationBadges(count) {
+    const badges = [
+        document.getElementById('conversations-badge-header'),
+        document.getElementById('conversations-badge-sidebar')
+    ];
+
+    badges.forEach(badge => {
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    });
+}
+
+function filterConversations() {
+    const searchTerm = document.getElementById('conversation-search').value.toLowerCase();
+
+    if (!searchTerm) {
+        displaySidebarConversations(activeConversationsData);
+        return;
+    }
+
+    const filtered = activeConversationsData.filter(convo => {
+        const requestingName = String(convo.requesting_barangay?.name || convo.requesting_barangay || '').toLowerCase();
+        const donatingName = String(convo.donating_barangay?.name || convo.donating_barangay || '').toLowerCase();
+        const category = String(convo.resource_need?.category || convo.category || '').toLowerCase();
+
+        return requestingName.includes(searchTerm) ||
+               donatingName.includes(searchTerm) ||
+               category.includes(searchTerm);
+    });
+
+    displaySidebarConversations(filtered);
+}
+
+function openConversationFromSidebar(matchId) {
+    // Close sidebar after opening conversation
+    toggleConversationsSidebar();
+    viewConversation(matchId);
+}
+
+function formatTimeAgo(dateString) {
+    if (!dateString) return 'Recently';
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function toggleNotifications() {
     const dropdown = document.getElementById('notifications-dropdown');
-    
+
     if (notificationDropdownOpen) {
         closeNotifications();
     } else {
@@ -2604,9 +3050,12 @@ async function handleNotificationClick(notificationId, actionUrl) {
             // Parse action (e.g., "view-match-123" or "view-conversation-5")
             if (actionUrl.includes('view-match-')) {
                 const matchId = actionUrl.replace('view-match-', '');
-                // Go to My Matches tab and highlight this match
+                // Go to My Matches tab
                 showTab('my-matches');
-                // TODO: Scroll to and highlight the match
+                // Reload matches to ensure fresh data
+                setTimeout(() => {
+                    loadMyMatches();
+                }, 300);
             } else if (actionUrl.includes('view-conversation-')) {
                 const matchId = actionUrl.replace('view-conversation-', '');
                 viewConversation(matchId);
@@ -2692,6 +3141,9 @@ function getNotificationIconColor(type) {
 }
 console.log('✅ Notification system loaded');
     </script>
+
+    </div> <!-- Close Main Content Area -->
+    </div> <!-- Close Main Layout with Sidebar -->
 
 </body>
 </html>
