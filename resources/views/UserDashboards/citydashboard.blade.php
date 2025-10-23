@@ -2121,6 +2121,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+// Match Success Modal System
+window.showMatchSuccessModal = function(matchData) {
+    const modal = document.getElementById('matchSuccessModal');
+
+    // Update match ID
+    document.getElementById('matchSuccessId').textContent = `#${matchData.match_id}`;
+
+    // Update barangay names
+    document.getElementById('matchSuccessRequesting').textContent = matchData.requesting_barangay;
+    document.getElementById('matchSuccessDonating').textContent = matchData.donating_barangay;
+
+    // Show modal
+    modal.classList.remove('hidden');
+}
+
+window.closeMatchSuccessModal = function() {
+    document.getElementById('matchSuccessModal').classList.add('hidden');
+}
+
 async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
     // Show confirmation modal
     const confirmed = await confirm(
@@ -3444,25 +3463,6 @@ console.log('✅ Notification system loaded');
                 alertCallback(result);
                 alertCallback = null;
             }
-        }
-
-        // Match Success Modal System
-        window.showMatchSuccessModal = function(matchData) {
-            const modal = document.getElementById('matchSuccessModal');
-
-            // Update match ID
-            document.getElementById('matchSuccessId').textContent = `#${matchData.match_id}`;
-
-            // Update barangay names
-            document.getElementById('matchSuccessRequesting').textContent = matchData.requesting_barangay;
-            document.getElementById('matchSuccessDonating').textContent = matchData.donating_barangay;
-
-            // Show modal
-            modal.classList.remove('hidden');
-        }
-
-        window.closeMatchSuccessModal = function() {
-            document.getElementById('matchSuccessModal').classList.add('hidden');
         }
 
         // Override native alert with modal
