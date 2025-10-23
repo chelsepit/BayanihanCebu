@@ -9,35 +9,7 @@ let currentConversationData = null;
 let messagePollingInterval = null;
 let isAtBottom = true;
 
-/**
- * Generic API fetch wrapper with error handling
- * @async
- * @param {string} url - API endpoint URL
- * @param {Object} options - Fetch options
- * @returns {Promise<Object>} JSON response
- */
-async function fetchAPI(url, options = {}) {
-    try {
-        // csrfToken from utils.js
-        const response = await fetch(url, {
-            ...options,
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                ...options.headers,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error(`API Error (${url}):`, error);
-        throw error;
-    }
-}
+// fetchAPI is imported from utils.js - no need to redefine
 
 /**
  * Loads incoming match requests (for donors)

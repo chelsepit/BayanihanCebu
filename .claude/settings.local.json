@@ -11,7 +11,8 @@
       "Bash(cat:*)",
       "Bash(node scripts/recordDonation.js:*)",
       "Bash(node:*)",
-      "Bash(php analyze_donations.php:*)"
+      "Bash(php analyze_donations.php:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
