@@ -154,17 +154,25 @@ function displayChatMessages(chatBox, messages) {
         return;
     }
 
-    // Get current barangay ID from session or DOM
-    const myBarangayId = parseInt(document.body.dataset.barangayId || window.currentBarangayId);
-
     // Render messages (Messenger-style bubbles)
     const html = messages
         .map((msg) => {
+            // Handle system messages differently
+            if (msg.is_system || msg.message_type === 'system') {
+                return `
+                    <div class="flex justify-center mb-3">
+                        <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
+                            <p class="text-xs text-gray-600 text-center">${escapeHtml(msg.message)}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
             const senderName = msg.sender_name || "Unknown";
 
             // Determine if this message is from me
-            // Check if sender_barangay_id matches my barangay
-            const isMe = msg.sender_barangay_id === myBarangayId;
+            // Use the is_mine flag from the API (more reliable than client-side calculation)
+            const isMe = msg.is_mine === true;
 
             let bgColor, textColor, initial;
             if (msg.sender_role === "ldrrmo") {

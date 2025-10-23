@@ -173,46 +173,67 @@ class BarangayDashboardController extends Controller
         $isRequester = $match->requesting_barangay_id === $barangayId;
 
         $data = [
-            'match_id' => $match->id,
-            'conversation_id' => $conversation->id,
-            'title' => $conversation->title,
-            'is_active' => $conversation->is_active,
-            'my_role' => $isRequester ? 'requester' : 'donor',
-            'participants' => [
-                'requester' => [
-                    'id' => $match->requesting_barangay_id,
-                    'name' => $match->requestingBarangay->name,
-                ],
-                'donor' => [
-                    'id' => $match->donating_barangay_id,
-                    'name' => $match->donatingBarangay->name,
-                ],
+            'success' => true,
+            'match' => [
+                'id' => $match->id,
+                'my_barangay' => $match->requesting_barangay_id === $barangayId ?
+                    $match->requestingBarangay->name : $match->donatingBarangay->name,
+                'requesting_barangay' => $match->requestingBarangay->name,
+                'donating_barangay' => $match->donatingBarangay->name,
+                'resource_need' => $match->resourceNeed->category . ' (' . $match->resourceNeed->quantity . ')',
             ],
-            'resource_details' => [
-                'category' => $match->resourceNeed->category,
-                'quantity_needed' => $match->resourceNeed->quantity,
-                'quantity_available' => $match->physicalDonation->quantity,
-                'urgency' => $match->resourceNeed->urgency,
+            'conversation' => [
+                'id' => $conversation->id,
+                'title' => $conversation->title,
+                'is_active' => $conversation->is_active,
+                'my_role' => $isRequester ? 'requester' : 'donor',
+                'participants' => [
+                    'requester' => [
+                        'id' => $match->requesting_barangay_id,
+                        'name' => $match->requestingBarangay->name,
+                    ],
+                    'donor' => [
+                        'id' => $match->donating_barangay_id,
+                        'name' => $match->donatingBarangay->name,
+                    ],
+                ],
+                'resource_details' => [
+                    'category' => $match->resourceNeed->category,
+                    'quantity_needed' => $match->resourceNeed->quantity,
+                    'quantity_available' => $match->physicalDonation->quantity,
+                    'urgency' => $match->resourceNeed->urgency,
+                ],
+                'messages' => $conversation->messages->map(function($msg) use ($barangayId, $match) {
+                    // Determine sender role
+                    $senderRole = 'unknown';
+                    if ($msg->sender_barangay_id === $match->requesting_barangay_id) {
+                        $senderRole = 'requester';
+                    } elseif ($msg->sender_barangay_id === $match->donating_barangay_id) {
+                        $senderRole = 'donor';
+                    } elseif ($msg->sender_user_id && !$msg->sender_barangay_id) {
+                        $senderRole = 'ldrrmo';
+                    }
+
+                    return [
+                        'id' => $msg->id,
+                        'sender_barangay_id' => $msg->sender_barangay_id,
+                        'sender_name' => $msg->sender_name,
+                        'sender_role' => $senderRole,
+                        'message' => $msg->message,
+                        'message_type' => $msg->message_type,
+                        'is_mine' => $msg->sender_barangay_id === $barangayId,
+                        'is_system' => $msg->isSystemMessage(),
+                        'attachment' => $msg->hasAttachment() ? [
+                            'url' => $msg->attachment_url,
+                            'type' => $msg->attachment_type,
+                            'name' => $msg->attachment_name,
+                            'icon' => $msg->attachment_icon,
+                        ] : null,
+                        'created_at' => $msg->created_at->format('M d, Y h:i A'),
+                        'time_ago' => $msg->time_ago,
+                    ];
+                }),
             ],
-            'messages' => $conversation->messages->map(function($msg) use ($barangayId) {
-                return [
-                    'id' => $msg->id,
-                    'sender_barangay_id' => $msg->sender_barangay_id,
-                    'sender_name' => $msg->sender_name,
-                    'message' => $msg->message,
-                    'message_type' => $msg->message_type,
-                    'is_mine' => $msg->sender_barangay_id === $barangayId,
-                    'is_system' => $msg->isSystemMessage(),
-                    'attachment' => $msg->hasAttachment() ? [
-                        'url' => $msg->attachment_url,
-                        'type' => $msg->attachment_type,
-                        'name' => $msg->attachment_name,
-                        'icon' => $msg->attachment_icon,
-                    ] : null,
-                    'created_at' => $msg->created_at->format('M d, Y h:i A'),
-                    'time_ago' => $msg->time_ago,
-                ];
-            }),
         ];
 
         return response()->json($data);

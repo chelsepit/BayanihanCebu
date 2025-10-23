@@ -21,11 +21,15 @@ async function fetchAPI(url, options = {}) {
             },
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // Try to get error message from response body
+            const errorMessage = data.message || data.error || response.statusText;
+            throw new Error(errorMessage);
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
         console.error(`API Error (${url}):`, error);
         throw error;
