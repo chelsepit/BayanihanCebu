@@ -34,22 +34,11 @@ class Donation extends Model
         'is_anonymous',
         'distributed_at',
         'distribution_notes',
-        // Fields from online_donations merge
-        'transaction_id',
-        'source_barangay_id',
-        'disaster_id',
-        'payment_proof_url',
-        'payment_reference',
-        'verification_status',
-        'verified_by',
-        'verified_at',
-        'rejection_reason',
-        'tx_hash',
-        'wallet_address',
-        'explorer_url',
+        // Blockchain recording fields (DonationRecorder smart contract)
         'blockchain_tx_hash',
         'blockchain_status',
         'blockchain_recorded_at',
+        'explorer_url',
     ];
 
     protected $casts = [
@@ -92,21 +81,6 @@ class Donation extends Model
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-    public function disaster()
-    {
-        return $this->belongsTo(Disaster::class);
-    }
-
-    public function verifier()
-    {
-        return $this->belongsTo(User::class, 'verified_by', 'user_id');
-    }
-
-    public function sourceBarangay()
-    {
-        return $this->belongsTo(Barangay::class, 'source_barangay_id', 'barangay_id');
-    }
-
     public function getDonorDisplayNameAttribute()
     {
         if ($this->is_anonymous) {
@@ -125,11 +99,6 @@ class Donation extends Model
             'completed' => 'green',
             default => 'gray',
         };
-    }
-
-    public function isVerified()
-    {
-        return $this->verification_status === 'verified';
     }
 
     public function isBlockchainVerified()
@@ -180,15 +149,5 @@ class Donation extends Model
     public function scopeRecent($query, $days = 30)
     {
         return $query->where('created_at', '>=', now()->subDays($days));
-    }
-
-    public function scopeVerified($query)
-    {
-        return $query->where('verification_status', 'verified');
-    }
-
-    public function scopePendingVerification($query)
-    {
-        return $query->where('verification_status', 'pending');
     }
 }

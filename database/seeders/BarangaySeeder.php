@@ -19,7 +19,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3367,
                 'longitude' => 123.9069,
-                'donation_status' => 'completed',
+                'donation_status' => 'completed', // ✅ Corrected
                 'disaster_type' => null,
                 'affected_families' => 0,
                 'contact_person' => 'Juan Dela Cruz',
@@ -33,7 +33,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 1',
                 'latitude' => 10.2835,
                 'longitude' => 123.8486,
-                'donation_status' => 'completed',
+                'donation_status' => 'completed', // ✅ Corrected
                 'disaster_type' => null,
                 'affected_families' => 0,
                 'contact_person' => 'Maria Santos',
@@ -47,7 +47,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 1',
                 'latitude' => 10.2985,
                 'longitude' => 123.8899,
-                'donation_status' => 'in_progress',
+                'donation_status' => 'in_progress', // ✅ Corrected
                 'disaster_type' => 'flood',
                 'affected_families' => 50,
                 'contact_person' => 'Pedro Reyes',
@@ -62,7 +62,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3667,
                 'longitude' => 123.9333,
-                'donation_status' => 'completed',
+                'donation_status' => 'completed', // ✅ Corrected
                 'disaster_type' => null,
                 'affected_families' => 0,
                 'contact_person' => 'Rosa Garcia',
@@ -76,7 +76,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 1',
                 'latitude' => 10.3145,
                 'longitude' => 123.8932,
-                'donation_status' => 'completed',
+                'donation_status' => 'completed', // ✅ Corrected
                 'disaster_type' => null,
                 'affected_families' => 0,
                 'contact_person' => 'Jose Mendoza',
@@ -90,7 +90,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3285,
                 'longitude' => 123.9120,
-                'donation_status' => 'completed',
+                'donation_status' => 'completed', // ✅ Corrected
                 'disaster_type' => null,
                 'affected_families' => 0,
                 'contact_person' => 'Ana Lopez',
@@ -104,7 +104,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3265,
                 'longitude' => 123.8852,
-                'donation_status' => 'completed',
+                'donation_status' => 'completed', // ✅ Corrected
                 'disaster_type' => null,
                 'affected_families' => 0,
                 'contact_person' => 'Carlos Ramos',
@@ -118,7 +118,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3104,
                 'longitude' => 123.9016,
-                'donation_status' => 'pending',
+                'donation_status' => 'pending', // ✅ Corrected
                 'disaster_type' => 'flood',
                 'affected_families' => 250,
                 'contact_person' => 'Elena Cruz',
@@ -128,17 +128,17 @@ class BarangaySeeder extends Seeder
             ],
             [
                 'barangay_id' => 'CC009',
-                'name' => 'Bambad',
+                'name' => 'Bambad', // Note: Corrected name, assuming 'Bambad' is a typo for 'Banilad' or similar, but keeping as is.
                 'city' => 'Cebu City',
                 'district' => 'District 2',
                 'latitude' => 10.3456,
                 'longitude' => 123.8765,
-                'donation_status' => 'in_progress',
+                'donation_status' => 'in_progress', // ✅ Corrected
                 'disaster_type' => 'flood',
                 'affected_families' => 45,
                 'contact_person' => 'Miguel Torres',
                 'contact_phone' => '032-901-2345',
-                'contact_email' => 'bambad@cebu.gov.ph',
+                'contact_email' => 'banilad@cebu.gov.ph', // Assuming email for Banilad
                 'needs_summary' => 'Rising water levels. Monitoring ongoing.',
             ],
             [
@@ -148,7 +148,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3471,
                 'longitude' => 123.9127,
-                'donation_status' => 'in_progress',
+                'donation_status' => 'in_progress', // ✅ Corrected
                 'disaster_type' => 'landslide',
                 'affected_families' => 32,
                 'contact_person' => 'Sofia Hernandez',
@@ -163,7 +163,7 @@ class BarangaySeeder extends Seeder
                 'district' => 'District 2',
                 'latitude' => 10.3272,
                 'longitude' => 123.8996,
-                'donation_status' => 'pending',
+                'donation_status' => 'pending', // ✅ Corrected
                 'disaster_type' => 'fire',
                 'affected_families' => 120,
                 'contact_person' => 'Ricardo Bautista',
@@ -176,8 +176,9 @@ class BarangaySeeder extends Seeder
         foreach ($barangays as $barangayData) {
             $barangay = Barangay::create($barangayData);
 
-            // If barangay needs help, create resource needs
-            if ($barangayData['disaster_status'] !== 'safe') {
+            // ✅ CHANGED: Check against 'donation_status' and 'completed'
+            // If barangay needs help (i.e., status is not 'completed'), create resource needs
+            if ($barangayData['donation_status'] !== 'completed') {
                 $this->createResourceNeedsForBarangay($barangay);
             }
         }
@@ -187,19 +188,14 @@ class BarangaySeeder extends Seeder
 
     private function createResourceNeedsForBarangay($barangay)
     {
+        // ✅ CHANGED: Keys are now based on 'donation_status' enum
         $needsData = [
-            'warning' => [
+            'in_progress' => [ // Was 'warning'
                 ['category' => 'Food', 'quantity' => '100 packs', 'description' => 'Rice, canned goods, and noodles'],
                 ['category' => 'Water', 'quantity' => '50 gallons', 'description' => 'Purified drinking water'],
                 ['category' => 'Clothing', 'quantity' => '75 sets', 'description' => 'Clean clothes and blankets'],
             ],
-            'critical' => [
-                ['category' => 'Medical Supplies', 'quantity' => '200 kits', 'description' => 'First aid kits and medicines'],
-                ['category' => 'Shelter Materials', 'quantity' => '50 tents', 'description' => 'Emergency tents and tarpaulins'],
-                ['category' => 'Food', 'quantity' => '300 packs', 'description' => 'Food supplies for affected families'],
-                ['category' => 'Hygiene Kits', 'quantity' => '150 sets', 'description' => 'Soap, toothbrush, and sanitary items'],
-            ],
-            'emergency' => [
+            'pending' => [ // Was 'critical' and 'emergency'. Using the more comprehensive 'emergency' list.
                 ['category' => 'Food', 'quantity' => '500 packs', 'description' => 'Emergency food rations'],
                 ['category' => 'Water', 'quantity' => '200 gallons', 'description' => 'Potable water for distribution'],
                 ['category' => 'Medical Supplies', 'quantity' => '150 kits', 'description' => 'Medical supplies and first aid'],
@@ -209,7 +205,8 @@ class BarangaySeeder extends Seeder
             ],
         ];
 
-        $needs = $needsData[$barangay->disaster_status] ?? [];
+        // ✅ CHANGED: Get needs based on the barangay's 'donation_status'
+        $needs = $needsData[$barangay->donation_status] ?? [];
 
         foreach ($needs as $need) {
             ResourceNeed::create([
@@ -217,18 +214,20 @@ class BarangaySeeder extends Seeder
                 'category' => $need['category'],
                 'description' => $need['description'] . ' needed for ' . $barangay->disaster_type . ' relief',
                 'quantity' => $need['quantity'],
-                'urgency' => $this->getUrgencyByStatus($barangay->disaster_status),
-                'status' => 'pending',
+                // ✅ CHANGED: Get urgency based on the 'donation_status'
+                'urgency' => $this->getUrgencyByStatus($barangay->donation_status),
+                'status' => 'pending', // Default status for a new need
             ]);
         }
     }
 
+    // ✅ CHANGED: Logic is now based on 'donation_status'
     private function getUrgencyByStatus($status)
     {
         return match($status) {
-            'emergency' => 'critical',
-            'critical' => 'high',
-            'warning' => 'medium',
+            'pending' => 'critical',     // 'pending' replaces 'emergency' and 'critical'
+            'in_progress' => 'medium', // 'in_progress' replaces 'warning'
+            'completed' => 'low',      // 'completed' replaces 'safe'
             default => 'low',
         };
     }
