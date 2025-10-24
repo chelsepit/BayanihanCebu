@@ -34,6 +34,21 @@
         <div class="p-6">
             <h3 class="text-xl font-bold mb-4">Verify Donation</h3>
             <p class="text-gray-600 mb-4">Are you sure you want to verify this donation?</p>
+
+            <!-- Warning for blockchain-verified donations -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4 hidden" id="blockchainWarning">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            This donation is already verified on the blockchain and cannot be rejected.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex gap-3">
                 <button onclick="confirmVerification('verify')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                     Verify
