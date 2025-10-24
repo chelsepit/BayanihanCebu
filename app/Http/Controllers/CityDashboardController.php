@@ -126,102 +126,10 @@ public function getBarangaysMapData()
 
     return response()->json($barangays);
 }
+
     /**
-     * Get analytics data - FIXED VERSION WITH PAYMENT METHOD
+     * Get barangays comparison data
      */
-    public function getAnalyticsData()
-    {
-        try {
-            // Donations by Barangay
-            $donationsByBarangay = DB::table('barangays')
-                ->leftJoin('donations', function($join) {
-                    $join->on('barangays.barangay_id', '=', 'donations.barangay_id')
-                         ->whereIn('donations.status', ['confirmed', 'distributed', 'completed']);
-                })
-                ->leftJoin('physical_donations', 'barangays.barangay_id', '=', 'physical_donations.barangay_id')
-                ->select(
-                    'barangays.name',
-                    DB::raw('COALESCE(SUM(donations.amount), 0) as online_donations'),
-                    DB::raw('COALESCE(SUM(physical_donations.estimated_value), 0) as physical_donations'),
-                    DB::raw('COALESCE(SUM(donations.amount), 0) + COALESCE(SUM(physical_donations.estimated_value), 0) as total_donations')
-                )
-                ->groupBy('barangays.barangay_id', 'barangays.name')
-                ->orderBy('total_donations', 'desc')
-                ->limit(10)
-                ->get();
-
-            // ✅ UPDATED: Donation Status Distribution (was Disaster Status Distribution)
-            $donationStatusDistribution = Barangay::select('donation_status', DB::raw('count(*) as count'))
-                ->groupBy('donation_status')
-                ->get()
-                ->pluck('count', 'donation_status')
-                ->toArray();
-
-            // Affected Families by Barangay
-            $affectedFamiliesByBarangay = Barangay::select('name', 'affected_families')
-                ->where('affected_families', '>', 0)
-                ->orderBy('affected_families', 'desc')
-                ->limit(10)
-                ->get();
-
-            // Payment Method Distribution (FIXED - Check if column exists)
-            $paymentMethodDistribution = [];
-            
-            // Check if payment_method column exists in donations table
-            $tableColumns = DB::getSchemaBuilder()->getColumnListing('donations');
-            
-            if (in_array('payment_method', $tableColumns)) {
-                $paymentMethodDistribution = Donation::select('payment_method', DB::raw('count(*) as total'))
-                    ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                    ->whereNotNull('payment_method')
-                    ->groupBy('payment_method')
-                    ->get()
-                    ->map(function($item) {
-                        return [
-                            'payment_method' => $item->payment_method ?? 'Unknown',
-                            'total' => $item->total
-                        ];
-                    });
-            } else {
-                // If payment_method doesn't exist, return empty array or default data
-                $paymentMethodDistribution = [
-                    ['payment_method' => 'Online', 'total' => Donation::whereIn('status', ['confirmed', 'distributed', 'completed'])->count()],
-                    ['payment_method' => 'Physical', 'total' => PhysicalDonation::count()]
-                ];
-            }
-
-            // Resource needs statistics
-            $totalResourceNeeds = ResourceNeed::count();
-            $activeResourceNeeds = ResourceNeed::whereIn('status', ['pending', 'verified', 'matched'])->count();
-            $fulfilledResourceNeeds = ResourceNeed::where('status', 'fulfilled')->count();
-
-            // Calculate total donations
-            $totalDonations = DB::table('donations')
-                ->whereIn('status', ['confirmed', 'distributed', 'completed'])
-                ->sum('amount') +
-                DB::table('physical_donations')
-                ->sum('estimated_value');
-
-            return response()->json([
-                'donations_by_barangay' => $donationsByBarangay,
-                'donation_status_distribution' => $donationStatusDistribution, // ✅ CHANGED from disaster_status_distribution
-                'affected_families_by_barangay' => $affectedFamiliesByBarangay,
-                'payment_method_distribution' => $paymentMethodDistribution,
-                'resource_needs_count' => $activeResourceNeeds,
-                'total_resource_needs' => $totalResourceNeeds,
-                'fulfilled_resource_needs' => $fulfilledResourceNeeds,
-                'total_donations' => $totalDonations
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error loading analytics: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error loading analytics data',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function getBarangaysComparison()
     {
         try {

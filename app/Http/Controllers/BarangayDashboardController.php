@@ -1024,9 +1024,16 @@ public function recordDonation(Request $request)
         try {
             $barangayId = session('barangay_id');
 
-            $validated = $request->validate([
+            // Validate action first
+            $request->validate([
                 'action' => 'required|in:accept,reject',
-                'message' => 'required|string|max:500',
+            ]);
+
+            $action = $request->input('action');
+
+            // Message is required only for reject
+            $validated = $request->validate([
+                'message' => $action === 'reject' ? 'required|string|max:500' : 'nullable|string|max:500',
             ]);
 
             $match = ResourceMatch::with([
@@ -1054,11 +1061,11 @@ public function recordDonation(Request $request)
 
             DB::beginTransaction();
 
-            $newStatus = $validated['action'] === 'accept' ? 'accepted' : 'rejected';
+            $newStatus = $action === 'accept' ? 'accepted' : 'rejected';
 
             $match->update([
                 'status' => $newStatus,
-                'barangay_response' => $validated['message'],
+                'barangay_response' => $validated['message'] ?? null,
                 'responded_at' => now(),
             ]);
 
@@ -1091,7 +1098,9 @@ public function recordDonation(Request $request)
                 'barangay_id' => $match->requesting_barangay_id,
                 'type' => $newStatus === 'accepted' ? 'match_accepted' : 'match_rejected',
                 'title' => $newStatus === 'accepted' ? 'Match Request Accepted' : 'Match Request Rejected',
-                'message' => $validated['message'],
+                'message' => $validated['message'] ?? ($newStatus === 'accepted'
+                    ? "{$match->donatingBarangay->name} has accepted your match request. Start coordinating in the conversation."
+                    : 'Match request was rejected.'),
                 'is_read' => false,
             ]);
 

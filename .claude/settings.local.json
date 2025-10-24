@@ -15,7 +15,8 @@
       "Bash(find:*)",
       "Bash(sed:*)",
       "Bash(git add:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []
