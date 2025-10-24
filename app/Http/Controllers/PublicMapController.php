@@ -32,44 +32,24 @@ class PublicMapController extends Controller
 
 public function trackDonation(Request $request)
 {
-    $request->validate([
-        'tracking_code' => 'required|string',
-    ]);
-
-    $trackingCode = $request->tracking_code;
-
-    // Try online donations first
-    $onlineDonation = Donation::where('tracking_code', $trackingCode)
+    $trackingCode = $request->input('tracking_code');
+    
+    $donation = Donation::where('tracking_code', $trackingCode)
         ->with(['barangay', 'disaster', 'verifier'])
         ->first();
 
-    if ($onlineDonation) {
-        return view('donations.track', [
-            'donation' => $onlineDonation,
-            'donation_type' => 'online',
-        ]);
+    if (!$donation) {
+        return back()->with('error', 'Invalid tracking code. Please try again.');
     }
 
-    // Try physical donations
-    $physicalDonation = PhysicalDonation::where('tracking_code', $trackingCode)
-        ->with(['barangay', 'recorder', 'distributions.distributor'])
-        ->first();
-
-    if ($physicalDonation) {
-        // ✨ AUTO-VERIFY ON PAGE LOAD
-        $blockchainService = new PhysicalDonationBlockchainService();
-        $blockchainService->verifyDonation($physicalDonation);
-        
-        // Refresh to get updated data
-        $physicalDonation->refresh();
-
-        return view('donations.track', [
-            'donation' => $physicalDonation,
-            'donation_type' => 'physical',
-        ]);
-    }
-
-    return back()->with('error', 'Tracking code not found. Please check and try again.');
+    // Set default values for optional fields
+    $donation->verification_status = $donation->verification_status ?? 'pending';
+    $donation->blockchain_status = $donation->blockchain_status ?? 'pending';
+    
+    return view('donations.track', [
+        'donation' => $donation,
+        'donation_type' => 'online'
+    ]);
 }
 
     /**
