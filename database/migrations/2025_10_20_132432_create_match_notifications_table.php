@@ -15,7 +15,8 @@ return new class extends Migration
             $table->foreignId('resource_match_id')->constrained('resource_matches')->onDelete('cascade');
             
             // Recipient Info
-            $table->string('barangay_id', 10);
+            // ✅ FIX: Make barangay_id nullable to support LDRRMO user notifications
+            $table->string('barangay_id', 10)->nullable();
             $table->string('user_id', 10)->nullable();
             
             // Notification Details
@@ -38,7 +39,8 @@ return new class extends Migration
             $table->timestamps();
             
             // Foreign Keys
-            $table->foreign('barangay_id')->references('barangay_id')->on('barangays')->onDelete('cascade');
+            // ✅ FIX: Allow null for LDRRMO notifications (no barangay, only user)
+            $table->foreign('barangay_id')->references('barangay_id')->on('barangays')->onDelete('cascade')->nullable();
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('set null');
             
             // Indexes

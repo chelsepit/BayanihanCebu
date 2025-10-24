@@ -2415,40 +2415,49 @@ document.addEventListener('DOMContentLoaded', function() {
                     fetchAPI('/api/ldrrmo/barangays')
                 ]);
 
+                // ✅ FIX: Add null safety checks before setting textContent
                 // Primary Stats
                 const totalRequests = (analyticsData.resource_needs_count || 0);
-                document.getElementById('homeActiveRequests').textContent = totalRequests;
+                const homeActiveRequests = document.getElementById('homeActiveRequests');
+                if (homeActiveRequests) homeActiveRequests.textContent = totalRequests;
 
                 const totalDonations = Number(analyticsData.total_donations || 0);
-                document.getElementById('homeTotalDonations').textContent = '₱' + totalDonations.toLocaleString();
+                const homeTotalDonations = document.getElementById('homeTotalDonations');
+                if (homeTotalDonations) homeTotalDonations.textContent = '₱' + totalDonations.toLocaleString();
 
                 // Calculate affected families from barangays
                 const affectedFamilies = Array.isArray(barangaysData)
                     ? barangaysData.reduce((sum, b) => sum + Number(b.affected_families || 0), 0)
                     : 0;
-                document.getElementById('homeAffectedFamilies').textContent = affectedFamilies.toLocaleString();
+                const homeAffectedFamilies = document.getElementById('homeAffectedFamilies');
+                if (homeAffectedFamilies) homeAffectedFamilies.textContent = affectedFamilies.toLocaleString();
 
                 // Calculate fulfillment rate
                 const totalNeeds = Number(analyticsData.total_resource_needs || 0);
                 const fulfilledNeeds = Number(analyticsData.fulfilled_resource_needs || 0);
                 const fulfillmentRate = totalNeeds > 0 ? Math.round((fulfilledNeeds / totalNeeds) * 100) : 0;
-                document.getElementById('homeFulfillmentRate').textContent = fulfillmentRate + '%';
+                const homeFulfillmentRate = document.getElementById('homeFulfillmentRate');
+                if (homeFulfillmentRate) homeFulfillmentRate.textContent = fulfillmentRate + '%';
 
                 // Secondary Stats
                 const totalBarangays = Array.isArray(barangaysData) ? barangaysData.length : 80;
-                document.getElementById('homeTotalBarangays').textContent = totalBarangays;
+                const homeTotalBarangays = document.getElementById('homeTotalBarangays');
+                if (homeTotalBarangays) homeTotalBarangays.textContent = totalBarangays;
 
                 const totalDonors = Array.isArray(barangaysData)
                     ? barangaysData.reduce((sum, b) => sum + Number(b.donor_count || 0), 0)
                     : 0;
-                document.getElementById('homeTotalDonors').textContent = totalDonors.toLocaleString();
+                const homeTotalDonors = document.getElementById('homeTotalDonors');
+                if (homeTotalDonors) homeTotalDonors.textContent = totalDonors.toLocaleString();
 
                 const affectedBarangays = Array.isArray(barangaysData)
                     ? barangaysData.filter(b => b.disaster_status !== 'safe' && b.status !== 'safe').length
                     : 0;
-                document.getElementById('homeAffectedBarangays').textContent = affectedBarangays;
+                const homeAffectedBarangays = document.getElementById('homeAffectedBarangays');
+                if (homeAffectedBarangays) homeAffectedBarangays.textContent = affectedBarangays;
 
-                document.getElementById('homeFulfilledRequests').textContent = fulfilledNeeds;
+                const homeFulfilledRequests = document.getElementById('homeFulfilledRequests');
+                if (homeFulfilledRequests) homeFulfilledRequests.textContent = fulfilledNeeds;
             } catch (error) {
                 console.error('Error loading summary stats:', error);
             }
