@@ -92,23 +92,38 @@ async function main() {
 
     const receipt = await tx.wait();
 
+    // Check if transaction was successful
+    if (receipt.status === 0) {
+      console.error("\n❌ Transaction FAILED!");
+      console.error(`   TX Hash: ${tx.hash}`);
+      console.error(`   Block: ${receipt.blockNumber}`);
+      console.error(`   Gas Used: ${receipt.gasUsed.toString()}`);
+      console.error("   Possible reasons:");
+      console.error("   - Tracking code already exists (duplicate)");
+      console.error("   - Contract validation failed");
+      process.exit(1);
+    }
+
     console.log("\n🎉 Donation recorded successfully!");
     console.log(`   Block: ${receipt.blockNumber}`);
     console.log(`   Gas Used: ${receipt.gasUsed.toString()}`);
 
   } catch (err) {
     console.error("\n❌ Error:", err.message);
-    
+
     if (err.code === "CALL_EXCEPTION") {
       console.error("   Possible reasons:");
       console.error("   - Wallet not added as admin (use addAdmin in Remix)");
       console.error("   - Contract is paused");
       console.error("   - Invalid parameters");
+      console.error("   - Duplicate tracking code (already recorded)");
     }
-    
+
     if (err.error?.message) {
       console.error("   Details:", err.error.message);
     }
+
+    process.exit(1);
   }
 }
 

@@ -45,6 +45,20 @@ class PhysicalDonationBlockchainService
    public function recordToBlockchain(PhysicalDonation $donation): array
 {
     try {
+        // Check if already recorded successfully
+        if ($donation->blockchain_status === 'confirmed' && $donation->blockchain_tx_hash) {
+            Log::warning("Donation already recorded to blockchain", [
+                'tracking_code' => $donation->tracking_code,
+                'existing_tx_hash' => $donation->blockchain_tx_hash
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Donation already recorded to blockchain',
+                'tx_hash' => $donation->blockchain_tx_hash
+            ];
+        }
+
         // Generate offchain hash if not exists
         if (!$donation->offchain_hash) {
             $donation->offchain_hash = $this->generateOffchainHash($donation);
@@ -72,15 +86,21 @@ class PhysicalDonationBlockchainService
 
         // Execute command
         exec($command, $output, $returnCode);
-        
+
         $outputString = implode("\n", $output);
         Log::info("Blockchain command output", ['output' => $outputString, 'return_code' => $returnCode]);
 
-        // Check if successful (look for transaction hash in output)
-        if (strpos($outputString, 'TX Hash:') !== false || strpos($outputString, 'Success') !== false) {
+        // Check return code first - non-zero means failure
+        if ($returnCode !== 0) {
+            throw new \Exception("Blockchain script failed with return code {$returnCode}: " . $outputString);
+        }
+
+        // Check if successful (look for success message and transaction hash in output)
+        if (strpos($outputString, '🎉 Donation recorded successfully!') !== false
+            || strpos($outputString, 'Donation recorded successfully!') !== false) {
             // Extract TX hash from output
-            preg_match('/0x[a-fA-F0-9]{64}/', $outputString, $matches);
-            $txHash = $matches[0] ?? null;
+            preg_match('/TX Hash:\s*(0x[a-fA-F0-9]{64})/i', $outputString, $matches);
+            $txHash = $matches[1] ?? null;
 
             if ($txHash) {
                 $donation->blockchain_tx_hash = $txHash;
