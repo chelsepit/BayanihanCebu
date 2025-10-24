@@ -18,23 +18,46 @@ let isAtBottom = true;
  */
 async function fetchAPI(url, options = {}) {
     try {
-        // csrfToken from utils.js
+        // Get fresh CSRF token from meta tag
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const currentCsrfToken = tokenMeta ? tokenMeta.content : csrfToken;
+
+        // Log for debugging
+        console.log(`[API Request] ${options.method || 'GET'} ${url}`);
+
         const response = await fetch(url, {
             ...options,
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
+                "X-CSRF-TOKEN": currentCsrfToken,
+                "Accept": "application/json", // Ensure JSON response
                 ...options.headers,
             },
         });
 
+        // Handle 419 CSRF error specifically
+        if (response.status === 419) {
+            console.error('[CSRF ERROR] Token mismatch - session may have expired');
+            throw new Error('CSRF token mismatch. Please refresh the page and try again.');
+        }
+
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // Try to parse error message from response
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+            } catch (e) {
+                // Response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
 
         return await response.json();
     } catch (error) {
-        console.error(`API Error (${url}):`, error);
+        console.error(`[API Error] ${url}:`, error);
         throw error;
     }
 }
@@ -626,19 +649,21 @@ async function openRespondModal(matchId, action) {
             }
         `;
 
-        // Show/hide buttons
+        // Show/hide buttons and message field
         if (action === "accept") {
             document
                 .getElementById("acceptMatchBtn")
                 .classList.remove("hidden");
             document.getElementById("rejectMatchBtn").classList.add("hidden");
-            document.getElementById("responseMessage").placeholder =
-                'Example: "Happy to help! We can arrange pickup this week. What time works best for you?"';
+            // Hide message field for accept
+            document.getElementById("responseMessageContainer").classList.add("hidden");
         } else {
             document.getElementById("acceptMatchBtn").classList.add("hidden");
             document
                 .getElementById("rejectMatchBtn")
                 .classList.remove("hidden");
+            // Show message field for reject
+            document.getElementById("responseMessageContainer").classList.remove("hidden");
             document.getElementById("responseMessage").placeholder =
                 'Example: "Sorry, this donation has already been committed to another barangay." or "We need to keep this for our own residents."';
         }
@@ -660,13 +685,6 @@ async function openRespondModal(matchId, action) {
  * @returns {Promise<void>}
  */
 async function submitAccept() {
-    const message = document.getElementById("responseMessage").value.trim();
-
-    if (!message) {
-        alert("⚠️ Please enter a message to the requesting barangay");
-        return;
-    }
-
     if (!currentMatchId) {
         alert("Error: No match selected");
         return;
@@ -679,7 +697,6 @@ async function submitAccept() {
                 method: "POST",
                 body: JSON.stringify({
                     action: "accept",
-                    message: message,
                 }),
             },
         );
