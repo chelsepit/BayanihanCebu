@@ -83,7 +83,7 @@
 
 
         <div class="footer-badge">
-            <p>Supported by the Department of Social Welfare and Development</p>
+            <p>Supported by Lisk || PizzaPy || JSCebu || LegalMatch || DOST Cebu </p>
         </div>
     </div>
 </footer>
