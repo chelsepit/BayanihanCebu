@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,6 +18,7 @@
     <!-- Additional Styles -->
     @stack('styles')
 </head>
+
 <body class="font-sans antialiased bg-gray-50">
 
     <!-- Navigation -->
@@ -32,18 +34,18 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-6">
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center" style="gap: 2rem;">
                     <a href="{{ route('home') }}" class="text-gray-700 hover:text-blue-600 font-medium">
                         Home
                     </a>
+
                     <a href="{{ route('home') }}#map" class="text-gray-700 hover:text-blue-600 font-medium">
                         Disaster Map
                     </a>
+
                     <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">
                         About
-                    </a>
-                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">
-                        Contact
                     </a>
 
                     @auth
@@ -51,7 +53,8 @@
                             <button class="flex items-center text-gray-700 hover:text-blue-600 font-medium">
                                 {{ Auth::user()->name }}
                                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
                         </div>
@@ -59,7 +62,8 @@
                         <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">
                             Login
                         </a>
-                        <a href="#" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                        <a href="#"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
                             Register
                         </a>
                     @endauth
@@ -69,7 +73,8 @@
                 <div class="md:hidden">
                     <button type="button" class="text-gray-700 hover:text-blue-600">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
@@ -78,10 +83,11 @@
     </nav>
 
     <!-- Main Content -->
-        <main class="py-4">
-            @yield('content')
-        </main>
-        @include('partials.footer')
+    <main class="py-4">
+        @yield('content')
+    </main>
+    @include('partials.footer')
     </div>
 </body>
+
 </html>
