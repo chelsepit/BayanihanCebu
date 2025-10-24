@@ -522,10 +522,20 @@ public function completeMatch(Request $request, $matchId)
     /**
      * Record a new physical donation
      */
-    public function recordDonation(Request $request)
-    {
+public function recordDonation(Request $request)
+{
+    // DEBUGGING: Log that we entered this method
+    Log::info('=== ENTERED recordDonation method ===', [
+        'request_data' => $request->all(),
+        'session_barangay' => session('barangay_id'),
+        'session_user' => session('user_id')
+    ]);
+
+    try {
         $barangayId = session('barangay_id');
         $userId = session('user_id');
+
+        Log::info('About to validate request');
 
         $validated = $request->validate([
             'donor_name' => 'required|string|max:100',
@@ -540,25 +550,52 @@ public function completeMatch(Request $request, $matchId)
             'notes' => 'nullable|string|max:500',
         ]);
 
+        Log::info('Validation passed, generating tracking code');
+
         // Generate tracking code
         $trackingCode = PhysicalDonation::generateTrackingCode($barangayId);
 
-        $donation = PhysicalDonation::create([
-            'barangay_id' => $barangayId,
+        Log::info('Tracking code generated', ['code' => $trackingCode]);
+
+        try {
+            $donation = PhysicalDonation::create([
+                'barangay_id' => $barangayId,
+                'tracking_code' => $trackingCode,
+                'donor_name' => $validated['donor_name'],
+                'donor_contact' => $validated['donor_contact'],
+                'donor_email' => $validated['donor_email'],
+                'donor_address' => $validated['donor_address'],
+                'category' => $validated['category'],
+                'items_description' => $validated['items_description'],
+                'quantity' => $validated['quantity'],
+                'estimated_value' => $validated['estimated_value'] ?? 0,
+                'intended_recipients' => $validated['intended_recipients'],
+                'notes' => $validated['notes'],
+                'distribution_status' => 'pending_distribution',
+                'recorded_by' => $userId,
+                'recorded_at' => now(),
+            ]);
+        } catch (\Exception $createError) {
+            Log::error('!!! FAILED TO CREATE PHYSICAL DONATION !!!', [
+                'error' => $createError->getMessage(),
+                'code' => $createError->getCode(),
+                'file' => $createError->getFile(),
+                'line' => $createError->getLine(),
+                'trace' => $createError->getTraceAsString()
+            ]);
+            throw $createError; // Re-throw so outer catch handles it
+        }
+
+        Log::info('PhysicalDonation created successfully', ['id' => $donation->id]);
+
+        // Dispatch blockchain recording job (runs in background via queue worker)
+        \App\Jobs\RecordPhysicalDonationToBlockchain::dispatch($donation->id);
+
+        Log::info('Blockchain job dispatched');
+
+        Log::info('Physical donation created and blockchain recording job dispatched', [
             'tracking_code' => $trackingCode,
-            'donor_name' => $validated['donor_name'],
-            'donor_contact' => $validated['donor_contact'],
-            'donor_email' => $validated['donor_email'],
-            'donor_address' => $validated['donor_address'],
-            'category' => $validated['category'],
-            'items_description' => $validated['items_description'],
-            'quantity' => $validated['quantity'],
-            'estimated_value' => $validated['estimated_value'],
-            'intended_recipients' => $validated['intended_recipients'],
-            'notes' => $validated['notes'],
-            'distribution_status' => 'pending_distribution',
-            'recorded_by' => $userId,
-            'recorded_at' => now(),
+            'donation_id' => $donation->id
         ]);
 
         return response()->json([
@@ -567,8 +604,20 @@ public function completeMatch(Request $request, $matchId)
             'data' => $donation,
             'tracking_code' => $trackingCode
         ], 201);
-    }
 
+    } catch (\Exception $e) {
+        // Log the actual error for debugging
+        Log::error('Error recording physical donation: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString());
+
+        // Return a generic error message to the user
+        return response()->json([
+            'success' => false,
+            'message' => 'An unexpected error occurred. Please try again later.',
+            'error' => $e->getMessage() // Temporarily include for debugging
+        ], 500);
+    }
+}
     /**
      * Get single donation details
      */
@@ -1060,6 +1109,150 @@ public function completeMatch(Request $request, $matchId)
             return response()->json([
                 'success' => false,
                 'message' => 'Error responding to match',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify online donation (monetary)
+     */
+    public function verifyOnlineDonation(Request $request, $donationId)
+    {
+        try {
+            $userId = session('user_id');
+            $barangayId = session('barangay_id');
+
+            $donation = Donation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            // Validate status
+            if ($donation->verification_status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This donation has already been processed'
+                ], 400);
+            }
+
+            $request->validate([
+                'action' => 'required|in:verify,reject',
+                'rejection_reason' => 'required_if:action,reject|max:500'
+            ]);
+
+            if ($request->action === 'verify') {
+                $donation->verification_status = 'verified';
+                $donation->verified_by = $userId; // Fixed: use user_id instead of barangay_id
+                $donation->verified_at = now();
+                $donation->status = 'confirmed';
+                $message = 'Donation verified successfully';
+            } else {
+                $donation->verification_status = 'rejected';
+                $donation->verified_by = $userId; // Fixed: use user_id instead of barangay_id
+                $donation->verified_at = now();
+                $donation->rejection_reason = $request->rejection_reason;
+                $message = 'Donation rejected';
+            }
+
+            $donation->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'donation' => $donation
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error verifying donation: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify donation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Record physical donation to blockchain
+     */
+    public function recordPhysicalDonationToBlockchain($donationId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $donation = PhysicalDonation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            // Record to blockchain
+            $result = $donation->recordToBlockchain();
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Error recording to blockchain: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record to blockchain',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify physical donation blockchain integrity
+     */
+    public function verifyPhysicalDonationBlockchain($donationId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $donation = PhysicalDonation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            // Verify blockchain integrity
+            $result = $donation->verifyBlockchainIntegrity();
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Error verifying blockchain: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify blockchain',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get physical donation verification status
+     */
+    public function getPhysicalDonationVerificationStatus($donationId)
+    {
+        try {
+            $barangayId = session('barangay_id');
+
+            $donation = PhysicalDonation::where('id', $donationId)
+                ->where('barangay_id', $barangayId)
+                ->firstOrFail();
+
+            return response()->json([
+                'success' => true,
+                'verification_status' => $donation->verification_status,
+                'offchain_hash' => $donation->offchain_hash,
+                'onchain_hash' => $donation->onchain_hash,
+                'verified_at' => $donation->verified_at,
+                'last_check' => $donation->last_verification_check,
+                'blockchain_status' => $donation->blockchain_status,
+                'blockchain_tx_hash' => $donation->blockchain_tx_hash
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get verification status',
                 'error' => $e->getMessage()
             ], 500);
         }

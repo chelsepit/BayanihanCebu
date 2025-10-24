@@ -987,6 +987,38 @@
             }
         }
 
+        // Auto-refresh donations that are pending blockchain recording
+        let autoRefreshInterval = null;
+
+        function startAutoRefresh() {
+            // Clear any existing interval
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+
+            // Refresh every 10 seconds if there are pending blockchain recordings
+            autoRefreshInterval = setInterval(async () => {
+                // Check if any donation card contains "Recording on Blockchain..." text
+                const donationCards = document.querySelectorAll('.donation-card');
+                let hasPending = false;
+
+                donationCards.forEach(card => {
+                    if (card.textContent.includes('Recording on Blockchain')) {
+                        hasPending = true;
+                    }
+                });
+
+                if (hasPending) {
+                    console.log('⏳ Auto-refreshing donations (pending blockchain recordings detected)...');
+                    await loadMyDonations();
+                } else {
+                    console.log('✅ All donations verified - stopping auto-refresh');
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }, 10000); // Check every 10 seconds
+        }
+
         function showEmptyDonations() {
             document.getElementById('donations-loading').classList.add('hidden');
             document.getElementById('donations-empty').classList.remove('hidden');
@@ -1039,6 +1071,11 @@
                         <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #d1fae5; color: #065f46; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 12px;">
                             <i class="fas fa-shield-alt"></i>
                             Blockchain Verified
+                        </div>
+                    ` : donation.blockchain_status === 'not_applicable' && donation.payment_status === 'paid' ? `
+                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #d1fae5; color: #065f46; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 12px;">
+                            <i class="fas fa-check-circle"></i>
+                            Payment Verified
                         </div>
                     ` : donation.payment_status === 'paid' ? `
                         <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #eff6ff; color: #1e40af; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 12px;">
@@ -1094,6 +1131,10 @@
             });
 
             grid.style.display = 'grid';
+
+            // Start auto-refresh if there are pending blockchain recordings
+            console.log('📊 Displayed ' + donations.length + ' donations');
+            startAutoRefresh();
         }
 
         function formatDonationDate(dateString) {

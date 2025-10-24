@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PhysicalDonation extends Model
 {
@@ -32,6 +33,9 @@ class PhysicalDonation extends Model
         'photo_urls' => 'array',
         'estimated_value' => 'decimal:2',
         'recorded_at' => 'datetime',
+        'blockchain_recorded_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'last_verification_check' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -73,4 +77,82 @@ class PhysicalDonation extends Model
 
         return strtoupper($barangayId) . '-' . $year . '-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Generate and store offchain hash of items description
+     */
+    public function generateOffchainHash(): void
+    {
+        $blockchainService = app(\App\Services\PhysicalDonationBlockchainService::class);
+        $this->offchain_hash = $blockchainService->generateOffchainHash($this);
+        $this->verification_status = 'unverified';
+        $this->save();
+    }
+
+    /**
+     * Record this donation to blockchain
+     */
+    public function recordToBlockchain(): array
+    {
+        $blockchainService = app(\App\Services\PhysicalDonationBlockchainService::class);
+        return $blockchainService->recordToBlockchain($this);
+    }
+
+    /**
+     * Verify blockchain integrity by comparing hashes
+     */
+    public function verifyBlockchainIntegrity(): array
+    {
+        $blockchainService = app(\App\Services\PhysicalDonationBlockchainService::class);
+        return $blockchainService->verifyDonation($this);
+    }
+
+    /**
+     * Check if donation is verified
+     */
+    public function isVerified(): bool
+    {
+        return $this->verification_status === 'verified';
+    }
+
+    /**
+     * Check if there's a hash mismatch
+     */
+    public function hasMismatch(): bool
+    {
+        return $this->verification_status === 'mismatch';
+    }
+
+    /**
+     * Get verification status badge color
+     */
+    public function getVerificationBadgeColor(): string
+    {
+        return match($this->verification_status) {
+            'verified' => 'green',
+            'mismatch' => 'red',
+            'unverified' => 'yellow',
+            default => 'gray'
+        };
+    }
+
+    /**
+     * Get verification status label
+     */
+public function getVerificationStatusLabel(): string
+{
+    if (!$this->offchain_hash) {
+        return 'Not Recorded';
+    }
+
+    if (!$this->onchain_hash) {
+        return 'Pending Verification';
+    }
+
+    return match($this->verification_status) {
+        'verified' => 'Verified',
+        'mismatch' => 'Mismatch Detected',
+        default => 'Pending'
+    };
+}
 }
