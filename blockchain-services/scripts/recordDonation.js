@@ -1,5 +1,6 @@
 const { ethers } = require("ethers");
 const path = require('path');
+const fs = require('fs');
 require("dotenv").config({ path: path.join(__dirname, '../.env') });
 
 const [,, trackingCode, amount, barangay, donationTypeInput, offChainHashInput] = process.argv;
@@ -46,8 +47,10 @@ async function main() {
       process.exit(1);
     }
 
-  console.log(`📄 Loading ABI from: ${CONTRACT_ABI_PATH}`);
-    const abi = JSON.parse(fs.readFileSync(CONTRACT_ABI_PATH, "utf8"));
+    // Resolve ABI path relative to the blockchain-services directory
+    const abiPath = path.join(__dirname, '..', CONTRACT_ABI_PATH);
+    console.log(`📄 Loading ABI from: ${abiPath}`);
+    const abi = JSON.parse(fs.readFileSync(abiPath, "utf8"));
     console.log(`✅ Loaded ABI with ${abi.length} functions`);
     const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, wallet);
 

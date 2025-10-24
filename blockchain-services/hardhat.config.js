@@ -7,7 +7,7 @@ module.exports = {
         liskSepolia: {
             url: "https://rpc.sepolia-api.lisk.com",
             chainId: 4202,
-            accounts: [process.env.SYSTEM_PRIVATE_KEY],
+            accounts: [process.env.LISK_PRIVATE_KEY],
         },
     },
     etherscan: {

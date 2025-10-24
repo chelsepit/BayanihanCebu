@@ -37,8 +37,8 @@ class ResidentDashboardController extends Controller
             ->where('needs_summary', '!=', '')
             ->count();
 
-        // Affected Barangays: Count barangays with disaster_status of 'critical', 'warning', or 'emergency'
-        $affectedBarangaysCount = Barangay::whereIn('disaster_status', ['critical', 'warning', 'emergency'])->count();
+        // Affected Barangays: Count barangays with donation_status of 'critical', 'warning', or 'emergency'
+        $affectedBarangaysCount = Barangay::whereIn('donation_status', ['critical', 'warning', 'emergency'])->count();
 
         // User Impact: Sum total donations by the logged-in user where payment_status is 'paid'
         $userId = session('user_id') ?? auth()->id();
