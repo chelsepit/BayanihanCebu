@@ -44,6 +44,11 @@ Route::get('/donation/track', function () {
 // Track donation (POST)
 Route::post('/donation/track', [PublicMapController::class, 'trackDonation'])->name('donation.track');
 
+// View all verified donations
+Route::get('/donations/all', [DonationController::class, 'showAllVerified'])->name('donations.all');
+// API: Get recent verified donations (for public display)
+Route::get('/api/donations/recent-verified', [DonationController::class, 'getRecentVerified']);
+
 // Donation Routes (Public - No Auth Required)
 Route::get('/donate/{barangay:barangay_id}', [PublicMapController::class, 'showDonateForm'])->name('barangay.donate');
 

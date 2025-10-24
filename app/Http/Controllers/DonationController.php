@@ -779,4 +779,76 @@ class DonationController extends Controller
             'donations' => $donations,
         ]);
     }
+
+    /**
+     * Get recent verified donations for public display (track page)
+     * Returns both online and physical donations that are blockchain-verified
+     */
+    public function getRecentVerified()
+    {
+        // Get recent online (monetary) donations
+        $onlineDonations = Donation::with('barangay')
+            ->where('blockchain_status', 'confirmed')
+            ->where('payment_status', 'paid')
+            ->whereNotNull('blockchain_tx_hash')
+            ->orderBy('blockchain_recorded_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($donation) {
+                return [
+                    'tracking_code' => $donation->tracking_code,
+                    'type' => 'online',
+                    'amount' => $donation->amount,
+                    'payment_method' => $donation->payment_method,
+                    'donor_name' => $donation->is_anonymous ? 'Anonymous Donor' : $donation->donor_name,
+                    'barangay_name' => $donation->barangay->name ?? 'Unknown',
+                    'blockchain_tx_hash' => $donation->blockchain_tx_hash,
+                    'blockchain_status' => $donation->blockchain_status,
+                    'explorer_url' => $donation->explorer_url,
+                    'time_ago' => $donation->blockchain_recorded_at ? $donation->blockchain_recorded_at->diffForHumans() : $donation->created_at->diffForHumans(),
+                ];
+            });
+
+        // Get recent physical donations
+        $physicalDonations = \App\Models\PhysicalDonation::with('barangay')
+            ->where('blockchain_status', 'confirmed')
+            ->whereNotNull('blockchain_tx_hash')
+            ->orderBy('blockchain_recorded_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($donation) {
+                return [
+                    'tracking_code' => $donation->tracking_code,
+                    'type' => 'physical',
+                    'category' => ucfirst($donation->category),
+                    'items_description' => $donation->items_description,
+                    'estimated_value' => $donation->estimated_value,
+                    'donor_name' => $donation->donor_name,
+                    'barangay_name' => $donation->barangay->name ?? 'Unknown',
+                    'blockchain_tx_hash' => $donation->blockchain_tx_hash,
+                    'blockchain_status' => $donation->blockchain_status,
+                    'explorer_url' => $donation->explorer_url,
+                    'time_ago' => $donation->blockchain_recorded_at ? $donation->blockchain_recorded_at->diffForHumans() : $donation->created_at->diffForHumans(),
+                ];
+            });
+
+        // Combine and sort by blockchain_recorded_at
+        $allDonations = $onlineDonations->concat($physicalDonations)
+            ->sortByDesc('time_ago')
+            ->take(20)
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'donations' => $allDonations,
+        ]);
+    }
+
+    /**
+     * Show all verified donations page
+     */
+    public function showAllVerified()
+    {
+        return view('donations.all');
+    }
 }

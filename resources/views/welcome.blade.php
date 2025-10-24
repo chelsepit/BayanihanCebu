@@ -20,6 +20,7 @@
     @include('public.sections.hero')
     @include('public.sections.map')
     @include('public.sections.track')
+    @include('public.sections.verified-donations')
     @include('public.sections.trust')
 
     <!-- Leaflet JS -->
