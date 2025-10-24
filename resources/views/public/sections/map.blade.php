@@ -146,9 +146,20 @@
                         </div>
                     @endif
 
-                    <button class="donate-btn" onclick="window.location.href='/donate/{{ $barangay->barangay_id }}'">
+                 @auth
+                    <button
+                        class="donate-btn"
+                        onclick="window.location.href='/donate/{{ $barangay->barangay_id }}'">
                         Donate to {{ $barangay->name }}
                     </button>
+                @else
+                    <button
+                        class="donate-btn"
+                        onclick="window.location.href='{{ route('login') }}'">
+                        Donate to {{ $barangay->name }}
+                    </button>
+                @endauth
+
                 @endif
             </div>
         @endforeach
