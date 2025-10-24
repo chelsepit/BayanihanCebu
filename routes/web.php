@@ -175,6 +175,7 @@ Route::get('/api/donations/barangay/{id}', [DonationController::class, 'getByBar
 
 // Public routes (no login required)
 Route::post('/api/donations/track', [DonationController::class, 'track']);
+Route::post('/api/verify-physical-donation/{trackingCode}', [PublicMapController::class, 'verifyPhysicalDonation']);
 Route::get('/api/donations/resource-needs', [DonationController::class, 'getResourceNeeds']);
 Route::middleware(['auth.check'])->group(function () {
 

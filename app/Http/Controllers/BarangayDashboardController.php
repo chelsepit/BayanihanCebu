@@ -522,10 +522,20 @@ public function completeMatch(Request $request, $matchId)
     /**
      * Record a new physical donation
      */
-    public function recordDonation(Request $request)
-    {
+public function recordDonation(Request $request)
+{
+    // DEBUGGING: Log that we entered this method
+    Log::info('=== ENTERED recordDonation method ===', [
+        'request_data' => $request->all(),
+        'session_barangay' => session('barangay_id'),
+        'session_user' => session('user_id')
+    ]);
+
+    try {
         $barangayId = session('barangay_id');
         $userId = session('user_id');
+
+        Log::info('About to validate request');
 
         $validated = $request->validate([
             'donor_name' => 'required|string|max:100',
@@ -540,25 +550,52 @@ public function completeMatch(Request $request, $matchId)
             'notes' => 'nullable|string|max:500',
         ]);
 
+        Log::info('Validation passed, generating tracking code');
+
         // Generate tracking code
         $trackingCode = PhysicalDonation::generateTrackingCode($barangayId);
 
-        $donation = PhysicalDonation::create([
-            'barangay_id' => $barangayId,
+        Log::info('Tracking code generated', ['code' => $trackingCode]);
+
+        try {
+            $donation = PhysicalDonation::create([
+                'barangay_id' => $barangayId,
+                'tracking_code' => $trackingCode,
+                'donor_name' => $validated['donor_name'],
+                'donor_contact' => $validated['donor_contact'],
+                'donor_email' => $validated['donor_email'],
+                'donor_address' => $validated['donor_address'],
+                'category' => $validated['category'],
+                'items_description' => $validated['items_description'],
+                'quantity' => $validated['quantity'],
+                'estimated_value' => $validated['estimated_value'] ?? 0,
+                'intended_recipients' => $validated['intended_recipients'],
+                'notes' => $validated['notes'],
+                'distribution_status' => 'pending_distribution',
+                'recorded_by' => $userId,
+                'recorded_at' => now(),
+            ]);
+        } catch (\Exception $createError) {
+            Log::error('!!! FAILED TO CREATE PHYSICAL DONATION !!!', [
+                'error' => $createError->getMessage(),
+                'code' => $createError->getCode(),
+                'file' => $createError->getFile(),
+                'line' => $createError->getLine(),
+                'trace' => $createError->getTraceAsString()
+            ]);
+            throw $createError; // Re-throw so outer catch handles it
+        }
+
+        Log::info('PhysicalDonation created successfully', ['id' => $donation->id]);
+
+        // Dispatch blockchain recording job (runs in background via queue worker)
+        \App\Jobs\RecordPhysicalDonationToBlockchain::dispatch($donation->id);
+
+        Log::info('Blockchain job dispatched');
+
+        Log::info('Physical donation created and blockchain recording job dispatched', [
             'tracking_code' => $trackingCode,
-            'donor_name' => $validated['donor_name'],
-            'donor_contact' => $validated['donor_contact'],
-            'donor_email' => $validated['donor_email'],
-            'donor_address' => $validated['donor_address'],
-            'category' => $validated['category'],
-            'items_description' => $validated['items_description'],
-            'quantity' => $validated['quantity'],
-            'estimated_value' => $validated['estimated_value'],
-            'intended_recipients' => $validated['intended_recipients'],
-            'notes' => $validated['notes'],
-            'distribution_status' => 'pending_distribution',
-            'recorded_by' => $userId,
-            'recorded_at' => now(),
+            'donation_id' => $donation->id
         ]);
 
         return response()->json([
@@ -567,8 +604,20 @@ public function completeMatch(Request $request, $matchId)
             'data' => $donation,
             'tracking_code' => $trackingCode
         ], 201);
-    }
 
+    } catch (\Exception $e) {
+        // Log the actual error for debugging
+        Log::error('Error recording physical donation: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString());
+
+        // Return a generic error message to the user
+        return response()->json([
+            'success' => false,
+            'message' => 'An unexpected error occurred. Please try again later.',
+            'error' => $e->getMessage() // Temporarily include for debugging
+        ], 500);
+    }
+}
     /**
      * Get single donation details
      */

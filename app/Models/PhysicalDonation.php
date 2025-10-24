@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PhysicalDonation extends Model
 {
@@ -83,7 +84,7 @@ class PhysicalDonation extends Model
     public function generateOffchainHash(): void
     {
         $blockchainService = app(\App\Services\PhysicalDonationBlockchainService::class);
-        $this->offchain_hash = $blockchainService->generateOffchainHash($this->items_description);
+        $this->offchain_hash = $blockchainService->generateOffchainHash($this);
         $this->verification_status = 'unverified';
         $this->save();
     }
@@ -138,13 +139,20 @@ class PhysicalDonation extends Model
     /**
      * Get verification status label
      */
-    public function getVerificationStatusLabel(): string
-    {
-        return match($this->verification_status) {
-            'verified' => 'Verified',
-            'mismatch' => 'Hash Mismatch',
-            'unverified' => 'Unverified',
-            default => 'Unknown'
-        };
+public function getVerificationStatusLabel(): string
+{
+    if (!$this->offchain_hash) {
+        return 'Not Recorded';
     }
+
+    if (!$this->onchain_hash) {
+        return 'Pending Verification';
+    }
+
+    return match($this->verification_status) {
+        'verified' => 'Verified',
+        'mismatch' => 'Mismatch Detected',
+        default => 'Pending'
+    };
+}
 }

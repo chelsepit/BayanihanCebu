@@ -244,9 +244,18 @@
                         @elseif($donation->verification_status === 'mismatch')
                             ⚠️ Warning: Data integrity check failed! The local data does not match the blockchain record. This may indicate tampering.
                         @else
-                            ℹ️ This donation data has not yet been verified against the blockchain. Verification will happen automatically.
+                            ℹ️ This donation data has not yet been verified against the blockchain.
                         @endif
                     </p>
+
+                    @if($donation->verification_status !== 'verified' && $donation->blockchain_status === 'confirmed' && $donation->blockchain_tx_hash)
+                        <button onclick="verifyNow()" id="verifyButton" class="mt-3 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            VERIFY BLOCKCHAIN NOW
+                        </button>
+                    @endif
 
                     @if($donation->verified_at)
                         <p class="text-xs text-gray-600 mb-2">
@@ -539,5 +548,48 @@ function copyTrackingCode() {
     }).catch(err => {
         alert('Failed to copy tracking code. Please copy manually: {{ $donation->tracking_code }}');
     });
+}
+
+async function verifyNow() {
+    const button = document.getElementById('verifyButton');
+    const originalHTML = button.innerHTML;
+
+    try {
+        button.disabled = true;
+        button.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> VERIFYING...';
+
+        const response = await fetch('/api/verify-physical-donation/{{ $donation->tracking_code }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.status === 'verified') {
+                alert('✅ SUCCESS!\n\nThis donation is VERIFIED on blockchain.\n\nThe hashes match perfectly!');
+                location.reload();
+            } else if (result.status === 'mismatch') {
+                alert('⚠️ WARNING!\n\nHash mismatch detected!\n\nThis donation may have been tampered with!');
+                location.reload();
+            } else {
+                alert('ℹ️ Not ready yet!\n\nBlockchain recording is still in progress.\n\nPlease wait 30 seconds and try again.');
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            }
+        } else {
+            alert('❌ Error: ' + (result.message || result.error) + '\n\nPlease try again in a moment.');
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+    } catch (error) {
+        console.error('Verification error:', error);
+        alert('❌ Error verifying blockchain. Please try again.');
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    }
 }
 </script>

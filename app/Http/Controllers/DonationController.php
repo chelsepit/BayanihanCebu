@@ -97,11 +97,10 @@ class DonationController extends Controller
                 ],
             ]);
 
-            // Save checkout session ID and payment method
+            // Save checkout session ID
             $donation->update([
                 'payment_session_id' => $checkoutData['id'],
                 'checkout_url' => $checkoutData['attributes']['checkout_url'],
-                'payment_method' => $validated['payment_method'], // FIXED: Save payment method!
             ]);
 
             DB::commit();
@@ -110,7 +109,6 @@ class DonationController extends Controller
                 'donation_id' => $donation->id,
                 'tracking_code' => $trackingCode,
                 'session_id' => $checkoutData['id'],
-                'payment_method' => $validated['payment_method'], // Log payment method
             ]);
 
             return response()->json([
@@ -206,11 +204,10 @@ class DonationController extends Controller
                 ],
             ]);
 
-            // Save checkout session ID and payment method
+            // Save checkout session ID
             $donation->update([
                 'payment_session_id' => $checkoutData['id'],
                 'checkout_url' => $checkoutData['attributes']['checkout_url'],
-                'payment_method' => $validated['payment_method'], // FIXED: Save payment method!
             ]);
 
             DB::commit();
@@ -219,7 +216,6 @@ class DonationController extends Controller
                 'donation_id' => $donation->id,
                 'tracking_code' => $trackingCode,
                 'session_id' => $checkoutData['id'],
-                'payment_method' => $validated['payment_method'], // Log payment method
             ]);
 
             return response()->json([
@@ -440,7 +436,7 @@ class DonationController extends Controller
      * PayMongo Webhook Handler (Step 3: Automatic payment confirmation)
      * This is the key to automatic Lisk recording
      */
-    public function webhook(Request $request)
+    public function webhook(    Request $request)
     {
         try {
             // Log ALL webhook requests for debugging
@@ -755,7 +751,7 @@ class DonationController extends Controller
                     'barangay_name' => $donation->barangay->name ?? 'Unknown',
                     'barangay_id' => $donation->barangay_id,
                     'blockchain_tx_hash' => $donation->blockchain_tx_hash,
-                    'blockchain_status' => $donation->blockchain_status ?? 'pending',
+                    'blockchain_status' => $donation->blockchain_status,
                     'explorer_url' => $donation->explorer_url,
                     'checkout_url' => $donation->checkout_url,
                     'created_at' => $donation->created_at,
@@ -782,94 +778,5 @@ class DonationController extends Controller
             'success' => true,
             'donations' => $donations,
         ]);
-
-        $trackingCode = $validated['tracking_code'];
-
-        // Try to find in online donations first
-        $onlineDonation = OnlineDonation::where('tracking_code', $trackingCode)
-            ->with(['barangay', 'disaster', 'verifier'])
-            ->first();
-
-        if ($onlineDonation) {
-            return response()->json([
-                'success' => true,
-                'donation_type' => 'online',
-                'donation' => [
-                    'tracking_code' => $onlineDonation->tracking_code,
-                    'donor_name' => $onlineDonation->getDonorDisplayName(),
-                    'barangay_name' => $onlineDonation->barangay->name,
-                    'disaster_title' => $onlineDonation->disaster ? $onlineDonation->disaster->title : 'General Donation',
-                    'amount' => $onlineDonation->amount,
-                    'payment_method' => $onlineDonation->payment_method,
-                    'verification_status' => $onlineDonation->verification_status,
-                    'verified_at' => $onlineDonation->verified_at ? $onlineDonation->verified_at->format('M d, Y h:i A') : null,
-                    'verified_by' => $onlineDonation->verifier ? $onlineDonation->verifier->full_name : null,
-                    'blockchain_status' => $onlineDonation->blockchain_status,
-                    'blockchain_tx_hash' => $onlineDonation->blockchain_tx_hash,
-                    'blockchain_recorded_at' => $onlineDonation->blockchain_recorded_at ? $onlineDonation->blockchain_recorded_at->format('M d, Y h:i A') : null,
-                    'explorer_url' => $onlineDonation->explorer_url,
-                    'created_at' => $onlineDonation->created_at->format('M d, Y h:i A'),
-                ],
-            ]);
-        }
-
-        // If not found in online donations, try physical donations
-        $physicalDonation = PhysicalDonation::where('tracking_code', $trackingCode)
-            ->with(['barangay', 'recorder', 'distributions.distributor'])
-            ->first();
-
-        if ($physicalDonation) {
-            return response()->json([
-                'success' => true,
-                'donation_type' => 'physical',
-                'donation' => [
-                    'tracking_code' => $physicalDonation->tracking_code,
-                    'donor_name' => $physicalDonation->donor_name,
-                    'donor_contact' => $physicalDonation->donor_contact,
-                    'donor_email' => $physicalDonation->donor_email,
-                    'barangay_name' => $physicalDonation->barangay->name,
-                    'category' => ucfirst($physicalDonation->category),
-                    'items_description' => $physicalDonation->items_description,
-                    'quantity' => $physicalDonation->quantity,
-                    'estimated_value' => $physicalDonation->estimated_value,
-                    'intended_recipients' => $physicalDonation->intended_recipients,
-                    'distribution_status' => $physicalDonation->distribution_status,
-                    'recorded_by' => $physicalDonation->recorder ? $physicalDonation->recorder->full_name : null,
-                    'recorded_at' => $physicalDonation->recorded_at->format('M d, Y h:i A'),
-                    'blockchain_status' => $physicalDonation->blockchain_status ?? 'pending',
-                    'blockchain_tx_hash' => $physicalDonation->blockchain_tx_hash ?? null,
-                    'blockchain_recorded_at' => $physicalDonation->blockchain_recorded_at ? $physicalDonation->blockchain_recorded_at->format('M d, Y h:i A') : null,
-                    'ipfs_hash' => $physicalDonation->ipfs_hash ?? null,
-                    'distributions' => $physicalDonation->distributions->map(function($dist) {
-                        return [
-                            'id' => $dist->id,
-                            'distributed_to' => $dist->distributed_to,
-                            'quantity_distributed' => $dist->quantity_distributed,
-                            'distributed_by' => $dist->distributor ? $dist->distributor->full_name : null,
-                            'distributed_at' => $dist->distributed_at->format('M d, Y h:i A'),
-                            'notes' => $dist->notes,
-                            'has_photos' => !empty($dist->photo_urls),
-                        ];
-                    }),
-                    'created_at' => $physicalDonation->created_at->format('M d, Y h:i A'),
-                ],
-            ]);
-        }
-
-        $stats = [
-            'total_donated' => OnlineDonation::where('donor_email', $userEmail)->sum('amount'),
-            'total_donations' => OnlineDonation::where('donor_email', $userEmail)->count(),
-            'verified_donations' => OnlineDonation::where('donor_email', $userEmail)
-                ->where('verification_status', 'verified')->count(),
-            'blockchain_verified' => OnlineDonation::where('donor_email', $userEmail)
-                ->where('blockchain_status', 'confirmed')->count(),
-            'families_helped' => OnlineDonation::where('donor_email', $userEmail)
-                ->where('verification_status', 'verified')
-                ->join('barangays', 'online_donations.target_barangay_id', '=', 'barangays.barangay_id')
-                ->sum('barangays.affected_families'),
-        ];
-
-        return response()->json($stats);
     }
-
 }

@@ -8,6 +8,7 @@ use App\Models\PhysicalDonation;
 use App\Models\ResourceNeed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\PhysicalDonationBlockchainService;
 
 class PublicMapController extends Controller
 {
@@ -27,41 +28,49 @@ class PublicMapController extends Controller
      * Track a donation by tracking code
      * ✅ NOW SUPPORTS BOTH ONLINE AND PHYSICAL DONATIONS
      */
-    public function trackDonation(Request $request)
-    {
-        $request->validate([
-            'tracking_code' => 'required|string',
+
+
+public function trackDonation(Request $request)
+{
+    $request->validate([
+        'tracking_code' => 'required|string',
+    ]);
+
+    $trackingCode = $request->tracking_code;
+
+    // Try online donations first
+    $onlineDonation = Donation::where('tracking_code', $trackingCode)
+        ->with(['barangay', 'disaster', 'verifier'])
+        ->first();
+
+    if ($onlineDonation) {
+        return view('donations.track', [
+            'donation' => $onlineDonation,
+            'donation_type' => 'online',
         ]);
-
-        $trackingCode = $request->tracking_code;
-
-        // Try online donations first
-        $onlineDonation = Donation::where('tracking_code', $trackingCode)
-            ->with(['barangay', 'disaster', 'verifier'])
-            ->first();
-
-        if ($onlineDonation) {
-            return view('donations.track', [
-                'donation' => $onlineDonation,
-                'donation_type' => 'online',
-            ]);
-        }
-
-        // Try physical donations
-        $physicalDonation = PhysicalDonation::where('tracking_code', $trackingCode)
-            ->with(['barangay', 'recorder', 'distributions.distributor'])
-            ->first();
-
-        if ($physicalDonation) {
-            return view('donations.track', [
-                'donation' => $physicalDonation,
-                'donation_type' => 'physical',
-            ]);
-        }
-
-        // Not found
-        return back()->with('error', 'Tracking code not found. Please check and try again.');
     }
+
+    // Try physical donations
+    $physicalDonation = PhysicalDonation::where('tracking_code', $trackingCode)
+        ->with(['barangay', 'recorder', 'distributions.distributor'])
+        ->first();
+
+    if ($physicalDonation) {
+        // ✨ AUTO-VERIFY ON PAGE LOAD
+        $blockchainService = new PhysicalDonationBlockchainService();
+        $blockchainService->verifyDonation($physicalDonation);
+        
+        // Refresh to get updated data
+        $physicalDonation->refresh();
+
+        return view('donations.track', [
+            'donation' => $physicalDonation,
+            'donation_type' => 'physical',
+        ]);
+    }
+
+    return back()->with('error', 'Tracking code not found. Please check and try again.');
+}
 
     /**
      * Show donation form for a specific barangay
@@ -220,4 +229,46 @@ public function apiBarangays()
 
     return response()->json($barangays);
 }
+
+    /**
+     * Verify physical donation from tracking page
+     */
+    public function verifyPhysicalDonation($trackingCode)
+    {
+        try {
+            $donation = PhysicalDonation::where('tracking_code', $trackingCode)->first();
+
+            if (!$donation) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Donation not found'
+                ], 404);
+            }
+
+            // Check if blockchain recording is complete
+            if ($donation->blockchain_status !== 'confirmed' || !$donation->blockchain_tx_hash) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 'not_ready',
+                    'message' => 'Blockchain recording is still in progress. Please wait and try again.'
+                ]);
+            }
+
+            // Verify blockchain integrity
+            $result = $donation->verifyBlockchainIntegrity();
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Error verifying physical donation from tracking page', [
+                'tracking_code' => $trackingCode,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Verification failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
