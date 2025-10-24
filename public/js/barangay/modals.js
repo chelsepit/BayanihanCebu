@@ -15,8 +15,9 @@ async function openEditStatusModal() {
         const response = await fetch("/api/bdrrmc/my-barangay");
         const barangay = await response.json();
 
-        document.getElementById("editDisasterStatus").value =
-            barangay.disaster_status || "safe";
+        // ✅ UPDATED: Use donation_status instead of disaster_status
+        document.getElementById("editDonationStatus").value =
+            barangay.donation_status || "pending";
         document.getElementById("editAffectedFamilies").value =
             barangay.affected_families || 0;
         document.getElementById("editNeedsSummary").value =
@@ -209,13 +210,15 @@ document
         e.preventDefault();
 
         const formData = new FormData(e.target);
+        // ✅ UPDATED: Use donation_status instead of disaster_status
         const data = {
-            disaster_status: formData.get("disaster_status"),
+            donation_status: formData.get("donation_status"),
             affected_families: parseInt(formData.get("affected_families")) || 0,
             needs_summary: formData.get("needs_summary"),
         };
 
-        if (data.disaster_status === "safe") {
+        // ✅ UPDATED: If completed, reset affected families to 0
+        if (data.donation_status === "completed") {
             data.affected_families = 0;
         }
 
@@ -234,23 +237,24 @@ document
             if (result.success) {
                 closeEditStatusModal();
                 alert(
-                    "✅ Barangay status updated successfully!\n\nThe changes will be reflected on the LDRRMO city map immediately.",
+                    "✅ Barangay donation status updated successfully!\n\nThe changes will be reflected on the LDRRMO city map immediately.",
                 );
                 location.reload();
             } else {
-                alert("❌ Error updating barangay status. Please try again.");
+                alert("❌ Error updating barangay donation status. Please try again.");
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("❌ Error updating barangay status. Please try again.");
+            alert("❌ Error updating barangay donation status. Please try again.");
         }
     });
 
-// Event listener for disaster status change
+// ✅ UPDATED: Event listener for donation status change
 document
-    .getElementById("editDisasterStatus")
+    .getElementById("editDonationStatus")
     .addEventListener("change", function (e) {
-        if (e.target.value === "safe") {
+        // If status is "completed", reset affected families to 0
+        if (e.target.value === "completed") {
             document.getElementById("editAffectedFamilies").value = 0;
             document.getElementById("editAffectedFamilies").disabled = true;
         } else {

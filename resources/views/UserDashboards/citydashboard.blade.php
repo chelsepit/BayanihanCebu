@@ -47,345 +47,101 @@
             display: none;
         }
 
-        /* Map Section Styles */
-        .city-map-container {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 20px;
-            height: 700px;
-            overflow: visible;
-            position: relative;
-            z-index: 1;
-        }
-
-        .city-map-wrapper {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-            position: relative;
-            height: 100%;
-            z-index: 1;
-        }
-
-        #cityBarangayMap {
+        #cityBarangayMapHome {
             width: 100%;
             height: 100%;
         }
+        </style>
 
-        /* Map Legend */
-        .city-map-legend-overlay {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
+        <style>
+        #current-time {
+            font-variant-numeric: tabular-nums; 
         }
 
-        .city-legend-title {
-            font-weight: 700;
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #1f2937;
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
-        .city-legend-items {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        .fa-clock {
+            animation: pulse-subtle 2s ease-in-out infinite;
         }
 
-        .city-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #4b5563;
+        #current-date,
+        #current-time,
+        #current-day {
+            color: #FFFFFF !important; 
         }
-
-        .city-legend-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        /* Summary Panel */
-        .city-summary-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow: visible;
-            height: 100%;
-        }
-
-        .city-summary-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .city-card-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .city-card-icon {
-            width: 28px;
-            height: 28px;
-            background: #CA6702;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-        }
-
-        /* Stats Grid */
-        .city-stats-grid-summary {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .city-stat-box {
-            text-align: center;
-            padding: 12px 8px;
-            background: #f9fafb;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .city-stat-box .stat-number {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 4px;
-        }
-
-        .city-stat-box .stat-label {
-            font-size: 10px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Barangay List */
-        .city-barangay-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .city-barangay-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .city-barangay-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .city-barangay-list::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        .city-barangay-list::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        .city-barangay-item {
-            padding: 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .city-barangay-item:hover {
-            border-color: #CA6702;
-            box-shadow: 0 2px 8px rgba(202, 103, 2, 0.1);
-            transform: translateX(2px);
-        }
-
-        .city-barangay-info-summary {
-            flex: 1;
-        }
-
-        .city-barangay-name-summary {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 4px;
-            font-size: 13px;
-        }
-
-        .city-barangay-meta {
-            font-size: 11px;
-            color: #6b7280;
-        }
-
-        .city-status-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .city-status-badge.safe {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .city-status-badge.warning {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .city-status-badge.critical {
-            background: #fed7aa;
-            color: #9a3412;
-        }
-
-        .city-status-badge.emergency {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Ensure no horizontal scroll */
-        #map-tab {
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-    </style>
-
+        </style>
 
 </head>
 <body class="bg-gray-50">
 
-    <!-- Top Header -->
-    <div class="bg-[#CA6702] text-white px-6 py-4 flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold">City Dashboard (LDRRMO)</h1>
-            <p class="text-sm opacity-90">Cebu City Disaster Management / Public Works</p>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="text-right">
-                <p class="text-sm opacity-90">Logged in as LDRRMO</p>
-                <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
-            </div>
-
-            <!-- Messages Toggle Button -->
-            <div class="relative">
-                <button id="conversations-toggle"
-                        onclick="toggleConversationsSidebar()"
-                        class="relative bg-white/20 hover:bg-white/30 p-3 rounded-lg transition"
-                        title="Messages">
-                    <i class="fas fa-comments text-xl"></i>
-                    <!-- Active Conversations Badge -->
-                    <span id="conversations-badge-header"
-                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        0
-                    </span>
-                </button>
-            </div>
-
-            <!-- Notification Bell -->
-            <div class="relative">
-                <button id="notification-bell"
-                        onclick="toggleNotifications()"
-                        class="relative bg-white/20 hover:bg-white/30 p-3 rounded-lg transition">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span id="notification-badge"
-                          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                        0
-                    </span>
-                </button>
-
-                <!-- Notifications Dropdown -->
-                <div id="notifications-dropdown"
-                     class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border max-h-96 overflow-hidden" style="z-index: 9999;">
-
-                    <!-- Header -->
-                    <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
-                        <h3 class="font-bold text-gray-900">Notifications</h3>
-                        <div class="flex items-center gap-2">
-                            <span id="notification-count" class="text-xs text-gray-500">0 unread</span>
-                            <button onclick="markAllAsRead()"
-                                    class="text-xs text-[#CA6702] hover:text-[#BB3E03] font-semibold">
-                                Mark all read
-                            </button>
-                        </div>
-                    </div>
-
-            <!-- Filter Tabs -->
-            <div class="flex border-b bg-gray-50">
-                <button onclick="filterNotifications('all')"
-                        id="notif-filter-all"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-[#CA6702] text-[#CA6702]">
-                    All
-                </button>
-                <button onclick="filterNotifications('match_request')"
-                        id="notif-filter-match_request"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#CA6702]">
-                    Matches
-                </button>
-                <button onclick="filterNotifications('match_accepted')"
-                        id="notif-filter-match_accepted"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#CA6702]">
-                    Accepted
-                </button>
-                <button onclick="filterNotifications('message')"
-                        id="notif-filter-message"
-                        class="flex-1 px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#CA6702]">
-                    Messages
-                </button>
-            </div>
-
-                    <!-- Notifications List -->
-                    <div id="notifications-list" class="overflow-y-auto max-h-80">
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                            <p class="text-sm">Loading notifications...</p>
-                        </div>
-                    </div>
-
-            <!-- Footer -->
-            <div class="px-4 py-3 border-t bg-gray-50 text-center">
-                <button onclick="viewAllNotifications()"
-                        class="text-sm text-[#CA6702] hover:text-[#BB3E03] font-semibold">
-                    View All Notifications
-                </button>
-            </div>
-        </div>
-            </div>
-
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
-                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
-                </button>
-            </form>
-        </div>
+<div class="bg-[#CA6702] text-white px-6 py-4 flex justify-between items-center">
+    <div>
+        <h1 class="text-2xl font-bold">City Dashboard (LDRRMO)</h1>
+        <p class="text-sm opacity-90">Cebu City Disaster Management / Public Works</p>
     </div>
+    
+    <div class="flex items-center gap-4">
+        <!-- Real-time Date and Time Display -->
+        <div class="flex flex-col items-center text-center px-6 border-x border-white/20">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="fas fa-calendar-alt text-sm"></i>
+                <span id="current-date" class="text-sm font-medium"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-clock text-sm"></i>
+                <span id="current-time" class="text-2xl font-bold tracking-wide"></span>
+            </div>
+            <span id="current-day" class="text-xs opacity-75 mt-1"></span>
+        </div>
+        
+        <!-- User Info (SINGLE VERSION - KEEP THIS ONE) -->
+        <div class="text-right">
+            <p class="text-sm opacity-90">Logged in as LDRRMO</p>
+            <p class="font-medium">{{ session('user_name', 'Admin') }}</p>
+        </div>
+
+        <!-- Messages Toggle Button -->
+        <div class="relative">
+            <button id="conversations-toggle"
+                    onclick="toggleConversationsSidebar()"
+                    class="relative p-2 text-white hover:bg-white/20 rounded-full transition"
+                    title="Messages">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3.293 3.293 3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                </svg>
+                <span id="conversations-badge-header"
+                      class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    0
+                </span>
+            </button>
+        </div>
+
+        <!-- Notifications Toggle Button -->
+        <div class="relative">
+            <button id="notifications-toggle"
+                    onclick="toggleNotificationsPanel()"
+                    class="relative bg-white/20 hover:bg-white/30 p-3 rounded-lg transition"
+                    title="Notifications">
+                <i class="fas fa-bell text-xl"></i>
+                <span id="unread-count-badge"
+                      class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    0
+                </span>
+            </button>
+        </div>
+
+        <!-- Logout Button -->
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </form>
+    </div>
+</div>
 
     <!-- Main Layout with Sidebar -->
     <div class="flex h-screen overflow-hidden">
@@ -440,79 +196,11 @@
         <div class="flex-1 overflow-y-auto bg-gray-50">
     <div class="max-w-7xl mx-auto px-6 py-6">
 
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-600">Total Donations</p>
-                        <h3 class="text-3xl font-bold text-gray-800" id="totalDonations">₱0</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
-                    </div>
-                </div>
-                <p class="text-xs text-green-600 mt-2"><i class="fas fa-check"></i> Verified</p>
-            </div>
-
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-600">Online Donations</p>
-                        <h3 class="text-2xl font-bold text-gray-800" id="onlineDonations">₱0</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-wallet text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <p class="text-xs text-purple-600 mt-2"><i class="fas fa-link"></i> Blockchain</p>
-            </div>
-
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-600">Affected Families</p>
-                        <h3 class="text-3xl font-bold text-gray-800" id="affectedFamilies">0</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-red-600 text-xl"></i>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-600 mt-2" id="affectedBarangays">0 Barangays</p>
-            </div>
-
-
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-600">Critical Barangays</p>
-                        <h3 class="text-3xl font-bold text-gray-800" id="criticalBarangays">0</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-orange-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm text-gray-600">Total Donors</p>
-                        <h3 class="text-3xl font-bold text-gray-800" id="totalDonors">0</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-teal-600 text-xl"></i>
-                    </div>
-                </div>
-                <p class="text-xs text-teal-600 mt-2" id="blockchainVerified">0 blockchain verified</p>
-            </div>
-        </div>
-
         <!-- Tabs Navigation -->
         <div class="bg-white rounded-t-xl shadow-sm border-b">
             <div class="flex gap-2 px-6">
-                <button onclick="switchTab('map', event)" class="tab-btn active px-6 py-4 font-medium text-gray-700 transition">
-                    <i class="fas fa-map mr-2"></i> Map View
+                <button onclick="switchTab('analytics', event)" class="tab-btn active px-6 py-4 font-medium text-gray-700 transition">
+                    <i class="fas fa-home mr-2"></i> Home
                 </button>
                 <button onclick="switchTab('resources', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-handshake mr-2"></i> Resource Needs
@@ -520,91 +208,9 @@
                 <button onclick="switchTab('my-matches', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition" data-tab="my-matches">
                     <i class="fas fa-handshake mr-2"></i> My Matches
                 </button>
-                <button onclick="switchTab('analytics', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
-                    <i class="fas fa-chart-bar mr-2"></i> Analytics
-                </button>
                 <button onclick="switchTab('barangays', event)" class="tab-btn px-6 py-4 font-medium text-gray-700 transition">
                     <i class="fas fa-list mr-2"></i> Barangays
                 </button>
-            </div>
-        </div>
-
-        <!-- TAB 1: Interactive Map -->
-        <div id="map-tab" class="tab-content active bg-white rounded-b-xl shadow-sm p-6">
-            <h2 class="text-2xl font-bold mb-4">Live Disaster Map of Cebu</h2>
-            <p class="text-gray-600 text-sm mb-6">Real-time status of all barangays across Cebu City</p>
-
-            {{-- Map Container with Summary Panel --}}
-            <div class="city-map-container">
-                {{-- Interactive Map --}}
-                <div class="city-map-wrapper">
-                    <div id="cityBarangayMap"></div>
-
-                    {{-- Map Legend Overlay --}}
-                    <div class="city-map-legend-overlay">
-                        <div class="city-legend-title">📍 Disaster Status</div>
-                        <div class="city-legend-items">
-                            <div class="city-legend-item">
-                                <span class="city-legend-dot" style="background: #10b981;"></span>
-                                <span>Safe</span>
-                            </div>
-                            <div class="city-legend-item">
-                                <span class="city-legend-dot" style="background: #f59e0b;"></span>
-                                <span>Warning</span>
-                            </div>
-                            <div class="city-legend-item">
-                                <span class="city-legend-dot" style="background: #f97316;"></span>
-                                <span>Critical</span>
-                            </div>
-                            <div class="city-legend-item">
-                                <span class="city-legend-dot" style="background: #ef4444;"></span>
-                                <span>Emergency</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Summary Panel --}}
-                <div class="city-summary-panel">
-                    {{-- City Statistics --}}
-                    <div class="city-summary-card">
-                        <div class="city-card-title">
-                            <div class="city-card-icon">📊</div>
-                            City Overview
-                        </div>
-                        <div class="city-stats-grid-summary">
-                            <div class="city-stat-box">
-                                <div class="stat-number" id="cityTotalDonations">₱0</div>
-                                <div class="stat-label">Total Donations</div>
-                            </div>
-                            <div class="city-stat-box">
-                                <div class="stat-number" id="cityAffectedFamilies">0</div>
-                                <div class="stat-label">Affected Families</div>
-                            </div>
-                            <div class="city-stat-box">
-                                <div class="stat-number" id="cityAffectedBarangays">0</div>
-                                <div class="stat-label">Barangays Affected</div>
-                            </div>
-                            <div class="city-stat-box">
-                                <div class="stat-number" id="cityTotalDonors">0</div>
-                                <div class="stat-label">Donors</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Barangays List (Needing Help + Safe) --}}
-                    <div class="city-summary-card" style="flex: 1; min-height: 0;">
-                        <div class="city-card-title">
-                            <div class="city-card-icon">⚠️</div>
-                            All Barangays Status
-                        </div>
-                        <div class="city-barangay-list" id="cityBarangayList">
-                            <div style="text-align: center; padding: 20px; color: #6b7280;">
-                                <i class="fas fa-spinner fa-spin"></i> Loading...
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -840,33 +446,147 @@
 </template>
 
 
-        <!-- TAB 3: Analytics -->
-        <div id="analytics-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
-            <h2 class="text-2xl font-bold mb-6">Analytics</h2>
+        <!-- TAB 3: Home -->
+        <div id="analytics-tab" class="tab-content active bg-white rounded-b-xl shadow-sm p-6">
+            <h2 class="text-2xl font-bold mb-6">
+                <i class="fas fa-home mr-2 text-indigo-600"></i>Home Dashboard
+            </h2>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white border rounded-lg p-6">
-                    <h3 class="text-lg font-semibold mb-4">Donations by Barangay</h3>
-                    <canvas id="donationsChart"></canvas>
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-6">
+
+                <!-- Total Donations -->
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-4 text-white shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-green-100 text-xs mb-1">Total Donations</p>
+                            <h3 class="text-2xl font-bold" id="totalDonations">₱0</h3>
+                            <p class="text-xs opacity-80 mt-1"><i class="fas fa-check"></i> Verified</p>
+                        </div>
+                        <div class="text-3xl opacity-70">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bg-white border rounded-lg p-6">
-                    <h3 class="text-lg font-semibold mb-4">Disaster Status Distribution</h3>
-                    <canvas id="statusChart"></canvas>
+                <!-- Online Donations -->
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-4 text-white shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-purple-100 text-xs mb-1">Online Donations</p>
+                            <h3 class="text-2xl font-bold" id="onlineDonations">₱0</h3>
+                            <p class="text-xs opacity-80 mt-1"><i class="fas fa-link"></i> Blockchain</p>
+                        </div>
+                        <div class="text-3xl opacity-70">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bg-white border rounded-lg p-6">
-                    <h3 class="text-lg font-semibold mb-4">Payment Method Distribution</h3>
-                    <canvas id="paymentMethodChart"></canvas>
+                <!-- Affected Families -->
+                <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-lg p-4 text-white shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-red-100 text-xs mb-1">Affected Families</p>
+                            <h3 class="text-2xl font-bold" id="affectedFamilies">0</h3>
+                            <p class="text-xs opacity-80 mt-1" id="affectedBarangays">0 Barangays</p>
+                        </div>
+                        <div class="text-3xl opacity-70">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bg-white border rounded-lg p-6">
-                    <h3 class="text-lg font-semibold mb-4">Affected Families by Barangay</h3>
-                    <canvas id="familiesChart"></canvas>
+                <!-- Critical Barangays -->
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-4 text-white shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-orange-100 text-xs mb-1">Critical Barangays</p>
+                            <h3 class="text-2xl font-bold" id="criticalBarangays">0</h3>
+                        </div>
+                        <div class="text-3xl opacity-70">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Donors -->
+                <div class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg p-4 text-white shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-teal-100 text-xs mb-1">Total Donors</p>
+                            <h3 class="text-2xl font-bold" id="totalDonors">0</h3>
+                            <p class="text-xs opacity-80 mt-1" id="blockchainVerified">0 blockchain verified</p>
+                        </div>
+                        <div class="text-3xl opacity-70">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
+            
+
+            <!-- Map -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+                <div class="lg:col-span-2">
+                    <div class="bg-white border rounded-lg shadow-sm overflow-hidden">
+                        <div class="bg-gray-50 border-b px-4 py-3">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                Live Disaster Map of Cebu
+                            </h3>
+                            <p class="text-xs text-gray-500">Real-time status of all barangays</p>
+                        </div>
+
+                        <div class="relative" style="height: 500px;">
+                            <div id="cityBarangayMapHome" style="height: 100%; width: 100%;"></div>
+
+                            {{-- Map Legend Overlay --}}
+                            <div class="absolute bottom-4 left-4 bg-white px-4 py-3 rounded-lg shadow-lg border">
+                                <div class="text-sm font-semibold mb-2 text-gray-700">Status</div>
+                                <div class="flex flex-col gap-2 text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full" style="background: #10b981;"></span>
+                                        <span>Safe</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full" style="background: #f59e0b;"></span>
+                                        <span>Warning</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full" style="background: #f97316;"></span>
+                                        <span>Critical</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full" style="background: #ef4444;"></span>
+                                        <span>Emergency</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Urgent Requests Panel --}}
+                <div class="lg:col-span-1">
+                    <div class="bg-white border rounded-lg shadow-sm overflow-hidden" style="height: 100%;">
+                        <div class="bg-orange-500 border-b px-4 py-3">
+                            <h3 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Urgent Requests
+                            </h3>
+                            <p class="text-xs text-orange-100">Top 5 by priority</p>
+                        </div>
+
+                        <div class="overflow-y-auto" style="max-height: 450px;" id="urgentRequestsList">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                <p class="text-sm">Loading urgent requests...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <!-- TAB 4: Barangays Comparison -->
         <div id="barangays-tab" class="tab-content bg-white rounded-b-xl shadow-sm p-6">
             <h2 class="text-2xl font-bold mb-6">Barangay Comparison</h2>
@@ -1032,9 +752,6 @@
                 loadedTabs[tabName] = true;
 
                 switch(tabName) {
-                    case 'map':
-                        loadMapData();
-                        break;
                     case 'resources':
                         loadResourceNeeds();
                         break;
@@ -1080,19 +797,7 @@
         // MAP FUNCTIONALITY
         // ============================================
 
-        function initMap() {
-            // Note: Map is now handled by city-dashboard-map.js
-            // This function is kept for compatibility but does nothing
-            console.log('initMap called - map initialization handled by city-dashboard-map.js');
-            return true;
-        }
 
-     async function loadMapData() {
-    // Note: Map data loading is now handled by city-dashboard-map.js
-    // This function is kept for compatibility but does nothing
-    console.log('loadMapData called - map data loading handled by city-dashboard-map.js');
-    return;
-}
 
         // ============================================
         // RESOURCE NEEDS & MATCHING
@@ -1529,7 +1234,7 @@ function displayMatches(need, matches) {
                         </button>
 
                         <!-- ✅ UPDATED: Now initiates match request -->
-                        <button onclick="contactBarangay(${need.id}, ${match.donation.id}, '${match.barangay.id || ''}', '${escapeHtml(match.barangay.name || 'Unknown')}', ${match.match_score || 0}, ${match.can_fully_fulfill || match.can_fulfill || false})"
+                        <button onclick="contactBarangay(${need.id}, ${match.donation.id}, '${match.barangay.id || ''}', '${escapeHtml(match.barangay.name || 'Unknown')}', ${match.match_score || 0}, ${match.can_fully_fulfill || match.can_fulfill || false}, '${escapeHtml(need.quantity || '')}')"
                                 class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-semibold">
                             <i class="fas fa-handshake mr-1"></i> Initiate Match
                         </button>
@@ -1546,9 +1251,7 @@ function displayMatches(need, matches) {
             document.getElementById('suggestedMatchesModal').classList.add('hidden');
         }
 
-        function viewMatchDetails(needId, donationId) {
-            alert('📋 Detailed Match Information\n\nThis would display:\n• Transfer logistics\n• Distance between barangays\n• Detailed item comparison\n• Confirmation and tracking options');
-        }
+        // ✅ CLEANUP: Removed stub viewMatchDetails() - Real implementation exists at line ~1935
 let currentMyMatchesFilter = 'all';
 let allMyMatches = [];
 
@@ -1969,9 +1672,22 @@ function displayChatMessages(chatBox, messages) {
 
     // Render messages (Messenger-style bubbles)
     const html = messages.map(msg => {
+        const isSystem = msg.sender_role === 'system';
         const isLDRRMO = msg.sender_role === 'ldrrmo';
         const isRequester = msg.sender_role === 'requester';
         const isDonor = msg.sender_role === 'donor';
+
+        // System messages (centered, gray style)
+        if (isSystem) {
+            return `
+                <div class="flex justify-center my-3">
+                    <div class="bg-gray-100 text-gray-600 rounded-lg px-3 py-2 text-xs max-w-[80%] text-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        ${escapeHtml(msg.message)}
+                    </div>
+                </div>
+            `;
+        }
 
         let bgColor, textColor;
         if (isLDRRMO) {
@@ -2002,7 +1718,7 @@ function displayChatMessages(chatBox, messages) {
             return `
                 <div class="flex items-start gap-2">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold">
-                        ${msg.sender_name.substring(0, 1)}
+                        ${String(msg.sender_name).substring(0, 1)}
                     </div>
                     <div class="flex-1">
                         <p class="text-xs text-gray-600 mb-0.5">${msg.sender_name}</p>
@@ -2140,7 +1856,7 @@ window.closeMatchSuccessModal = function() {
     document.getElementById('matchSuccessModal').classList.add('hidden');
 }
 
-async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill) {
+async function contactBarangay(needId, donationId, barangayId, barangayName, matchScore, canFullyFulfill, quantityRequested) {
     // Show confirmation modal
     const confirmed = await confirm(
         `🤝 Initiate Match Request\n\n` +
@@ -2155,14 +1871,14 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
     if (!confirmed) return;
 
     try {
-        // Get the need details to extract quantity
-        const needData = currentResourceNeeds.find(n => n.id === needId);
+        // ✅ FIX: Use quantity passed as parameter instead of looking up from currentResourceNeeds
+        const quantity = quantityRequested || '';
 
         console.log('Initiating match with data:', {
             resource_need_id: needId,
             physical_donation_id: donationId,
             match_score: matchScore,
-            quantity_requested: needData?.quantity || '',
+            quantity_requested: quantity,
             can_fully_fulfill: canFullyFulfill
         });
 
@@ -2172,19 +1888,64 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
                 resource_need_id: needId,
                 physical_donation_id: donationId,
                 match_score: matchScore,
-                quantity_requested: needData?.quantity || '',
+                quantity_requested: quantity,
                 can_fully_fulfill: canFullyFulfill
             })
         });
 
         if (response.success) {
-            // Show custom match success modal
-            showMatchSuccessModal({
-                match_id: response.data.match_id,
-                status: response.data.status,
-                requesting_barangay: response.data.requesting_barangay,
-                donating_barangay: response.data.donating_barangay
-            });
+            // Show success modal
+            const successHtml = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" id="successMatchModal">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                        <div class="text-center mb-4">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-check-circle text-3xl text-green-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Match Request Sent!</h3>
+                            <p class="text-gray-600">Both barangays have been notified</p>
+                        </div>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="text-sm space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Match ID:</span>
+                                    <span class="font-semibold text-gray-900">#${response.data.match_id}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold">${response.data.status}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 mb-6 text-sm">
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-check text-green-600"></i>
+                                <span>${response.data.requesting_barangay} (Notified)</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-700">
+                                <i class="fas fa-check text-green-600"></i>
+                                <span>${response.data.donating_barangay} (Action Required)</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                            <p class="text-xs text-blue-800">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Track this match in the "My Matches" tab
+                            </p>
+                        </div>
+
+                        <button onclick="closeSuccessModal()"
+                                class="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', successHtml);
 
             // Close the suggested matches modal
             closeMatchModal();
@@ -2192,8 +1953,8 @@ async function contactBarangay(needId, donationId, barangayId, barangayName, mat
             // Refresh the resource needs list
             loadResourceNeeds();
 
-            // TODO: Update notification bell count
-            // loadNotifications();
+            // Update notification count
+            loadNotifications();
         } else {
             showAlert('Error: ' + response.message, '❌ Error');
         }
@@ -2465,7 +2226,8 @@ function renderMatchDetails(data) {
                 donation.barangay_id,
                 donation.barangay_name,
                 match_analysis.match_score,
-                match_analysis.can_fully_fulfill
+                match_analysis.can_fully_fulfill,
+                need.quantity  // ✅ FIX: Pass quantity parameter
             );
         };
     }
@@ -2477,63 +2239,18 @@ function renderMatchDetails(data) {
  * @param {number} score - Match score percentage
  * @returns {string} CSS class name
  */
-function getMatchScoreBadgeClass(score) {
-    if (score >= 90) return 'match-score-excellent';
-    if (score >= 75) return 'match-score-good';
-    if (score >= 60) return 'match-score-fair';
-    return 'match-score-poor';
-}
+// ✅ CLEANUP: Removed 3 unused helper functions:
+// - getMatchScoreBadgeClass() - Never called (renderMatchDetails uses inline conditionals)
+// - getUrgencyBadgeClass() - Duplicate of getUrgencyColor() which is actually used
+// - getFactorIcon() - Never called anywhere in the code
 
-/**
- * Get urgency badge CSS class
- *
- * @param {string} urgency - Urgency level
- * @returns {string} CSS class name
- */
-function getUrgencyBadgeClass(urgency) {
-    const classes = {
-        'critical': 'bg-red-100 text-red-700',
-        'high': 'bg-orange-100 text-orange-700',
-        'medium': 'bg-yellow-100 text-yellow-700',
-        'low': 'bg-green-100 text-green-700',
-    };
-    return classes[urgency] || 'bg-gray-100 text-gray-700';
-}
 
-/**
- * Get icon for match factor
- *
- * @param {string} status - Factor status
- * @returns {string} Font Awesome icon name
- */
-function getFactorIcon(status) {
-    const icons = {
-        'match': 'check-circle',
-        'mismatch': 'times-circle',
-        'good': 'smile',
-        'moderate': 'meh',
-        'far': 'frown',
-        'urgent': 'exclamation-triangle',
-        'normal': 'info-circle',
-        'full': 'check-double',
-        'partial': 'minus-circle',
-    };
-    return icons[status] || 'circle';
-}
-
-/**
- * Escape HTML to prevent XSS
- *
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-// Close modal when clicking outside
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('matchDetailsModal');
     if (modal) {
@@ -2664,6 +2381,278 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error loading analytics:', error);
                 showError('analytics-tab', 'Failed to load analytics data. Please try again.');
             }
+
+            // Load Home Tab specific data
+            await loadHomeTabData();
+        }
+
+        // ============================================
+        // HOME TAB DATA LOADING
+        // ============================================
+
+        let homeMapInstance = null;
+        const homeMapMarkers = {};
+
+        async function loadHomeTabData() {
+            try {
+                await loadHomeSummaryStats();
+
+                if (!homeMapInstance && document.getElementById('cityBarangayMapHome')) {
+                    initializeHomeMap();
+                }
+                await loadHomeMapData();
+
+                await loadUrgentRequests();
+            } catch (error) {
+                console.error('Error loading home tab data:', error);
+            }
+        }
+
+        async function loadHomeSummaryStats() {
+            try {
+                const [analyticsData, barangaysData] = await Promise.all([
+                    fetchAPI('/api/ldrrmo/analytics'),
+                    fetchAPI('/api/ldrrmo/barangays')
+                ]);
+
+                // ✅ FIX: Add null safety checks before setting textContent
+                // Primary Stats
+                const totalRequests = (analyticsData.resource_needs_count || 0);
+                const homeActiveRequests = document.getElementById('homeActiveRequests');
+                if (homeActiveRequests) homeActiveRequests.textContent = totalRequests;
+
+                const totalDonations = Number(analyticsData.total_donations || 0);
+                const homeTotalDonations = document.getElementById('homeTotalDonations');
+                if (homeTotalDonations) homeTotalDonations.textContent = '₱' + totalDonations.toLocaleString();
+
+                // Calculate affected families from barangays
+                const affectedFamilies = Array.isArray(barangaysData)
+                    ? barangaysData.reduce((sum, b) => sum + Number(b.affected_families || 0), 0)
+                    : 0;
+                const homeAffectedFamilies = document.getElementById('homeAffectedFamilies');
+                if (homeAffectedFamilies) homeAffectedFamilies.textContent = affectedFamilies.toLocaleString();
+
+                // Calculate fulfillment rate
+                const totalNeeds = Number(analyticsData.total_resource_needs || 0);
+                const fulfilledNeeds = Number(analyticsData.fulfilled_resource_needs || 0);
+                const fulfillmentRate = totalNeeds > 0 ? Math.round((fulfilledNeeds / totalNeeds) * 100) : 0;
+                const homeFulfillmentRate = document.getElementById('homeFulfillmentRate');
+                if (homeFulfillmentRate) homeFulfillmentRate.textContent = fulfillmentRate + '%';
+
+                // Secondary Stats
+                const totalBarangays = Array.isArray(barangaysData) ? barangaysData.length : 80;
+                const homeTotalBarangays = document.getElementById('homeTotalBarangays');
+                if (homeTotalBarangays) homeTotalBarangays.textContent = totalBarangays;
+
+                const totalDonors = Array.isArray(barangaysData)
+                    ? barangaysData.reduce((sum, b) => sum + Number(b.donor_count || 0), 0)
+                    : 0;
+                const homeTotalDonors = document.getElementById('homeTotalDonors');
+                if (homeTotalDonors) homeTotalDonors.textContent = totalDonors.toLocaleString();
+
+                const affectedBarangays = Array.isArray(barangaysData)
+                    ? barangaysData.filter(b => b.disaster_status !== 'safe' && b.status !== 'safe').length
+                    : 0;
+                const homeAffectedBarangays = document.getElementById('homeAffectedBarangays');
+                if (homeAffectedBarangays) homeAffectedBarangays.textContent = affectedBarangays;
+
+                const homeFulfilledRequests = document.getElementById('homeFulfilledRequests');
+                if (homeFulfilledRequests) homeFulfilledRequests.textContent = fulfilledNeeds;
+            } catch (error) {
+                console.error('Error loading summary stats:', error);
+            }
+        }
+
+        function initializeHomeMap() {
+            // Initialize map centered on Cebu City
+            homeMapInstance = L.map('cityBarangayMapHome').setView([10.3157, 123.8854], 12);
+
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(homeMapInstance);
+        }
+
+        async function loadHomeMapData() {
+            try {
+                const barangays = await fetchAPI('/api/ldrrmo/barangays');
+
+                if (!Array.isArray(barangays)) {
+                    console.error('Invalid barangays data');
+                    return;
+                }
+
+                // Add markers to map
+                if (homeMapInstance) {
+                    // Clear existing markers
+                    Object.values(homeMapMarkers).forEach(m => m.remove());
+
+                    barangays.forEach(barangay => {
+                        if (barangay.lat && barangay.lng) {
+                            // ✅ UPDATED: Use donation_status (with legacy fallback)
+                            const status = barangay.donation_status || barangay.status || barangay.disaster_status || 'pending';
+                            const marker = L.marker([barangay.lat, barangay.lng], {
+                                icon: createMapIcon(status)
+                            }).addTo(homeMapInstance);
+
+                            // Format status for display
+                            const statusDisplay = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            const statusEmoji = {pending: '🔴', in_progress: '🟠', completed: '🟢'}[status] || '';
+
+                            marker.bindPopup(`
+                                <div class="p-2">
+                                    <strong class="text-sm">${escapeHtml(barangay.name)}</strong><br>
+                                    <span class="text-xs text-gray-600">Status: ${statusEmoji} ${escapeHtml(statusDisplay)}</span><br>
+                                    <span class="text-xs text-gray-600">Affected Families: ${barangay.affected_families || 0}</span>
+                                </div>
+                            `);
+
+                            homeMapMarkers[barangay.barangay_id] = marker;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading home map data:', error);
+            }
+        }
+
+        function createMapIcon(status) {
+            // ✅ UPDATED: New donation status colors
+            // 🔴 Red = Pending (nobody checked request yet)
+            // 🟠 Orange = In Progress (help promised, not arrived)
+            // 🟢 Green = Completed (got what they needed)
+            const statusColors = {
+                pending: '#ef4444',      // Red
+                in_progress: '#f97316',  // Orange
+                completed: '#10b981',    // Green
+                // Legacy support (will be removed after migration)
+                safe: '#10b981',
+                warning: '#f59e0b',
+                critical: '#f97316',
+                emergency: '#ef4444'
+            };
+
+            const color = statusColors[status] || statusColors['pending'];
+
+            return L.divIcon({
+                className: 'custom-marker-icon',
+                html: `<div style="
+                    background-color: ${color};
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    border: 3px solid white;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                "></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 24]
+            });
+        }
+
+        // View urgent request details - switches to Resources tab
+        function viewUrgentRequestDetails(needId) {
+            // Switch to resources tab
+            switchTab('resources');
+
+            // Wait for tab to load, then scroll to the specific request
+            setTimeout(() => {
+                const needElement = document.querySelector(`[data-need-id="${needId}"]`);
+                if (needElement) {
+                    needElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    needElement.classList.add('bg-yellow-100');
+                    setTimeout(() => {
+                        needElement.classList.remove('bg-yellow-100');
+                    }, 2000);
+                }
+            }, 500);
+        }
+
+        async function loadUrgentRequests() {
+            const listElement = document.getElementById('urgentRequestsList');
+            if (!listElement) return;
+
+            try {
+                const response = await fetchAPI('/api/ldrrmo/urgent-requests');
+
+                if (!Array.isArray(response) || response.length === 0) {
+                    listElement.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i>
+                            <p class="text-sm">No urgent requests</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                listElement.innerHTML = response.map((req, index) => {
+                    const statusColors = {
+                        pending: 'bg-red-50 text-red-700 border-red-200',
+                        verified: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                        matched: 'bg-orange-50 text-orange-700 border-orange-200',
+                        fulfilled: 'bg-green-50 text-green-700 border-green-200'
+                    };
+                    const statusClass = statusColors[req.status] || statusColors['pending'];
+
+                    const urgencyColors = {
+                        emergency: 'bg-red-600',
+                        high: 'bg-orange-500',
+                        medium: 'bg-yellow-500',
+                        low: 'bg-blue-500'
+                    };
+                    const urgencyColor = urgencyColors[req.urgency_level] || urgencyColors['medium'];
+
+                    return `
+                        <div class="border-b hover:bg-gray-50 p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="w-2 h-2 rounded-full ${urgencyColor}"></span>
+                                        <h4 class="font-semibold text-sm text-gray-800">${escapeHtml(req.barangay_name)}</h4>
+                                    </div>
+                                    <p class="text-xs text-gray-600">${escapeHtml(req.category)}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded border ${statusClass}">
+                                    ${escapeHtml(String(req.status).toUpperCase())}
+                                </span>
+                            </div>
+
+                            <div class="text-xs text-gray-700 mb-2">
+                                <strong>${escapeHtml(req.item_name)}</strong>
+                                <span class="text-gray-500"> - ${req.quantity_needed}</span>
+                            </div>
+
+                            <div class="flex gap-2 mt-3">
+                                ${req.status === 'pending' ? `
+                                    <button onclick="viewUrgentRequestDetails(${req.id})"
+                                            class="flex-1 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                        <i class="fas fa-check mr-1"></i> Verify
+                                    </button>
+                                ` : ''}
+                                ${req.status === 'verified' ? `
+                                    <button onclick="viewUrgentRequestDetails(${req.id})"
+                                            class="flex-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:blue-700">
+                                        <i class="fas fa-link mr-1"></i> Match
+                                    </button>
+                                ` : ''}
+                                <button onclick="viewUrgentRequestDetails(${req.id})"
+                                        class="flex-1 px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
+                                    <i class="fas fa-eye mr-1"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading urgent requests:', error);
+                listElement.innerHTML = `
+                    <div class="text-center py-8 text-red-500">
+                        <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                        <p class="text-sm">Failed to load requests</p>
+                    </div>
+                `;
+            }
         }
 
         // ============================================
@@ -2752,20 +2741,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             loadOverview();
 
-            if (initMap()) {
-                loadMapData();
-                loadedTabs.map = true;
-            }
+            // Load Home (Analytics) tab by default
+            loadAnalytics();
+            loadedTabs.analytics = true;
 
             // Auto-refresh overview statistics every 30 seconds
             setInterval(loadOverview, 30 * 1000);
-
-            // Auto-refresh map data every 30 seconds
-            setInterval(() => {
-                if (loadedTabs.map && cityMap) {
-                    loadMapData();
-                }
-            }, 30 * 1000);
 
             // Auto-refresh resource needs if tab is active
             setInterval(() => {
@@ -2816,7 +2797,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadNotifications() {
     try {
-        const data = await fetchAPI('/api/notifications');
+        const data = await fetchAPI('/api/ldrrmo/notifications');
         allNotifications = data;
 
         // Update unread count
@@ -2834,7 +2815,7 @@ async function loadNotifications() {
 
 async function updateUnreadCount() {
     try {
-        const data = await fetchAPI('/api/notifications/unread-count');
+        const data = await fetchAPI('/api/ldrrmo/notifications/unread-count');
         const count = data.count || 0;
 
         const badge = document.getElementById('notification-badge');
@@ -3177,7 +3158,7 @@ function displayNotifications() {
 async function handleNotificationClick(notificationId, actionUrl) {
     try {
         // Mark as read
-        await fetchAPI(`/api/notifications/${notificationId}/read`, {
+        await fetchAPI(`/api/ldrrmo/notifications/${notificationId}/read`, {
             method: 'POST'
         });
 
@@ -3210,7 +3191,7 @@ async function handleNotificationClick(notificationId, actionUrl) {
 
 async function markAllAsRead() {
     try {
-        await fetchAPI('/api/notifications/mark-all-read', {
+        await fetchAPI('/api/ldrrmo/notifications/mark-all-read', {
             method: 'POST'
         });
 
@@ -3282,9 +3263,6 @@ function getNotificationIconColor(type) {
 }
 console.log('✅ Notification system loaded');
     </script>
-
-    <!-- City Dashboard Map Script -->
-    <script src="{{ asset('js/city/city-dashboard-map.js') }}"></script>
 
     </div> <!-- Close Main Content Area -->
     </div> <!-- Close Main Layout with Sidebar -->
@@ -3432,8 +3410,8 @@ console.log('✅ Notification system loaded');
         </div>
     </div>
 
-    <script>
-        // Simple Alert Modal System
+    <script> 
+         // Simple Alert Modal System
         let alertCallback = null;
 
         function showAlert(message, title = 'Notice', showCancel = false) {
@@ -3465,6 +3443,25 @@ console.log('✅ Notification system loaded');
             }
         }
 
+        // Match Success Modal System
+        window.showMatchSuccessModal = function(matchData) {
+            const modal = document.getElementById('matchSuccessModal');
+
+            // Update match ID
+            document.getElementById('matchSuccessId').textContent = `#${matchData.match_id}`;
+
+            // Update barangay names
+            document.getElementById('matchSuccessRequesting').textContent = matchData.requesting_barangay;
+            document.getElementById('matchSuccessDonating').textContent = matchData.donating_barangay;
+
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        window.closeMatchSuccessModal = function() {
+            document.getElementById('matchSuccessModal').classList.add('hidden');
+        }
+
         // Override native alert with modal
         window.alert = function(message) {
             return showAlert(message);
@@ -3475,277 +3472,72 @@ console.log('✅ Notification system loaded');
             return showAlert(message, 'Confirm', true);
         };
 
-        // ============================================
-        // MESSENGER-STYLE CHAT BOXES
-        // ============================================
+        console.log('✅ Dashboard initialized successfully');
 
-        let openChatBoxes = new Map(); // matchId -> { element, interval }
 
-        function viewConversation(matchId) {
-            // Check if chat box already exists
-            if (openChatBoxes.has(matchId)) {
-                // If minimized, maximize it
-                const existingBox = openChatBoxes.get(matchId).element;
-                const chatBody = existingBox.querySelector('.chat-body');
-                const chatFooter = existingBox.querySelector('.chat-footer');
-                if (chatBody.classList.contains('hidden')) {
-                    chatBody.classList.remove('hidden');
-                    chatFooter.classList.remove('hidden');
-                }
-                // Bring to front by re-appending
-                existingBox.parentElement.appendChild(existingBox);
-                return;
-            }
-
-            // Create new chat box from template
-            const template = document.getElementById('chat-box-template');
-            const chatBox = template.content.cloneNode(true).querySelector('.chat-box');
-            chatBox.setAttribute('data-match-id', matchId);
-
-            // Add to container
-            const container = document.getElementById('chat-boxes-container');
-            container.appendChild(chatBox);
-
-            // Load conversation
-            loadChatConversation(matchId, chatBox);
-
-            // Start auto-refresh
-            const refreshInterval = setInterval(() => {
-                loadChatConversation(matchId, chatBox, true);
-            }, 5000);
-
-            // Store reference
-            openChatBoxes.set(matchId, {
-                element: chatBox,
-                interval: refreshInterval
-            });
+// time
+(function() {
+    'use strict';
+    
+    function updateDateTime() {
+        try {
+            const now = new Date();
+            
+            const dateOptions = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'Asia/Manila'
+            };
+            
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+                timeZone: 'Asia/Manila'
+            };
+            
+            const dayOptions = {
+                weekday: 'long',
+                timeZone: 'Asia/Manila'
+            };
+            
+            const formattedDate = now.toLocaleDateString('en-PH', dateOptions);
+            const formattedTime = now.toLocaleTimeString('en-PH', timeOptions);
+            const formattedDay = now.toLocaleDateString('en-PH', dayOptions);
+            
+            const dateElement = document.getElementById('current-date');
+            const timeElement = document.getElementById('current-time');
+            const dayElement = document.getElementById('current-day');
+            
+            if (dateElement) dateElement.textContent = formattedDate;
+            if (timeElement) timeElement.textContent = formattedTime;
+            if (dayElement) dayElement.textContent = formattedDay;
+            
+        } catch (error) {
+            console.error('[LDRRMO Clock] Error updating display:', error);
         }
-
-        function closeChatBox(button) {
-            const chatBox = button.closest('.chat-box');
-            const matchId = parseInt(chatBox.getAttribute('data-match-id'));
-
-            // Clear interval
-            if (openChatBoxes.has(matchId)) {
-                clearInterval(openChatBoxes.get(matchId).interval);
-                openChatBoxes.delete(matchId);
-            }
-
-            // Remove element
-            chatBox.remove();
-        }
-
-        function minimizeChatBox(button) {
-            const chatBox = button.closest('.chat-box');
-            const chatBody = chatBox.querySelector('.chat-body');
-            const chatFooter = chatBox.querySelector('.chat-footer');
-            const icon = button.querySelector('i');
-
-            if (chatBody.classList.contains('hidden')) {
-                // Maximize
-                chatBody.classList.remove('hidden');
-                chatFooter.classList.remove('hidden');
-                icon.classList.remove('fa-window-maximize');
-                icon.classList.add('fa-minus');
-            } else {
-                // Minimize
-                chatBody.classList.add('hidden');
-                chatFooter.classList.add('hidden');
-                icon.classList.remove('fa-minus');
-                icon.classList.add('fa-window-maximize');
-            }
-        }
-
-        async function loadChatConversation(matchId, chatBox, silent = false) {
-            try {
-                const messagesContainer = chatBox.querySelector('.chat-body');
-
-                if (!silent) {
-                    messagesContainer.innerHTML = `
-                        <div class="text-center py-12">
-                            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                            <p class="text-gray-600">Loading conversation...</p>
-                        </div>
-                    `;
-                }
-
-                const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/conversation`);
-
-                if (!response.success) {
-                    // No conversation yet
-                    messagesContainer.innerHTML = `
-                        <div class="text-center py-12">
-                            <i class="fas fa-comments-slash text-6xl text-gray-300 mb-4"></i>
-                            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Conversation Yet</h3>
-                            <p class="text-gray-500 mb-4">
-                                The conversation will start once the donating barangay accepts the match request.
-                            </p>
-                            <p class="text-sm text-gray-400">
-                                As LDRRMO, you can monitor and participate in the conversation once it begins.
-                            </p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Update chat header
-                const matchInfo = response.match;
-                const chatTitle = chatBox.querySelector('.chat-title');
-                const chatSubtitle = chatBox.querySelector('.chat-subtitle');
-
-                chatTitle.textContent = `${matchInfo.requesting_barangay} ↔ ${matchInfo.donating_barangay}`;
-                chatSubtitle.textContent = matchInfo.resource_need;
-
-                // Display messages
-                displayChatMessages(chatBox, response.conversation.messages);
-
-            } catch (error) {
-                console.error('Error loading conversation:', error);
-                const messagesContainer = chatBox.querySelector('.chat-body');
-                messagesContainer.innerHTML = `
-                    <div class="text-center py-8">
-                        <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-2"></i>
-                        <p class="text-xs text-gray-500">${error.message || 'Failed to load'}</p>
-                    </div>
-                `;
-            }
-        }
-
-        function displayChatMessages(chatBox, messages) {
-            const container = chatBox.querySelector('.chat-body');
-
-            if (!messages || messages.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8">
-                        <i class="fas fa-inbox text-3xl text-gray-300 mb-2"></i>
-                        <p class="text-xs text-gray-500">No messages yet</p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Render messages (Messenger-style bubbles)
-            const html = messages.map(msg => {
-                // Handle system messages differently
-                if (msg.message_type === 'system') {
-                    return `
-                        <div class="flex justify-center mb-3">
-                            <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
-                                <p class="text-xs text-gray-600 text-center">${escapeHtml(msg.message)}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // Use is_mine flag from API to determine if message is from current user
-                const isMe = msg.is_mine === true;
-
-                let bgColor, textColor, initial;
-                if (msg.sender_role === 'ldrrmo') {
-                    bgColor = 'bg-indigo-600';
-                    textColor = 'text-white';
-                    initial = 'L';
-                } else if (msg.sender_role === 'requester') {
-                    bgColor = 'bg-blue-500';
-                    textColor = 'text-white';
-                    initial = 'R';
-                } else {
-                    bgColor = 'bg-green-500';
-                    textColor = 'text-white';
-                    initial = 'D';
-                }
-
-                // My messages on the right, others on the left (Messenger style)
-                if (isMe) {
-                    return `
-                        <div class="flex items-start gap-2 justify-end mb-3">
-                            <div class="flex flex-col items-end max-w-[85%]">
-                                <p class="text-xs text-gray-600 mb-1">You</p>
-                                <div class="${bgColor} ${textColor} rounded-2xl px-4 py-2">
-                                    <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message)}</p>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">${formatTimeSimple(msg.created_at)}</p>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div class="flex items-start gap-2 mb-3">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold">
-                                ${initial}
-                            </div>
-                            <div class="flex flex-col max-w-[85%]">
-                                <p class="text-xs text-gray-600 mb-1">${escapeHtml(msg.sender_name)}</p>
-                                <div class="${bgColor} ${textColor} rounded-2xl px-4 py-2">
-                                    <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message)}</p>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">${formatTimeSimple(msg.created_at)}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            }).join('');
-
-            container.innerHTML = html;
-
-            // Scroll to bottom
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 100);
-        }
-
-        function formatTimeSimple(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        }
-
-        async function sendChatMessage(event, form) {
-            event.preventDefault();
-
-            const chatBox = form.closest('.chat-box');
-            const matchId = parseInt(chatBox.getAttribute('data-match-id'));
-            const input = form.querySelector('.message-input');
-            const message = input.value.trim();
-
-            if (!message) return;
-
-            // Disable input while sending
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            input.disabled = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-            try {
-                const response = await fetchAPI(`/api/ldrrmo/matches/${matchId}/messages`, {
-                    method: 'POST',
-                    body: JSON.stringify({ message })
-                });
-
-                if (response.success) {
-                    // Clear input
-                    input.value = '';
-
-                    // Reload conversation
-                    await loadChatConversation(matchId, chatBox, true);
-                } else {
-                    alert('❌ Error: ' + (response.message || 'Failed to send message'));
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('❌ Failed to send message. Please try again.');
-            } finally {
-                // Re-enable input
-                input.disabled = false;
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-                input.focus();
-            }
-        }
-
-        console.log('✅ Messenger-style chat boxes loaded');
+    }
+    
+    function initClock() {
+        console.log('[LDRRMO Clock] Initializing real-time clock...');
+        
+        updateDateTime();
+        
+        setInterval(updateDateTime, 1000);
+        
+        console.log('[LDRRMO Clock] ✅ Clock initialized successfully');
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initClock);
+    } else {
+        initClock();
+    }
+    
+})();
     </script>
 
 </body>
-</html>~
+</html>

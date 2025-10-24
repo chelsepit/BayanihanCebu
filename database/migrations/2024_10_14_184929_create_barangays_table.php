@@ -17,8 +17,12 @@ return new class extends Migration
             $table->decimal('latitude', 10, 8)->nullable(); // Fixed precision
             $table->decimal('longitude', 11, 8)->nullable(); // Fixed precision
             
-            // Disaster management fields
-            $table->enum('disaster_status', ['safe', 'warning', 'critical', 'emergency'])->default('safe');
+            // Donation status management
+            // ✅ CHANGED: From disaster_status to donation_status (see migration 2025_10_24_042652)
+            // Red (Pending) = Nobody has checked their request yet
+            // Orange (In Progress) = Someone said "Okay, we'll help," but it hasn't arrived
+            // Green (Completed) = They got what they needed
+            $table->enum('donation_status', ['pending', 'in_progress', 'completed'])->default('pending');
             $table->enum('disaster_type', ['flood', 'fire', 'earthquake', 'typhoon', 'landslide', 'other'])->nullable(); // Consolidated from 2025_10_16_114407
             
             // Contact information
