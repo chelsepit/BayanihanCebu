@@ -1,7 +1,7 @@
 # BayanihanCebu: Blockchain-Powered Disaster Relief Platform
 
 <p align="center">
-  <img src="https://via.placeholder.com/200" alt="BayanihanCebu Logo" width="200"/>
+  <img src="https://github.com/chelsepit/BayanihanCebu/blob/main/resources/images/logo-icon.png" alt="Logo Icon"" alt="BayanihanCebu Logo" width="200"/>
 </p>
 
 <p align="center">
