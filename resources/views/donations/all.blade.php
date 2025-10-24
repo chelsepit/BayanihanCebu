@@ -16,7 +16,12 @@
             --primary-color: #2563eb;
             --secondary-color: #1e40af;
             --success-color: #10b981;
-            --purple-color: #9333ea;
+            --purple-color: #9333ea; /* Kept for reference, but replaced by orange */
+            /* ADDED: New orange color palette */
+            --orange-color: #f97316;       /* Main orange for text */
+            --orange-hover-color: #c2410c; /* Darker orange for hover */
+            --orange-bg-light: #fff7ed;   /* Light orange for badge backgrounds */
+            --orange-border-light: #fed7aa;/* Light orange for badge borders */
             --gray-50: #f9fafb;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -119,7 +124,7 @@
         .icon-wrapper svg {
             width: 2.5rem;
             height: 2.5rem;
-            color: var(--purple-color);
+            color: var(--primary-color);
         }
 
         .page-title {
@@ -269,8 +274,8 @@
         }
 
         .donations-table thead {
-            background: var(--gray-50);
-            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-300);
         }
 
         .donations-table th {
@@ -296,8 +301,12 @@
             transition: background-color 0.2s;
         }
 
+        .donations-table tbody tr:nth-child(even) {
+            background-color: var(--gray-50);
+        }
+
         .donations-table tbody tr:hover {
-            background: var(--gray-50);
+            background: var(--gray-200);
         }
 
         .donations-table td {
@@ -351,10 +360,11 @@
             border: 1px solid;
         }
 
+        /* MODIFIED: Changed physical badge to use orange colors */
         .badge-physical {
-            background: #faf5ff;
-            color: var(--purple-color);
-            border-color: #e9d5ff;
+            background: var(--orange-bg-light);
+            color: var(--orange-color);
+            border-color: var(--orange-border-light);
         }
 
         .badge-monetary {
@@ -412,12 +422,13 @@
             transition: color 0.2s;
         }
 
-        .blockchain-link.purple {
-            color: var(--purple-color);
+        /* MODIFIED: Changed .purple to .orange */
+        .blockchain-link.orange {
+            color: var(--orange-color);
         }
 
-        .blockchain-link.purple:hover {
-            color: #6b21a8;
+        .blockchain-link.orange:hover {
+            color: var(--orange-hover-color);
         }
 
         .blockchain-link.green {
@@ -448,8 +459,9 @@
             margin-top: 0.5rem;
         }
 
-        .blockchain-badge.purple {
-            color: var(--purple-color);
+        /* MODIFIED: Changed .purple to .orange */
+        .blockchain-badge.orange {
+            color: var(--orange-color);
         }
 
         .blockchain-badge.green {
@@ -471,8 +483,9 @@
             font-size: 1.125rem;
         }
 
-        .value-amount.purple {
-            color: var(--purple-color);
+        /* MODIFIED: Changed .purple to .orange */
+        .value-amount.orange {
+            color: var(--orange-color);
         }
 
         .value-amount.green {
@@ -519,8 +532,227 @@
             display: none !important;
         }
 
+        /* Footer Styles */
+        .footer {
+            background-color: var(--gray-900);
+            color: var(--white);
+            padding: 3rem 0;
+            margin-top: 4rem;
+        }
+
+        .footer .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-col h4 {
+            color: var(--white);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-col p {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-col ul li a {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--white);
+        }
+
+        .contact-info-footer {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+        }
+
+        .contact-info-footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #f8fafc;
+            padding: 4rem 0 0 0;
+            color: #1e293b;
+        }
+
+        .footer .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-col h4 {
+            color: #0f172a;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -0.5rem;
+            width: 2rem;
+            height: 2px;
+            background: #2563eb;
+        }
+
+        .footer-col p {
+            color: #475569;
+            line-height: 1.75;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-col ul li a {
+            color: #475569;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #2563eb;
+        }
+
+        .contact-info-footer p {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-link {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .social-link:hover {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .footer-bottom-content {
+            border-top: 1px solid #e2e8f0;
+            padding: 2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #64748b;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .footer-bottom-links a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-bottom-links a:hover {
+            color: #2563eb;
+        }
+
+        .footer-bottom-links span {
+            color: #cbd5e1;
+        }
+
+        .footer-badge {
+            background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-weight: 500;
+            margin-top: 2rem;
+        }
+
+        .footer-badge p {
+            margin: 0;
+        }
+
         /* Responsive */
+        @media (max-width: 1024px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 3rem;
+            }
+        }
+
         @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-bottom-links {
+                justify-content: center;
+            }
+
             .header-content {
                 flex-direction: column;
                 gap: 1rem;
@@ -723,8 +955,8 @@
         function createTableRow(donation) {
             const isPhysical = donation.type === 'physical';
             const typeBadgeClass = isPhysical ? 'badge-physical' : 'badge-monetary';
-            const valueClass = isPhysical ? 'purple' : 'green';
-            const linkClass = isPhysical ? 'purple' : 'green';
+            // MODIFIED: This now uses 'orange' instead of 'purple' for physical donations
+            const colorClass = isPhysical ? 'orange' : 'green';
 
             return `
                 <tr>
@@ -764,7 +996,7 @@
                         ` : ''}
                         ${donation.blockchain_tx_hash ? `
                             <div>
-                                <a href="${donation.explorer_url}" target="_blank" class="blockchain-link ${linkClass}">
+                                <a href="${donation.explorer_url}" target="_blank" class="blockchain-link ${colorClass}">
                                     <svg fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                     </svg>
@@ -775,7 +1007,7 @@
                                 TX: ${donation.blockchain_tx_hash.substring(0, 30)}...
                             </div>
                         ` : ''}
-                        <div class="blockchain-badge ${valueClass}">
+                        <div class="blockchain-badge ${colorClass}">
                             <svg fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
@@ -784,10 +1016,10 @@
                     </td>
                     <td class="whitespace-nowrap text-right">
                         ${isPhysical ? `
-                            <div class="value-amount ${valueClass}">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                            <div class="value-amount ${colorClass}">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
                             <div class="value-label">Est. Value</div>
                         ` : `
-                            <div class="value-amount large ${valueClass}">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                            <div class="value-amount large ${colorClass}">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
                         `}
                     </td>
                 </tr>
