@@ -186,11 +186,27 @@ public function getBarangaysMapData()
                 ];
             }
 
+            // Resource needs statistics
+            $totalResourceNeeds = ResourceNeed::count();
+            $activeResourceNeeds = ResourceNeed::whereIn('status', ['pending', 'verified', 'matched'])->count();
+            $fulfilledResourceNeeds = ResourceNeed::where('status', 'fulfilled')->count();
+
+            // Calculate total donations
+            $totalDonations = DB::table('donations')
+                ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+                ->sum('amount') +
+                DB::table('physical_donations')
+                ->sum('estimated_value');
+
             return response()->json([
                 'donations_by_barangay' => $donationsByBarangay,
                 'disaster_status_distribution' => $disasterStatusDistribution,
                 'affected_families_by_barangay' => $affectedFamiliesByBarangay,
-                'payment_method_distribution' => $paymentMethodDistribution
+                'payment_method_distribution' => $paymentMethodDistribution,
+                'resource_needs_count' => $activeResourceNeeds,
+                'total_resource_needs' => $totalResourceNeeds,
+                'fulfilled_resource_needs' => $fulfilledResourceNeeds,
+                'total_donations' => $totalDonations
             ]);
         } catch (\Exception $e) {
             Log::error('Error loading analytics: ' . $e->getMessage());
@@ -557,11 +573,21 @@ public function revertVerification($needId)
             ->where('barangay_id', '!=', $need->barangay_id)
             ->get()
             ->filter(function($donation) use ($need) {
+                // Check if this donation already has a pending/accepted match with this need
+                $hasActiveMatch = ResourceMatch::where('resource_need_id', $need->id)
+                    ->where('physical_donation_id', $donation->id)
+                    ->whereIn('status', ['pending', 'accepted'])
+                    ->exists();
+
+                if ($hasActiveMatch) {
+                    return false; // Skip this donation
+                }
+
                 $needCategory = strtolower(trim($need->category ?? ''));
                 $donationItem = strtolower(trim($donation->items_description ?? ''));
                 $donationCategory = strtolower(trim($donation->category ?? ''));
-                
-                return str_contains($donationItem, $needCategory) || 
+
+                return str_contains($donationItem, $needCategory) ||
                        str_contains($donationCategory, $needCategory) ||
                        str_contains($needCategory, $donationItem) ||
                        str_contains($needCategory, $donationCategory);
@@ -768,6 +794,15 @@ public function revertVerification($needId)
             'message' => "{$need->barangay->name} needs {$need->category} ({$need->quantity}). You have {$donation->quantity} available. Please accept or reject this request.",
         ]);
 
+        // Create notification for LDRRMO user (tracking)
+        MatchNotification::create([
+            'resource_match_id' => $match->id,
+            'user_id' => $userId,
+            'type' => 'match_request',
+            'title' => 'Match Request Sent',
+            'message' => "Match request sent: {$need->barangay->name} ↔ {$donation->barangay->name} for {$need->category}. Awaiting response from donor.",
+        ]);
+
         Log::info("Match initiated by LDRRMO", [
             'match_id' => $match->id,
             'need' => $need->barangay->name,
@@ -914,13 +949,26 @@ public function cancelMatch($matchId)
 public function getMatchStatistics()
 {
     try {
+        $totalMatches = ResourceMatch::count();
+        $pendingMatches = ResourceMatch::pending()->count();
+        $acceptedMatches = ResourceMatch::accepted()->count();
+        $completedMatches = ResourceMatch::completed()->count();
+        $rejectedMatches = ResourceMatch::rejected()->count();
+        $activeConversations = MatchConversation::active()->count();
+
+        // ✅ Calculate success rate (accepted + completed / total)
+        $successRate = $totalMatches > 0
+            ? round(($acceptedMatches + $completedMatches) / $totalMatches * 100, 1)
+            : 0;
+
         $stats = [
-            'total_matches' => ResourceMatch::count(),
-            'pending_matches' => ResourceMatch::pending()->count(),
-            'accepted_matches' => ResourceMatch::accepted()->count(),
-            'completed_matches' => ResourceMatch::completed()->count(),
-            'rejected_matches' => ResourceMatch::rejected()->count(),
-            'active_conversations' => MatchConversation::active()->count(),
+            'total_matches' => $totalMatches,
+            'pending_matches' => $pendingMatches,
+            'accepted_matches' => $acceptedMatches,
+            'completed_matches' => $completedMatches,
+            'rejected_matches' => $rejectedMatches,
+            'active_conversations' => $activeConversations,
+            'success_rate' => $successRate, // ✅ ADDED: Backend calculation for consistency
         ];
 
         return response()->json($stats);
@@ -1019,7 +1067,11 @@ public function getMatchConversation($matchId)
             $senderName = 'Unknown';
             $senderRole = 'unknown';
 
-            if ($message->sender_barangay_id === $match->requesting_barangay_id) {
+            // Check for system messages first
+            if ($message->isSystemMessage()) {
+                $senderName = 'System';
+                $senderRole = 'system';
+            } elseif ($message->sender_barangay_id === $match->requesting_barangay_id) {
                 $senderName = $match->requestingBarangay->name . ' (Requesting)';
                 $senderRole = 'requester';
             } elseif ($message->sender_barangay_id === $match->donating_barangay_id) {
@@ -1134,4 +1186,198 @@ public function sendMessage(Request $request, $matchId)
         ], 500);
     }
 }
+
+/**
+ * Get LDRRMO notifications
+ */
+public function getLdrrmoNotifications(Request $request)
+{
+    try {
+        $userId = session('user_id');
+        $limit = $request->query('limit', 50);
+        $type = $request->query('type', 'all');
+
+        $query = MatchNotification::with([
+            'resourceMatch.resourceNeed',
+            'resourceMatch.requestingBarangay',
+            'resourceMatch.donatingBarangay'
+        ])
+        ->where('user_id', $userId)
+        ->orderBy('created_at', 'desc')
+        ->limit($limit);
+
+        // Filter by type if specified
+        if ($type !== 'all') {
+            $query->where('type', $type);
+        }
+
+        $notifications = $query->get()->map(function($notification) {
+            return [
+                'id' => $notification->id,
+                'type' => $notification->type,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'is_read' => $notification->is_read,
+                'match_id' => $notification->resource_match_id,
+                'match_status' => $notification->resourceMatch->status ?? null,
+                'action_url' => $notification->resource_match_id ? "view-match-{$notification->resource_match_id}" : null,
+                'created_at' => $notification->created_at->format('M d, Y h:i A'),
+                'time_ago' => $notification->created_at->diffForHumans(),
+            ];
+        });
+
+        return response()->json($notifications);
+
+    } catch (\Exception $e) {
+        Log::error('Error loading LDRRMO notifications: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading notifications',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Get LDRRMO unread notification count
+ */
+public function getLdrrmoUnreadCount()
+{
+    try {
+        $userId = session('user_id');
+
+        $count = MatchNotification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json([
+            'count' => $count
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error getting LDRRMO unread count: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error getting unread count',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Mark LDRRMO notification as read
+ */
+public function markLdrrmoNotificationAsRead($notificationId)
+{
+    try {
+        $userId = session('user_id');
+
+        $notification = MatchNotification::where('id', $notificationId)
+            ->where('user_id', $userId)
+            ->firstOrFail();
+
+        $notification->update([
+            'is_read' => true,
+            'read_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notification marked as read'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error marking notification as read: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error marking notification as read',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Mark all LDRRMO notifications as read
+ */
+public function markAllLdrrmoNotificationsAsRead()
+{
+    try {
+        $userId = session('user_id');
+
+        MatchNotification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now()
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All notifications marked as read'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error marking all notifications as read: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error marking all notifications as read',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+    /**
+     * Get top 5 urgent requests sorted by urgency
+     * ✅ FIXED: Now uses same filtering logic as Resource Needs tab for consistency
+     */
+    public function getUrgentRequests()
+    {
+        try {
+            // ✅ FIX: Use same status filter as Resource Needs tab
+            $allNeeds = ResourceNeed::with('barangay')
+                ->where(function($q) {
+                    $q->where('status', 'pending')
+                      ->orWhere('status', 'partially_fulfilled');
+                })
+                // ✅ FIX: Sort by urgency (critical > high > medium > low), then NEWEST first
+                ->orderByRaw("FIELD(urgency, 'critical', 'high', 'medium', 'low')")
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // ✅ FIX: Exclude requests with active matches (same as Resource Needs tab)
+            $urgentRequests = $allNeeds->filter(function($need) {
+                $hasActiveMatch = ResourceMatch::where('resource_need_id', $need->id)
+                    ->whereIn('status', ['pending', 'accepted'])
+                    ->exists();
+                return !$hasActiveMatch;
+            })
+            ->take(5) // Top 5 after filtering
+            ->map(function ($need) {
+                return [
+                    'id' => $need->id,
+                    'barangay_id' => $need->barangay_id,
+                    'barangay_name' => $need->barangay->name ?? 'Unknown',
+                    'category' => $need->category,
+                    'item_name' => $need->description, // Using description as item_name
+                    'quantity_needed' => $need->quantity,
+                    'unit' => '', // No separate unit field
+                    'status' => $need->status,
+                    'urgency_level' => $need->urgency ?? 'medium',
+                    'description' => $need->description,
+                    'created_at' => $need->created_at,
+                    'verification_status' => $need->verification_status
+                ];
+            })
+            ->values();
+
+            return response()->json($urgentRequests);
+        } catch (\Exception $e) {
+            Log::error('Error loading urgent requests: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading urgent requests',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

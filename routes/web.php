@@ -75,28 +75,39 @@ Route::middleware(['auth.check'])->group(function () {
 Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/city/dashboard', [CityDashboardController::class, 'index'])->name('city.dashboard');
     Route::get('/api/ldrrmo/overview', [CityDashboardController::class, 'getCityOverview']);
-    Route::get('/api/ldrrmo/barangays-map', [CityDashboardController::class, 'getBarangaysMapData']);
+    // ✅ CLEANUP: Removed duplicate '/api/ldrrmo/barangays-map' route
+    Route::get('/api/ldrrmo/barangays', [CityDashboardController::class, 'getBarangaysMapData']);
     Route::get('/api/ldrrmo/analytics', [CityDashboardController::class, 'getAnalyticsData']);
     Route::get('/api/ldrrmo/barangays-comparison', [CityDashboardController::class, 'getBarangaysComparison']);
     Route::get('/api/ldrrmo/barangays/{barangayId}', [CityDashboardController::class, 'getBarangayDetails']);
     Route::patch('/api/ldrrmo/barangays/{barangayId}/status', [CityDashboardController::class, 'updateBarangayStatus']);
     Route::get('/api/ldrrmo/recent-activity', [CityDashboardController::class, 'getRecentActivity']);
+    Route::get('/api/ldrrmo/urgent-requests', [CityDashboardController::class, 'getUrgentRequests']);
 
     Route::get('/api/ldrrmo/resource-needs', [CityDashboardController::class, 'getResourceNeeds']);
     Route::post('/api/ldrrmo/find-matches/{needId}', [CityDashboardController::class, 'findMatches']);
     Route::get('/api/ldrrmo/barangay-contact/{barangayId}', [CityDashboardController::class, 'getBarangayContact']);
 
-    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
-
+    // Resource Needs Verification
     Route::post('/api/ldrrmo/resource-needs/{needId}/verify', [CityDashboardController::class, 'verifyResourceNeed']);
     Route::post('/api/ldrrmo/resource-needs/{needId}/revert', [CityDashboardController::class, 'revertVerification']);
-    });
-    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
+
+    // Match Management
     Route::post('/api/ldrrmo/matches/initiate', [CityDashboardController::class, 'initiateMatch']);
     Route::get('/api/ldrrmo/matches', [CityDashboardController::class, 'getMyInitiatedMatches']);
     Route::post('/api/ldrrmo/matches/{id}/cancel', [CityDashboardController::class, 'cancelMatch']);
     Route::get('/api/ldrrmo/matches/statistics', [CityDashboardController::class, 'getMatchStatistics']);
-    });
+    Route::get('/api/ldrrmo/match-details/{needId}/{donationId}', [CityDashboardController::class, 'getMatchDetails']);
+
+    // Conversation & Messaging
+    Route::get('/api/ldrrmo/matches/{id}/conversation', [CityDashboardController::class, 'getMatchConversation']);
+    Route::post('/api/ldrrmo/matches/{id}/messages', [CityDashboardController::class, 'sendMessage']);
+
+    // LDRRMO Notifications
+    Route::get('/api/ldrrmo/notifications', [CityDashboardController::class, 'getLdrrmoNotifications']);
+    Route::get('/api/ldrrmo/notifications/unread-count', [CityDashboardController::class, 'getLdrrmoUnreadCount']);
+    Route::post('/api/ldrrmo/notifications/{id}/read', [CityDashboardController::class, 'markLdrrmoNotificationAsRead']);
+    Route::post('/api/ldrrmo/notifications/mark-all-read', [CityDashboardController::class, 'markAllLdrrmoNotificationsAsRead']);
 });
 
 
@@ -201,21 +212,7 @@ Route::middleware(['auth.check'])->group(function () {
     Route::get('/api/notifications/grouped', [NotificationController::class, 'getGroupedNotifications']);
     });
 
-    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
-
-    Route::post('/api/ldrrmo/resource-needs/{needId}/verify', [CityDashboardController::class, 'verifyResourceNeed']);
-    Route::post('/api/ldrrmo/resource-needs/{needId}/revert', [CityDashboardController::class, 'revertVerification']);
-    }); 
-    Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
-    Route::post('/api/ldrrmo/matches/initiate', [CityDashboardController::class, 'initiateMatch']);
-    Route::get('/api/ldrrmo/matches', [CityDashboardController::class, 'getMyInitiatedMatches']);
-    Route::post('/api/ldrrmo/matches/{id}/cancel', [CityDashboardController::class, 'cancelMatch']);
-    Route::get('/api/ldrrmo/matches/statistics', [CityDashboardController::class, 'getMatchStatistics']);
-    Route::get('/api/ldrrmo/match-details/{needId}/{donationId}', [CityDashboardController::class, 'getMatchDetails']);
-
-    // Conversation & Messaging (LDRRMO as Monitor)
-    Route::get('/api/ldrrmo/matches/{id}/conversation', [CityDashboardController::class, 'getMatchConversation']);
-    Route::post('/api/ldrrmo/matches/{id}/messages', [CityDashboardController::class, 'sendMessage']);
-    });
+    // ✅ CLEANUP: Removed duplicate LDRRMO route groups (lines 206-227)
+    // All routes are now properly organized in the main LDRRMO group above (lines 75-111)
 
     });
