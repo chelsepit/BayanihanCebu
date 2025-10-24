@@ -12,42 +12,68 @@
             <p class="mt-4 text-gray-600">Loading verified donations...</p>
         </div>
 
-        {{-- Donations Grid --}}
+        {{-- Donations Tables --}}
         <div id="verified-donations-content" class="hidden">
             <div class="grid md:grid-cols-2 gap-6 mb-8">
-                {{-- Non-Monetary Donations --}}
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-purple-100">
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-900">Non-Monetary Donations</h3>
-                            <p class="text-sm text-gray-600 mt-1">In-kind contributions tracked on-chain</p>
-                        </div>
-                        <div class="bg-purple-100 p-3 rounded-lg">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                            </svg>
+                {{-- Non-Monetary Donations Table --}}
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Non-Monetary Donations</h3>
+                                <p class="text-xs text-gray-600 mt-1">In-kind contributions tracked on-chain</p>
+                            </div>
+                            <div class="bg-purple-100 p-2 rounded">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                    <div id="physical-donations-list" class="space-y-3">
-                        {{-- Physical donations will be inserted here --}}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tracking Code</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Details</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="physical-donations-list" class="bg-white divide-y divide-gray-200">
+                                {{-- Physical donations will be inserted here --}}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                {{-- Monetary Donations --}}
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-green-100">
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-900">Monetary Donations</h3>
-                            <p class="text-sm text-gray-600 mt-1">Financial contributions verified on blockchain</p>
-                        </div>
-                        <div class="bg-green-100 p-3 rounded-lg">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                {{-- Monetary Donations Table --}}
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Monetary Donations</h3>
+                                <p class="text-xs text-gray-600 mt-1">Financial contributions verified on blockchain</p>
+                            </div>
+                            <div class="bg-green-100 p-2 rounded">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                    <div id="online-donations-list" class="space-y-3">
-                        {{-- Online donations will be inserted here --}}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tracking Code</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Donor</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="online-donations-list" class="bg-white divide-y divide-gray-200">
+                                {{-- Online donations will be inserted here --}}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -102,98 +128,116 @@
         const physicalList = document.getElementById('physical-donations-list');
         if (physicalDonations.length === 0) {
             physicalList.innerHTML = `
-                <div class="text-center py-6 text-gray-500">
-                    <p>No verified physical donations yet.</p>
-                </div>
+                <tr>
+                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">
+                        No verified physical donations yet.
+                    </td>
+                </tr>
             `;
         } else {
-            physicalList.innerHTML = physicalDonations.map(donation => createDonationItem(donation, 'physical')).join('');
+            physicalList.innerHTML = physicalDonations.map(donation => createPhysicalRow(donation)).join('');
         }
 
         // Render online donations
         const onlineList = document.getElementById('online-donations-list');
         if (onlineDonations.length === 0) {
             onlineList.innerHTML = `
-                <div class="text-center py-6 text-gray-500">
-                    <p>No verified monetary donations yet.</p>
-                </div>
+                <tr>
+                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">
+                        No verified monetary donations yet.
+                    </td>
+                </tr>
             `;
         } else {
-            onlineList.innerHTML = onlineDonations.map(donation => createDonationItem(donation, 'online')).join('');
+            onlineList.innerHTML = onlineDonations.map(donation => createOnlineRow(donation)).join('');
         }
     }
 
-    function createDonationItem(donation, type) {
-        const isPhysical = type === 'physical';
-        const accentColor = isPhysical ? 'text-purple-600' : 'text-green-600';
-        const iconColor = isPhysical ? 'text-purple-500' : 'text-green-500';
-
+    function createPhysicalRow(donation) {
         return `
-            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <a href="/donation/track?tracking_code=${donation.tracking_code}"
-                               class="font-mono text-sm font-bold text-blue-600 hover:text-blue-800 transition">
-                                ${donation.tracking_code}
-                            </a>
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                                Verified
-                            </span>
-                        </div>
-                        ${isPhysical ? `
-                            <h4 class="text-base font-bold text-gray-900">${donation.category}</h4>
-                            <p class="text-sm text-gray-600 mt-1">${donation.items_description}</p>
-                            <p class="text-sm font-semibold ${accentColor} mt-1">Est. Value: ₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</p>
-                        ` : `
-                            <div class="flex items-baseline gap-2">
-                                <h4 class="text-2xl font-bold ${accentColor}">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</h4>
-                                <span class="text-sm text-gray-600">• ${donation.payment_method || 'GCash'}</span>
-                            </div>
-                        `}
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-4 whitespace-nowrap">
+                    <a href="/donation/track?tracking_code=${donation.tracking_code}"
+                       class="font-mono text-xs font-medium text-blue-600 hover:text-blue-800 transition">
+                        ${donation.tracking_code}
+                    </a>
+                    <div class="flex items-center mt-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Verified
+                        </span>
+                        <span class="text-xs text-gray-500 ml-2">${donation.time_ago}</span>
                     </div>
-                    <span class="text-xs text-gray-500 whitespace-nowrap ml-2">${donation.time_ago}</span>
-                </div>
-
-                <div class="space-y-2 text-sm border-t border-gray-200 pt-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Donor:</span>
-                        <span class="font-medium text-gray-900">${donation.donor_name}</span>
+                </td>
+                <td class="px-4 py-4">
+                    <div class="text-sm font-semibold text-gray-900">${donation.category}</div>
+                    <div class="text-xs text-gray-600 mt-0.5">${donation.items_description}</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        <span class="font-medium text-gray-700">${donation.donor_name}</span>
+                        ${donation.barangay_name ? `<span class="text-gray-400"> • ${donation.barangay_name}</span>` : ''}
                     </div>
-                    ${donation.barangay_name ? `
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Barangay:</span>
-                        <span class="text-gray-900">${donation.barangay_name}</span>
-                    </div>
-                    ` : ''}
                     ${donation.blockchain_tx_hash ? `
-                        <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                        <div class="mt-2">
                             <a href="${donation.explorer_url}" target="_blank"
-                               class="inline-flex items-center text-xs ${iconColor} hover:underline font-medium">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                               class="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 font-medium transition">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                                 View on Blockchain
                             </a>
                         </div>
-                        <p class="text-xs text-gray-500 font-mono truncate" title="${donation.blockchain_tx_hash}">
-                            TX: ${donation.blockchain_tx_hash.substring(0, 20)}...
-                        </p>
                     ` : ''}
-                </div>
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-right">
+                    <div class="text-sm font-bold text-purple-600">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                    <div class="text-xs text-gray-500">Est. Value</div>
+                </td>
+            </tr>
+        `;
+    }
 
-                <div class="mt-3 pt-3 border-t border-gray-200">
-                    <div class="flex items-center text-xs ${iconColor}">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Permanently recorded on blockchain
+    function createOnlineRow(donation) {
+        return `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-4 whitespace-nowrap">
+                    <a href="/donation/track?tracking_code=${donation.tracking_code}"
+                       class="font-mono text-xs font-medium text-blue-600 hover:text-blue-800 transition">
+                        ${donation.tracking_code}
+                    </a>
+                    <div class="flex items-center mt-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Verified
+                        </span>
+                        <span class="text-xs text-gray-500 ml-2">${donation.time_ago}</span>
                     </div>
-                </div>
-            </div>
+                </td>
+                <td class="px-4 py-4">
+                    <div class="text-sm font-semibold text-gray-900">${donation.donor_name}</div>
+                    ${donation.barangay_name ? `<div class="text-xs text-gray-600 mt-0.5">${donation.barangay_name}</div>` : ''}
+                    <div class="inline-flex items-center px-2 py-0.5 bg-gray-100 rounded text-xs font-medium text-gray-700 mt-1">
+                        ${donation.payment_method || 'GCash'}
+                    </div>
+                    ${donation.blockchain_tx_hash ? `
+                        <div class="mt-2">
+                            <a href="${donation.explorer_url}" target="_blank"
+                               class="inline-flex items-center text-xs text-green-600 hover:text-green-800 font-medium transition">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                View on Blockchain
+                            </a>
+                        </div>
+                    ` : ''}
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-right">
+                    <div class="text-lg font-bold text-green-600">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                </td>
+            </tr>
         `;
     }
 

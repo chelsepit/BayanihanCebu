@@ -40,6 +40,16 @@ body {
     line-height: 1.6;
     color: var(--gray-800);
     background-color: var(--gray-50);
+    display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+  background-color: var(--background);
+  color: var(--text);
+  text-align: center;
+  padding: 2rem;
 }
 
 img {
@@ -737,4 +747,171 @@ ul {
     border-radius: 0.5rem;
     font-size: 1rem;
     transition: border-color 0.3s;
+}
+/* ===== ANIMATIONS & TRANSITIONS ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.8s ease both;
+}
+
+.glow {
+  animation: pulseGlow 2s infinite;
+}
+
+/* ===== CARD HOVER ANIMATION ===== */
+.card {
+  background: var(--white);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ===== INPUT & FORM INTERACTIONS ===== */
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+input::placeholder {
+  color: var(--gray-400);
+}
+
+/* ===== ALERTS ===== */
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border-left: 5px solid var(--success-color);
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-left: 5px solid var(--danger-color);
+}
+
+.alert-warning {
+  background: #fffbeb;
+  color: #92400e;
+  border-left: 5px solid var(--warning-color);
+}
+
+/* ===== LOADING SPINNER ===== */
+.loader {
+  border: 4px solid var(--gray-200);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== RESPONSIVE UTILITIES ===== */
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: 1.875rem;
+  }
+  .section-title {
+    font-size: 1.5rem;
+  }
+  .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar .container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .hero-buttons {
+    flex-direction: column;
+  }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+
+/* ===== TOOLTIP ===== */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  background-color: var(--gray-800);
+  color: var(--white);
+  text-align: center;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
