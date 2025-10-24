@@ -1,7 +1,8 @@
 // blockchain-services/scripts/recordDonation.js
 
 const { ethers } = require("ethers");
-require("dotenv").config();
+const path = require('path');
+require("dotenv").config({ path: path.join(__dirname, '../.env') });
 
 // Complete ABI for DonationRecorder contract
 const CONTRACT_ABI = [

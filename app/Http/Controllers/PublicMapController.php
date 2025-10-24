@@ -145,12 +145,14 @@ class PublicMapController extends Controller
 
     /**
      * Get statistics for the map
+     * ✅ UPDATED: Uses donation_status instead of disaster_status
      */
     public function statistics()
     {
         $stats = [
             'total_barangays' => Barangay::count(),
-            'affected_barangays' => Barangay::where('disaster_status', '!=', 'safe')->count(),
+            // ✅ CHANGED: Affected = pending or in_progress (not completed)
+            'affected_barangays' => Barangay::whereIn('donation_status', ['pending', 'in_progress'])->count(),
             'total_online_donations' => Donation::where('verification_status', 'verified')->sum('amount'),
             'total_physical_donations' => PhysicalDonation::sum('estimated_value'),
             'total_donors' => Donation::distinct('donor_email')->count() + PhysicalDonation::distinct('donor_email')->count(),
@@ -205,7 +207,7 @@ public function apiBarangays()
                 'id' => $barangay->barangay_id,
                 'name' => $barangay->name,
                 'slug' => $barangay->slug,
-                'status' => $barangay->disaster_status,
+                'donation_status' => $barangay->donation_status, // ✅ CHANGED from disaster_status
                 'disaster_type' => $barangay->disaster_type,
                 'latitude' => $barangay->latitude,
                 'longitude' => $barangay->longitude,

@@ -457,6 +457,15 @@ public function completeMatch(Request $request, $matchId)
             'message' => "The {$match->resourceNeed->category} transfer to {$match->requestingBarangay->name} has been marked as complete. Thank you for your donation!",
         ]);
 
+        // Notify LDRRMO user
+        MatchNotification::create([
+            'resource_match_id' => $match->id,
+            'user_id' => $match->initiated_by,
+            'type' => 'match_completed',
+            'title' => 'Transfer Completed',
+            'message' => "Match #{$match->id} has been completed: {$match->resourceNeed->category} transferred from {$match->donatingBarangay->name} to {$match->requestingBarangay->name}.",
+        ]);
+
         Log::info("Match completed", [
             'match_id' => $match->id,
             'requester' => $match->requestingBarangay->name,
@@ -712,8 +721,9 @@ public function completeMatch(Request $request, $matchId)
         try {
             $barangayId = session('barangay_id');
 
+            // ✅ UPDATED: Use donation_status instead of disaster_status
             $validated = $request->validate([
-                'disaster_status' => 'required|in:safe,warning,critical,emergency',
+                'donation_status' => 'required|in:pending,in_progress,completed',
                 'disaster_type' => 'nullable|in:flood,fire,earthquake,typhoon,landslide,other',
                 'affected_families' => 'required|integer|min:0',
                 'needs_summary' => 'nullable|string|max:1000',
@@ -723,8 +733,8 @@ public function completeMatch(Request $request, $matchId)
 
             $barangay = Barangay::where('barangay_id', $barangayId)->firstOrFail();
 
-            // If status is safe, clear disaster_type and affected_families
-            if ($validated['disaster_status'] === 'safe') {
+            // ✅ UPDATED: If status is completed, clear affected_families
+            if ($validated['donation_status'] === 'completed') {
                 $validated['disaster_type'] = null;
                 $validated['affected_families'] = 0;
                 $validated['needs_summary'] = null;
@@ -734,7 +744,7 @@ public function completeMatch(Request $request, $matchId)
 
             return response()->json([
                 'success' => true,
-                'message' => 'Barangay information updated successfully',
+                'message' => 'Barangay donation status updated successfully',
                 'data' => $barangay
             ]);
 
@@ -782,7 +792,7 @@ public function completeMatch(Request $request, $matchId)
                     'requesting_barangay' => [
                         'id' => $match->requesting_barangay_id,
                         'name' => $match->requestingBarangay->name,
-                        'disaster_status' => $match->requestingBarangay->disaster_status,
+                        'donation_status' => $match->requestingBarangay->donation_status, // ✅ UPDATED
                     ],
                     'resource_need' => [
                         'id' => $match->resource_need_id,
@@ -1033,6 +1043,16 @@ public function completeMatch(Request $request, $matchId)
                 'type' => $newStatus === 'accepted' ? 'match_accepted' : 'match_rejected',
                 'title' => $newStatus === 'accepted' ? 'Match Request Accepted' : 'Match Request Rejected',
                 'message' => $validated['message'],
+                'is_read' => false,
+            ]);
+
+            // Create notification for LDRRMO user
+            MatchNotification::create([
+                'resource_match_id' => $match->id,
+                'user_id' => $match->initiated_by,
+                'type' => $newStatus === 'accepted' ? 'match_accepted' : 'match_rejected',
+                'title' => $newStatus === 'accepted' ? 'Match Accepted' : 'Match Rejected',
+                'message' => "{$match->donatingBarangay->name} has " . ($newStatus === 'accepted' ? 'accepted' : 'rejected') . " the match with {$match->requestingBarangay->name}.",
                 'is_read' => false,
             ]);
 

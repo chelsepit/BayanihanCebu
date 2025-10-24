@@ -12,7 +12,10 @@
       "Bash(node scripts/recordDonation.js:*)",
       "Bash(node:*)",
       "Bash(php analyze_donations.php:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(git add:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
