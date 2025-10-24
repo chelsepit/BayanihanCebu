@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DonorTrack | Resident Registration</title>
+    <title>BayanihanCebu | Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         <!-- Logo -->
-        <div class="text-center mb-6">
-            <img src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png" alt="logo" class="w-14 mx-auto mb-2">
-            <h1 class="text-2xl font-semibold text-gray-800">DonorTrack</h1>
-            <p class="text-sm text-gray-500 -mt-1">Cebu Donations</p>
+        <div class="text-center mb-6"> 
+           <div class="logo-icon">
+                <img src="{{ asset('images/logo-icon.png') }}" alt="Logo Icon" class="w-14 mx-auto mb-2">
+            </div>
+            <h1 class="text-2xl font-semibold text-gray-800">BayanihanCebu</h1>
+            <p class="text-sm text-gray-500 -mt-1">Cebu City</p>
         </div>
-
+            
         <!-- Tabs -->
         <div class="flex mb-6 border border-gray-200 rounded-lg overflow-hidden">
             <a href="{{ route('login') }}"
                class="w-1/2 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 text-center">
-                Staff Login
+                Login
             </a>
             <button class="w-1/2 py-2 text-sm font-medium bg-white text-[#CA6702] border-b-2 border-[#CA6702]">
                 Register
@@ -28,7 +30,7 @@
         </div>
 
         <!-- Heading -->
-        <h2 class="text-xl font-bold text-center mb-1">Resident Registration</h2>
+        <h2 class="text-xl font-bold text-center mb-1">Registration</h2>
         <p class="text-center text-gray-500 text-sm mb-6">
             Register to access full barangay donation data
         </p>

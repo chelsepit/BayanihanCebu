@@ -14,20 +14,12 @@
                 <ul>
                     <li>
                         <a href="#map">
-                            <span class="material-symbols-outlined">map</span>
-                            Barangay Map
+                            <span class="material-symbols-outlined">Barangay Map</span>
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('donation.track') }}">
-                            <span class="material-symbols-outlined">track_changes</span>
-                            Track Donation
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <span class="material-symbols-outlined">volunteer_activism</span>
-                            Fundraisers
+                            <span class="material-symbols-outlined">Track Donation</span>
                         </a>
                     </li>
                 </ul>
@@ -38,19 +30,13 @@
                 <h4>Resources</h4>
                 <ul>
                     <li>
-                        <a href="#">
-                            <span class="material-symbols-outlined">help_center</span>
-                            Help Center
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
+                        <a href="{{ route('privacy.policy') }}">
                             <span class="material-symbols-outlined">privacy_tip</span>
                             Privacy Policy
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('terms.of.service') }}">
                             <span class="material-symbols-outlined">gavel</span>
                             Terms of Service
                         </a>
@@ -63,11 +49,9 @@
                 <h4>Connect</h4>
                 <div class="contact-info-footer">
                     <p>
-                        <span class="material-symbols-outlined">email</span>
                         info@donortrack.ph
                     </p>
                     <p>
-                        <span class="material-symbols-outlined">phone</span>
                         +63 32 123 4567
                     </p>
                 </div>

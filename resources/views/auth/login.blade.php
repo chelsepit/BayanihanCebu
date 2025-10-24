@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DonorTrack | Staff Login</title>
+    <title>Bayanihan | Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
@@ -11,9 +11,11 @@
     <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         <!-- Logo -->
         <div class="text-center mb-6">
-            <img src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png" alt="logo" class="w-14 mx-auto mb-2">
-            <h1 class="text-2xl font-semibold text-gray-800">DonorTrack</h1>
-            <p class="text-sm text-gray-500 -mt-1">Cebu Donations</p>
+            <div class="logo-icon">
+                <img src="{{ asset('images/logo-icon.png') }}" alt="Logo Icon" class="w-14 mx-auto mb-2">
+            </div>
+            <h1 class="text-2xl font-semibold text-gray-800">BayanihanCebu</h1>
+            <p class="text-sm text-gray-500 -mt-1">Cebu City</p>
         </div>
 
         <!-- Tabs -->
@@ -28,7 +30,7 @@
 
         <!-- Welcome Text -->
         <h2 class="text-xl font-bold text-center mb-1">Welcome To BayanihanCebu</h2>
-        <p class="text-center text-gray-500 text-sm mb-6">Connecting communities for faster disaster response.</p>
+        <p class="text-center text-gray-500 text-sm mb-6">We don’t just track help. We make it happen.</p>
 
         <!-- Success Message -->
         @if (session('success'))

@@ -7,7 +7,8 @@
             <!-- Match details will be inserted here -->
         </div>
 
-        <div class="mb-4">
+        <!-- Message field - only shown for reject -->
+        <div id="responseMessageContainer" class="mb-4 hidden">
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Your Message <span class="text-red-500">*</span>
             </label>

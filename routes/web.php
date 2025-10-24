@@ -69,6 +69,15 @@ Route::get('/donation/success/{trackingCode}', [PublicMapController::class, 'don
 Route::get('/api/statistics', [PublicMapController::class, 'statistics'])->name('api.statistics');
 Route::get('/api/barangays', [PublicMapController::class, 'apiBarangays'])->name('api.barangays');
 
+// Public Legal Pages
+Route::get('/privacy-policy', function () {
+    return view('public.privacy-policy');
+})->name('privacy.policy');
+
+Route::get('/terms-of-service', function () {
+    return view('public.terms-of-service');
+})->name('terms.of.service');
+
 // ==================== PROTECTED ROUTES ====================
 
 // Get current user info (all authenticated users)
@@ -82,7 +91,6 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/api/ldrrmo/overview', [CityDashboardController::class, 'getCityOverview']);
     // ✅ CLEANUP: Removed duplicate '/api/ldrrmo/barangays-map' route
     Route::get('/api/ldrrmo/barangays', [CityDashboardController::class, 'getBarangaysMapData']);
-    Route::get('/api/ldrrmo/analytics', [CityDashboardController::class, 'getAnalyticsData']);
     Route::get('/api/ldrrmo/barangays-comparison', [CityDashboardController::class, 'getBarangaysComparison']);
     Route::get('/api/ldrrmo/barangays/{barangayId}', [CityDashboardController::class, 'getBarangayDetails']);
     Route::patch('/api/ldrrmo/barangays/{barangayId}/status', [CityDashboardController::class, 'updateBarangayStatus']);
