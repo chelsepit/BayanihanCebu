@@ -77,7 +77,6 @@ Route::middleware(['auth.check', 'role:ldrrmo'])->group(function () {
     Route::get('/api/ldrrmo/overview', [CityDashboardController::class, 'getCityOverview']);
     // ✅ CLEANUP: Removed duplicate '/api/ldrrmo/barangays-map' route
     Route::get('/api/ldrrmo/barangays', [CityDashboardController::class, 'getBarangaysMapData']);
-    Route::get('/api/ldrrmo/analytics', [CityDashboardController::class, 'getAnalyticsData']);
     Route::get('/api/ldrrmo/barangays-comparison', [CityDashboardController::class, 'getBarangaysComparison']);
     Route::get('/api/ldrrmo/barangays/{barangayId}', [CityDashboardController::class, 'getBarangayDetails']);
     Route::patch('/api/ldrrmo/barangays/{barangayId}/status', [CityDashboardController::class, 'updateBarangayStatus']);
