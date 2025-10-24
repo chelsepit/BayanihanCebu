@@ -1,86 +1,67 @@
 const { ethers } = require("ethers");
+const fs = require("fs");
 require("dotenv").config();
 
-const TX_HASH =
-    process.argv[2] ||
-    "0x74b79ba4862f0df40c243e816fa638bcc3164e9a4de8f40982d412139e6f6c37";
+const trackingCode = process.argv[2];
+
+if (!trackingCode) {
+    console.error(JSON.stringify({
+        success: false,
+        error: "Usage: node verifyDonation.js <trackingCode>"
+    }));
+    process.exit(1);
+}
 
 async function verifyDonation() {
-    console.log("=== Verifying Donation on Blockchain ===");
-    console.log("Transaction Hash:", TX_HASH);
-    console.log("");
-
     try {
-        const provider = new ethers.providers.JsonRpcProvider(
-            process.env.LISK_RPC_URL,
-        );
+        const CONTRACT_ADDRESS = process.env.DONATION_RECORDER_CONTRACT_ADDRESS || process.env.CONTRACT_ADDRESS;
+        const RPC_URL = process.env.WEB3_PROVIDER_URL || process.env.SEPOLIA_RPC_URL;
+        const CONTRACT_ABI_PATH = process.env.CONTRACT_ABI_PATH;
 
-        const receipt = await provider.getTransactionReceipt(TX_HASH);
+        // Validate env variables
+        if (!CONTRACT_ADDRESS || !RPC_URL || !CONTRACT_ABI_PATH) {
+            throw new Error("Missing environment variables");
+        }
 
-        if (!receipt) {
-            console.log("❌ Transaction not found");
+        // Connect to provider
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+
+        // Load ABI
+        const abiData = JSON.parse(fs.readFileSync(CONTRACT_ABI_PATH, "utf8"));
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, abiData, provider);
+
+        // Query donation by tracking code
+        const donation = await contract.getDonation(trackingCode);
+
+        // Check if donation exists (trackingCode will be empty string if not found)
+        if (!donation.trackingCode || donation.trackingCode === "") {
+            console.log(JSON.stringify({
+                success: false,
+                error: "Donation not found on blockchain",
+                trackingCode: trackingCode
+            }));
             return;
         }
 
-        console.log("✓ Transaction Confirmed");
-        console.log("Block Number:", receipt.blockNumber);
-        console.log(
-            "Status:",
-            receipt.status === 1 ? "✅ Success" : "❌ Failed",
-        );
-        console.log("Gas Used:", receipt.gasUsed.toString());
-        console.log("");
+        // Return donation data with offchain hash
+        console.log(JSON.stringify({
+            success: true,
+            trackingCode: donation.trackingCode,
+            donationType: donation.donationType === 0 ? "monetary" : "goods",
+            offChainHash: donation.offChainHash,
+            amount: donation.amount.toString(),
+            barangayId: donation.barangayId,
+            timestamp: donation.timestamp.toString(),
+            isActive: donation.isActive
+        }));
 
-        const contractABI = [
-            "event DonationRecorded(string trackingCode, uint256 amount, string barangayId, uint8 donationType, uint256 timestamp)",
-        ];
-
-        const iface = new ethers.utils.Interface(contractABI);
-
-        console.log("=== Donation Details from Blockchain ===");
-        let found = false;
-        receipt.logs.forEach((log) => {
-            try {
-                const parsed = iface.parseLog(log);
-                if (parsed && parsed.name === "DonationRecorded") {
-                    found = true;
-                    console.log("📋 Tracking Code:", parsed.args.trackingCode);
-                    console.log(
-                        "💰 Amount (PHP):",
-                        parsed.args.amount.toString(),
-                    );
-                    console.log("🏘️  Barangay ID:", parsed.args.barangayId);
-                    console.log(
-                        "📦 Type:",
-                        parsed.args.donationType === 0 ? "Monetary" : "In-Kind",
-                    );
-                    console.log(
-                        "📅 Timestamp:",
-                        new Date(
-                            Number(parsed.args.timestamp) * 1000,
-                        ).toLocaleString(),
-                    );
-                }
-            } catch (e) {}
-        });
-
-        if (!found) {
-            console.log("⚠️  No DonationRecorded event found in transaction");
-        }
-
-        console.log("");
-        console.log(
-            "🔗 Explorer:",
-            `https://sepolia-blockscout.lisk.com/tx/${TX_HASH}`,
-        );
-        console.log("");
-        console.log(
-            found
-                ? "✅ Donation is VERIFIED on blockchain"
-                : "⚠️  Could not parse donation data",
-        );
     } catch (error) {
-        console.error("❌ Error:", error.message);
+        console.error(JSON.stringify({
+            success: false,
+            error: error.message,
+            trackingCode: trackingCode
+        }));
+        process.exit(1);
     }
 }
 

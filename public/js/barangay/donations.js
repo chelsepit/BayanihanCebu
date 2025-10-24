@@ -11,7 +11,7 @@
 async function loadPhysicalDonations() {
     const tbody = document.getElementById("donationsList");
     tbody.innerHTML =
-        '<tr><td colspan="7" class="px-4 py-8 text-center"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i></td></tr>';
+        '<tr><td colspan="8" class="px-4 py-8 text-center"><i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i></td></tr>';
 
     try {
         const response = await fetch("/api/bdrrmc/physical-donations");
@@ -20,7 +20,7 @@ async function loadPhysicalDonations() {
         if (donations.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                    <td colspan="8" class="px-4 py-12 text-center text-gray-500">
                         <i class="fas fa-box-open text-5xl mb-4 text-gray-300"></i>
                         <p class="text-lg">No physical donations recorded yet.</p>
                     </td>
@@ -40,6 +40,9 @@ async function loadPhysicalDonations() {
                 <td class="px-4 py-3 text-gray-600">${formatDateShort(donation.recorded_at)}</td>
                 <td class="px-4 py-3 text-gray-600">${formatCategory(donation.category)}</td>
                 <td class="px-4 py-3 text-gray-600">${donation.quantity}</td>
+                <td class="px-4 py-3">
+                    ${getBlockchainStatusBadge(donation)}
+                </td>
                 <td class="px-4 py-3">
                     <span class="px-3 py-1 text-xs font-semibold rounded ${getDistributionStatusBadge(donation.distribution_status)}">
                         ${formatStatus(donation.distribution_status).toUpperCase()}
@@ -83,7 +86,7 @@ async function loadPhysicalDonations() {
         console.error("Error loading donations:", error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="px-4 py-12 text-center text-red-500">
+                <td colspan="8" class="px-4 py-12 text-center text-red-500">
                     <i class="fas fa-exclamation-circle text-5xl mb-4"></i>
                     <p class="text-lg">Error loading donations</p>
                 </td>
@@ -106,7 +109,7 @@ async function loadOnlineDonations() {
 
         if (!data.success || !data.donations || data.donations.length === 0) {
             tbody.innerHTML =
-                '<tr><td colspan="6" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-globe text-5xl mb-4 text-gray-300"></i><p class="text-lg">No online donations yet.</p><p class="text-sm mt-2">Online donations from residents will appear here.</p></td></tr>';
+                '<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-globe text-5xl mb-4 text-gray-300"></i><p class="text-lg">No online donations yet.</p><p class="text-sm mt-2">Online donations from residents will appear here.</p></td></tr>';
             return;
         }
 
@@ -140,6 +143,15 @@ async function loadOnlineDonations() {
                       '" target="_blank" class="text-green-600 hover:text-green-800"><i class="fas fa-check-circle"></i> Verified</a>'
                     : '<span class="text-gray-400"><i class="fas fa-clock"></i> Pending</span>';
 
+                let actionButton = '';
+                if (donation.verification_status === 'pending') {
+                    actionButton = '<button onclick="openVerificationModal(' + donation.id + ')" class="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>';
+                } else if (donation.verification_status === 'verified') {
+                    actionButton = '<span class="text-xs text-gray-500">Verified</span>';
+                } else {
+                    actionButton = '<span class="text-xs text-red-500">Rejected</span>';
+                }
+
                 return (
                     '<tr class="border-b hover:bg-gray-50">' +
                     '<td class="px-4 py-3 text-sm">' +
@@ -160,6 +172,9 @@ async function loadOnlineDonations() {
                     '<td class="px-4 py-3 text-sm">' +
                     blockchain +
                     "</td>" +
+                    '<td class="px-4 py-3 text-sm">' +
+                    actionButton +
+                    "</td>" +
                     "</tr>"
                 );
             })
@@ -167,7 +182,63 @@ async function loadOnlineDonations() {
     } catch (error) {
         console.error("Error loading online donations:", error);
         tbody.innerHTML =
-            '<tr><td colspan="6" class="px-4 py-6 text-center text-red-500"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading donations. Please try again.</p></td></tr>';
+            '<tr><td colspan="7" class="px-4 py-6 text-center text-red-500"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading donations. Please try again.</p></td></tr>';
+    }
+}
+
+// Verification Modal Functions
+let currentDonationId = null;
+
+function openVerificationModal(donationId) {
+    currentDonationId = donationId;
+    document.getElementById('verificationModal').classList.remove('hidden');
+}
+
+function closeVerificationModal() {
+    currentDonationId = null;
+    document.getElementById('verificationModal').classList.add('hidden');
+    document.getElementById('rejectionForm').classList.add('hidden');
+    document.getElementById('rejectionReason').value = '';
+}
+
+function showRejectionForm() {
+    document.getElementById('rejectionForm').classList.remove('hidden');
+}
+
+function hideRejectionForm() {
+    document.getElementById('rejectionForm').classList.add('hidden');
+    document.getElementById('rejectionReason').value = '';
+}
+
+async function confirmVerification(action) {
+    if (!currentDonationId) return;
+
+    try {
+        const data = { action };
+        if (action === 'reject') {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection');
+                return;
+            }
+            data.rejection_reason = reason;
+        }
+
+        const response = await fetchAPI(`/api/bdrrmc/donations/${currentDonationId}/verify`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+
+        if (response.success) {
+            alert(response.message);
+            closeVerificationModal();
+            loadOnlineDonations(); // Reload the list
+        } else {
+            alert('Error: ' + response.message);
+        }
+    } catch (error) {
+        console.error('Error verifying donation:', error);
+        alert('Failed to verify donation. Please try again.');
     }
 }
 
@@ -337,4 +408,82 @@ function getDistributionStatusBadge(status) {
         fully_distributed: "bg-green-100 text-green-700",
     };
     return badges[status] || "bg-gray-100 text-gray-700";
+}
+
+/**
+ * Gets blockchain status badge and verify button
+ * @param {Object} donation - The donation object
+ * @returns {string} HTML string for blockchain status
+ */
+function getBlockchainStatusBadge(donation) {
+    if (donation.verification_status === 'verified') {
+        return `<span class="px-3 py-1 text-xs font-semibold rounded bg-green-100 text-green-700">
+            <i class="fas fa-check-circle"></i> VERIFIED
+        </span>`;
+    } else if (donation.blockchain_status === 'confirmed' && donation.blockchain_tx_hash) {
+        // Recorded but not verified yet
+        return `<button onclick="verifyBlockchain(${donation.id}, '${donation.tracking_code}')"
+            class="px-3 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+            <i class="fas fa-shield-alt"></i> VERIFY
+        </button>`;
+    } else if (donation.blockchain_status === 'pending') {
+        return `<span class="px-3 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-700">
+            <i class="fas fa-clock"></i> RECORDING...
+        </span>`;
+    } else if (donation.blockchain_status === 'failed') {
+        return `<span class="px-3 py-1 text-xs font-semibold rounded bg-red-100 text-red-700" title="${donation.blockchain_error || 'Recording failed'}">
+            <i class="fas fa-exclamation-triangle"></i> FAILED
+        </span>`;
+    } else {
+        return `<span class="px-3 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-700">
+            <i class="fas fa-times"></i> NOT RECORDED
+        </span>`;
+    }
+}
+
+/**
+ * Manually verify blockchain integrity for a donation
+ * @param {number} donationId - The donation ID
+ * @param {string} trackingCode - The tracking code
+ */
+async function verifyBlockchain(donationId, trackingCode) {
+    try {
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFYING...';
+
+        const response = await fetch(`/api/bdrrmc/physical-donations/${donationId}/verify-blockchain`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.status === 'verified') {
+                alert(`✅ SUCCESS!\n\nDonation ${trackingCode} is VERIFIED on blockchain.\n\nThe hashes match perfectly!`);
+                loadPhysicalDonations(); // Reload to show verified badge
+            } else if (result.status === 'mismatch') {
+                alert(`⚠️ WARNING!\n\nHash mismatch detected for ${trackingCode}.\n\nThis donation may have been tampered with!`);
+                loadPhysicalDonations();
+            } else {
+                alert(`ℹ️ Not ready yet!\n\nBlockchain recording is still in progress for ${trackingCode}.\n\nPlease wait 30 seconds and try again.`);
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            }
+        } else {
+            alert(`❌ Error: ${result.message || result.error}\n\nPlease try again in a moment.`);
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+    } catch (error) {
+        console.error('Verification error:', error);
+        alert('❌ Error verifying blockchain. Please try again.');
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    }
 }

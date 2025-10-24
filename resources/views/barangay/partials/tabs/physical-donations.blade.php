@@ -16,13 +16,14 @@
                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Date Recorded</th>
                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Category</th>
                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Items</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Blockchain</th>
                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
                 </tr>
             </thead>
             <tbody id="donationsList">
                 <tr>
-                    <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                    <td colspan="8" class="px-4 py-12 text-center text-gray-500">
                         <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
                         <p>Loading donations...</p>
                     </td>

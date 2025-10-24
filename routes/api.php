@@ -34,7 +34,7 @@ Route::post('/donations/track', [DonationController::class, 'track']);
 Route::get('/donations/stats', [DonationController::class, 'getResidentStats']);
 Route::get('/donations', [DonationController::class, 'index']);
 Route::get('/donations/barangay/{barangayId}', [DonationController::class, 'getByBarangay']);
-
+Route::post('/donations/physical/{id}/verify-blockchain', [DonationController::class, 'verifyPhysicalDonationBlockchain']);
 // ==================== PAYMENT ROUTES (PayMongo) ====================
 Route::post('/payments/create-intent', [PaymentController::class, 'createPaymentIntent']);
 Route::post('/payments/attach-method', [PaymentController::class, 'attachPaymentMethod']);
