@@ -27,23 +27,32 @@ function createCustomIcon(
     resourceCount = 0,
     zoomLevel = 12,
 ) {
-    // Urgency-based color coding
-    const urgencyColors = {
-        emergency: "#ef4444", // Red - Emergency
-        critical: "#f97316", // Orange - Critical
-        warning: "#f59e0b", // Amber - Warning
+    // ✅ UPDATED: Donation status color coding (primary) + Urgency fallback
+    const statusColors = {
+        // Donation Status (primary)
+        pending: "#ef4444",      // 🔴 Red - Pending
+        in_progress: "#f97316",  // 🟠 Orange - In Progress
+        completed: "#10b981",    // 🟢 Green - Completed
+        // Legacy urgency levels (fallback)
+        emergency: "#ef4444",    // Red - Emergency
+        critical: "#f97316",     // Orange - Critical
+        warning: "#f59e0b",      // Amber - Warning
     };
 
-    const pinColor = urgencyColors[urgencyLevel] || urgencyColors["warning"];
+    const pinColor = statusColors[urgencyLevel] || statusColors["pending"];
 
-    // Standardized base pin sizes - ONLY based on urgency level
+    // Standardized base pin sizes - all donation statuses same size
     const baseSizes = {
-        emergency: 40, // Largest
-        critical: 32, // Large
-        warning: 26, // Medium
+        pending: 32,        // Red pin
+        in_progress: 32,    // Orange pin
+        completed: 32,      // Green pin
+        // Legacy sizes
+        emergency: 40,      // Largest
+        critical: 32,       // Large
+        warning: 26,        // Medium
     };
 
-    const baseSize = baseSizes[urgencyLevel] || 26;
+    const baseSize = baseSizes[urgencyLevel] || 32;
 
     // Zoom-responsive scaling
     let zoomMultiplier = 1.0;
@@ -172,15 +181,16 @@ function loadMapData() {
             // Add markers for each barangay - SKIP SAFE STATUS
             data.forEach((barangay) => {
                 // Skip safe barangays - only show barangays with active needs
-                if (barangay.status === "safe") {
+                // ✅ UPDATED: Skip completed barangays (was: safe)
+                if (barangay.donation_status === "completed") {
                     return;
                 }
 
                 // Get resource needs data
                 const resourceNeeds = barangay.resource_needs || [];
                 const resourceCount = barangay.resource_needs_count || 0;
-                // Use barangay's disaster_status for pin color, not resource urgency
-                const barangayStatus = barangay.status || "warning";
+                // ✅ UPDATED: Use donation_status for pin color
+                const barangayStatus = barangay.donation_status || "pending";
 
                 const marker = L.marker(
                     [barangay.latitude, barangay.longitude],
@@ -257,9 +267,9 @@ function loadMapData() {
 
                         <div style="padding: 0 5px;">
                             <div style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
-                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Status</div>
-                                <div style="display: inline-block; background: ${barangay.status === "emergency" ? "#fee2e2" : barangay.status === "critical" ? "#fed7aa" : barangay.status === "warning" ? "#fef3c7" : "#d1fae5"}; color: ${barangay.status === "emergency" ? "#991b1b" : barangay.status === "critical" ? "#9a3412" : barangay.status === "warning" ? "#92400e" : "#065f46"}; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
-                                    ${barangay.status}
+                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Donation Status</div>
+                                <div style="display: inline-block; background: ${barangayStatus === "pending" ? "#fee2e2" : barangayStatus === "in_progress" ? "#fed7aa" : "#d1fae5"}; color: ${barangayStatus === "pending" ? "#991b1b" : barangayStatus === "in_progress" ? "#9a3412" : "#065f46"}; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+                                    ${barangayStatus === "pending" ? "🔴 PENDING" : barangayStatus === "in_progress" ? "🟠 IN PROGRESS" : "🟢 COMPLETED"}
                                 </div>
                             </div>
 
@@ -309,7 +319,7 @@ function loadMapData() {
                                     📍 View on Google Maps
                                 </a>
                                 ${
-                                    barangay.status !== "safe" &&
+                                    barangayStatus !== "completed" &&
                                     resourceCount > 0
                                         ? `
                                     <button onclick="window.location.href='/donate/${barangay.id}'" style="width: 100%; background: #ef4444; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
@@ -330,7 +340,7 @@ function loadMapData() {
                 });
 
                 // Update statistics
-                if (barangay.status !== "safe") {
+                if (barangayStatus !== "completed") {
                     totalDonations += parseFloat(barangay.total_raised) || 0;
                     totalFamilies += parseInt(barangay.affected_families) || 0;
                     affectedCount++;
@@ -347,7 +357,7 @@ function loadMapData() {
 
             // Populate barangay list (only affected ones with resource needs)
             const barangayList = document.getElementById("barangayList");
-            const affectedBarangays = data.filter((b) => b.status !== "safe");
+            const affectedBarangays = data.filter((b) => b.donation_status !== "completed");
 
             if (affectedBarangays.length === 0) {
                 barangayList.innerHTML = `
@@ -365,13 +375,14 @@ function loadMapData() {
                             critical: 2,
                             warning: 1,
                         };
-                        const statusOrder = {
-                            emergency: 0,
-                            critical: 1,
-                            warning: 2,
+                        // ✅ UPDATED: Use donation_status sorting
+                        const donationStatusOrder = {
+                            pending: 0,      // Red - most urgent
+                            in_progress: 1,  // Orange - middle priority
+                            completed: 2,    // Green - least urgent
                         };
 
-                        // Sort by highest urgency first, then by status
+                        // Sort by highest urgency first, then by donation status
                         const aUrgency = a.highest_urgency || "warning";
                         const bUrgency = b.highest_urgency || "warning";
 
@@ -381,7 +392,10 @@ function loadMapData() {
                             );
                         }
 
-                        return statusOrder[a.status] - statusOrder[b.status];
+                        // ✅ UPDATED: Sort by donation_status
+                        const aStatus = a.donation_status || 'pending';
+                        const bStatus = b.donation_status || 'pending';
+                        return donationStatusOrder[aStatus] - donationStatusOrder[bStatus];
                     })
                     .map((barangay) => {
                         const highestUrgency =
@@ -415,8 +429,8 @@ function loadMapData() {
                                             : ""
                                     }
                                 </div>
-                                <span class="status-badge ${barangay.status}">
-                                    ${barangay.status.toUpperCase()}
+                                <span class="status-badge ${barangay.donation_status || 'pending'}">
+                                    ${(barangay.donation_status || 'PENDING').toUpperCase().replace('_', ' ')}
                                 </span>
                             </div>
                         `;

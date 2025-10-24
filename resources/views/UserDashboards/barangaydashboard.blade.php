@@ -39,16 +39,16 @@
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h2 class="text-xl font-semibold text-gray-800">Barangay Status</h2>
+                    <h2 class="text-xl font-semibold text-gray-800">Barangay Donation Status</h2>
                     @php
-                        $status = $barangay->disaster_status ?? 'safe';
+                        // ✅ UPDATED: Use donation_status instead of disaster_status
+                        $status = $barangay->donation_status ?? 'pending';
                         $statusConfig = [
-                            'safe' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'icon' => '✅', 'label' => 'Safe'],
-                            'warning' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700', 'icon' => '⚠️', 'label' => 'Warning'],
-                            'critical' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-700', 'icon' => '🔶', 'label' => 'Critical'],
-                            'emergency' => ['bg' => 'bg-red-100', 'text' => 'text-red-700', 'icon' => '🚨', 'label' => 'Emergency']
+                            'pending' => ['bg' => 'bg-red-100', 'text' => 'text-red-700', 'icon' => '🔴', 'label' => 'Pending'],
+                            'in_progress' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-700', 'icon' => '🟠', 'label' => 'In Progress'],
+                            'completed' => ['bg' => 'bg-green-100', 'text' => 'text-green-700', 'icon' => '🟢', 'label' => 'Completed']
                         ];
-                        $config = $statusConfig[$status] ?? $statusConfig['safe'];
+                        $config = $statusConfig[$status] ?? $statusConfig['pending'];
                     @endphp
                     <span class="inline-block mt-2 px-3 py-1 {{ $config['bg'] }} {{ $config['text'] }} text-sm font-medium rounded">
                         {{ $config['icon'] }} {{ strtoupper($config['label']) }}

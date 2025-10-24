@@ -13,19 +13,19 @@
 
             {{-- Map Legend Overlay --}}
             <div class="map-legend-overlay">
-                <div class="legend-title">📍 Urgency Levels</div>
+                <div class="legend-title">📍 Donation Status</div>
                 <div class="legend-items">
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #f59e0b;"></span>
-                        <span>Warning</span>
+                        <span class="legend-dot" style="background: #ef4444;"></span>
+                        <span>🔴 Pending</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #f97316;"></span>
-                        <span>Critical</span>
+                        <span>🟠 In Progress</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #ef4444;"></span>
-                        <span>Emergency</span>
+                        <span class="legend-dot" style="background: #10b981;"></span>
+                        <span>🟢 Completed</span>
                     </div>
                 </div>
             </div>

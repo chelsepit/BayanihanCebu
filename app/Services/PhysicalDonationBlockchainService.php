@@ -17,7 +17,7 @@ class PhysicalDonationBlockchainService
         $this->adminWallet = env('BLOCKCHAIN_ADMIN_WALLET');
 
         // Load ABI
-        $abiPath = base_path('blockchain-services/artifacts/contracts/DonationRecorder.sol/DonationRecorder.json');
+        $abiPath = base_path('blockchain-services/abi/DonationRecorder.json');
         if (file_exists($abiPath)) {
             $this->abi = json_decode(file_get_contents($abiPath), true);
         }

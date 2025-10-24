@@ -42,7 +42,7 @@ class Barangay extends Model
         'latitude',
         'longitude',
         'status',
-        'disaster_status',
+        'donation_status', // ✅ CHANGED from disaster_status
         'disaster_type',
         'description',
         'contact_person',
@@ -117,26 +117,28 @@ class Barangay extends Model
 
     /**
      * Check if barangay needs help
+     * ✅ UPDATED: Uses donation_status (pending/in_progress need help)
      */
     public function needsHelp()
     {
-        return $this->disaster_status !== 'safe';
+        return in_array($this->donation_status, ['pending', 'in_progress']);
     }
 
     /**
      * Scope to get barangays that need help
+     * ✅ UPDATED: Barangays with pending or in_progress status
      */
     public function scopeNeedsHelp($query)
     {
-        return $query->where('disaster_status', '!=', 'safe');
+        return $query->whereIn('donation_status', ['pending', 'in_progress']);
     }
 
     /**
-     * Scope to get safe barangays
+     * Scope to get barangays that completed their requests
+     * ✅ UPDATED: Renamed from scopeSafe to scopeCompleted
      */
-    public function scopeSafe($query)
+    public function scopeCompleted($query)
     {
-        return $query->where('status', 'safe')
-                     ->orWhere('disaster_status', 'safe');
+        return $query->where('donation_status', 'completed');
     }
 }
