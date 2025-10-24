@@ -39,6 +39,9 @@ class Donation extends Model
         'blockchain_status',
         'blockchain_recorded_at',
         'explorer_url',
+        'verification_status',
+        'verified_at',
+        'disaster_id',
     ];
 
     protected $casts = [
@@ -81,7 +84,17 @@ class Donation extends Model
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-    public function getDonorDisplayNameAttribute()
+    public function disaster()
+    {
+        return $this->belongsTo(Disaster::class);
+    }
+
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function getDonorDisplayName()
     {
         if ($this->is_anonymous) {
             return 'Anonymous Donor';
