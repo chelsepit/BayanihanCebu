@@ -583,7 +583,8 @@
                         </div>
                         <div>
                             <p class="text-gray-600 text-sm">Active Needs</p>
-                            <h3 class="text-3xl font-bold text-gray-900" id="activeNeedsCount">{{ $activeNeedsCount }}</h3>
+                            <h3 class="text-3xl font-bold text-gray-900" id="activeNeedsCount">{{ $activeNeedsCount }}
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -746,7 +747,8 @@
                 </div>
 
                 <!-- Donations Grid -->
-                <div id="donations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display: none;"></div>
+                <div id="donations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -1162,7 +1164,8 @@
     </script>
 
     <!-- Donation Modal -->
-    <div id="donationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" style="display: none;">
+    <div id="donationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        style="display: none;">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative animate-fadeIn">
 
             <!-- Header -->
@@ -1231,8 +1234,9 @@
                             data-method="gcash" onclick="selectPaymentMethod(this)">
                             <div class="h-10 w-10 mb-2 flex items-center justify-center">
                                 <svg viewBox="0 0 48 48" class="h-full w-full">
-                                    <rect fill="#2E7CF6" width="48" height="48" rx="8"/>
-                                    <text x="24" y="32" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">G</text>
+                                    <rect fill="#2E7CF6" width="48" height="48" rx="8" />
+                                    <img src="{{ asset('images/payments/gcash.jpeg') }}" alt="GCash"
+                                        class="payment-logo" border-radius="200px" />
                                 </svg>
                             </div>
                             <span class="text-xs font-medium text-gray-700">GCash</span>
@@ -1242,8 +1246,9 @@
                         <!-- GrabPay -->
                         <div class="payment-option cursor-pointer border-2 border-gray-300 rounded-xl p-3 flex flex-col items-center hover:border-green-500 hover:bg-green-50 transition"
                             data-method="grabpay" onclick="selectPaymentMethod(this)">
-                            <div class="h-10 w-10 mb-2 flex items-center justify-center bg-green-600 rounded-lg">
-                                <span class="text-white font-bold text-lg">Grab</span>
+                            <div class="h-10 w-10 mb-2 flex items-center justify-center bg-green-100 rounded-lg">
+                                <img src="{{ asset('images/payments/grabpay.jpeg') }}" alt="GrabPay"
+                                    class="h-8 w-8 rounded-full" />
                             </div>
                             <span class="text-xs font-medium text-gray-700">GrabPay</span>
                             <span class="text-[10px] text-gray-500 mt-1">E-Wallet</span>
@@ -1252,19 +1257,11 @@
                         <!-- PayMaya -->
                         <div class="payment-option cursor-pointer border-2 border-gray-300 rounded-xl p-3 flex flex-col items-center hover:border-purple-500 hover:bg-purple-50 transition"
                             data-method="paymaya" onclick="selectPaymentMethod(this)">
-                            <div class="h-10 w-10 mb-2 flex items-center justify-center">
-                                <svg viewBox="0 0 48 48" class="h-full w-full">
-                                    <defs>
-                                        <linearGradient id="mayaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" style="stop-color:#00D632;stop-opacity:1" />
-                                            <stop offset="100%" style="stop-color:#00B528;stop-opacity:1" />
-                                        </linearGradient>
-                                    </defs>
-                                    <rect fill="url(#mayaGradient)" width="48" height="48" rx="8"/>
-                                    <text x="24" y="32" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">Maya</text>
-                                </svg>
+                            <div class="h-10 w-10 mb-2 flex items-center justify-center bg-purple-100 rounded-lg">
+                                <img src="{{ asset('images/payments/maya.jpeg') }}" alt="PayMaya"
+                                    class="h-8 w-8 rounded-full" />
                             </div>
-                            <span class="text-xs font-medium text-gray-700">Maya</span>
+                            <span class="text-xs font-medium text-gray-700">PayMaya</span>
                             <span class="text-[10px] text-gray-500 mt-1">E-Wallet</span>
                         </div>
                     </div>
@@ -1370,7 +1367,7 @@
         }
 
         // Handle donation form submission with PayMongo integration
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const donationForm = document.getElementById('donationForm');
 
             if (!donationForm) {
