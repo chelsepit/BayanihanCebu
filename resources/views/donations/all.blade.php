@@ -16,7 +16,12 @@
             --primary-color: #2563eb;
             --secondary-color: #1e40af;
             --success-color: #10b981;
-            --purple-color: #9333ea;
+            --purple-color: #9333ea; /* Kept for reference, but replaced by orange */
+            /* ADDED: New orange color palette */
+            --orange-color: #f97316;       /* Main orange for text */
+            --orange-hover-color: #c2410c; /* Darker orange for hover */
+            --orange-bg-light: #fff7ed;   /* Light orange for badge backgrounds */
+            --orange-border-light: #fed7aa;/* Light orange for badge borders */
             --gray-50: #f9fafb;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -119,7 +124,7 @@
         .icon-wrapper svg {
             width: 2.5rem;
             height: 2.5rem;
-            color: var(--purple-color);
+            color: var(--primary-color);
         }
 
         .page-title {
@@ -269,8 +274,8 @@
         }
 
         .donations-table thead {
-            background: var(--gray-50);
-            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-300);
         }
 
         .donations-table th {
@@ -296,8 +301,12 @@
             transition: background-color 0.2s;
         }
 
+        .donations-table tbody tr:nth-child(even) {
+            background-color: var(--gray-50);
+        }
+
         .donations-table tbody tr:hover {
-            background: var(--gray-50);
+            background: var(--gray-200);
         }
 
         .donations-table td {
@@ -351,10 +360,11 @@
             border: 1px solid;
         }
 
+        /* MODIFIED: Changed physical badge to use orange colors */
         .badge-physical {
-            background: #faf5ff;
-            color: var(--purple-color);
-            border-color: #e9d5ff;
+            background: var(--orange-bg-light);
+            color: var(--orange-color);
+            border-color: var(--orange-border-light);
         }
 
         .badge-monetary {
@@ -412,12 +422,13 @@
             transition: color 0.2s;
         }
 
-        .blockchain-link.purple {
-            color: var(--purple-color);
+        /* MODIFIED: Changed .purple to .orange */
+        .blockchain-link.orange {
+            color: var(--orange-color);
         }
 
-        .blockchain-link.purple:hover {
-            color: #6b21a8;
+        .blockchain-link.orange:hover {
+            color: var(--orange-hover-color);
         }
 
         .blockchain-link.green {
@@ -448,8 +459,9 @@
             margin-top: 0.5rem;
         }
 
-        .blockchain-badge.purple {
-            color: var(--purple-color);
+        /* MODIFIED: Changed .purple to .orange */
+        .blockchain-badge.orange {
+            color: var(--orange-color);
         }
 
         .blockchain-badge.green {
@@ -471,8 +483,9 @@
             font-size: 1.125rem;
         }
 
-        .value-amount.purple {
-            color: var(--purple-color);
+        /* MODIFIED: Changed .purple to .orange */
+        .value-amount.orange {
+            color: var(--orange-color);
         }
 
         .value-amount.green {
@@ -723,8 +736,8 @@
         function createTableRow(donation) {
             const isPhysical = donation.type === 'physical';
             const typeBadgeClass = isPhysical ? 'badge-physical' : 'badge-monetary';
-            const valueClass = isPhysical ? 'purple' : 'green';
-            const linkClass = isPhysical ? 'purple' : 'green';
+            // MODIFIED: This now uses 'orange' instead of 'purple' for physical donations
+            const colorClass = isPhysical ? 'orange' : 'green';
 
             return `
                 <tr>
@@ -764,7 +777,7 @@
                         ` : ''}
                         ${donation.blockchain_tx_hash ? `
                             <div>
-                                <a href="${donation.explorer_url}" target="_blank" class="blockchain-link ${linkClass}">
+                                <a href="${donation.explorer_url}" target="_blank" class="blockchain-link ${colorClass}">
                                     <svg fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                     </svg>
@@ -775,7 +788,7 @@
                                 TX: ${donation.blockchain_tx_hash.substring(0, 30)}...
                             </div>
                         ` : ''}
-                        <div class="blockchain-badge ${valueClass}">
+                        <div class="blockchain-badge ${colorClass}">
                             <svg fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
@@ -784,10 +797,10 @@
                     </td>
                     <td class="whitespace-nowrap text-right">
                         ${isPhysical ? `
-                            <div class="value-amount ${valueClass}">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                            <div class="value-amount ${colorClass}">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
                             <div class="value-label">Est. Value</div>
                         ` : `
-                            <div class="value-amount large ${valueClass}">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                            <div class="value-amount large ${colorClass}">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
                         `}
                     </td>
                 </tr>

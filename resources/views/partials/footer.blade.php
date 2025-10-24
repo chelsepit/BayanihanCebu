@@ -31,13 +31,11 @@
                 <ul>
                     <li>
                         <a href="{{ route('privacy.policy') }}">
-                            <span class="material-symbols-outlined">privacy_tip</span>
                             Privacy Policy
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('terms.of.service') }}">
-                            <span class="material-symbols-outlined">gavel</span>
                             Terms of Service
                         </a>
                     </li>

@@ -8,7 +8,7 @@
 
         {{-- Loading State --}}
         <div id="verified-donations-loading" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             <p class="mt-4 text-gray-600">Loading verified donations...</p>
         </div>
 
@@ -23,8 +23,8 @@
                                 <h3 class="text-lg font-bold text-gray-900">Non-Monetary Donations</h3>
                                 <p class="text-xs text-gray-600 mt-1">In-kind contributions tracked on-chain</p>
                             </div>
-                            <div class="bg-purple-100 p-2 rounded">
-                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="bg-orange-100 p-2 rounded">
+                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                 </svg>
                             </div>
@@ -79,10 +79,12 @@
             </div>
 
             {{-- View All Button --}}
-            <div class="text-center pt-6">
-                <a href="{{ route('donations.all') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            <<div class="text-center m-10 mt-16 pt-6 pb-6">
+                <a href="{{ route('donations.all') }}"
+                   class="inline-flex items-center px-10 py-5 bg-[#C87522] hover:bg-[#a65d1b] !text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                     </svg>
                     View All Transactions
                 </a>
@@ -181,7 +183,7 @@
                     ${donation.blockchain_tx_hash ? `
                         <div class="mt-2">
                             <a href="${donation.explorer_url}" target="_blank"
-                               class="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 font-medium transition">
+                               class="inline-flex items-center text-xs text-orange-600 hover:text-orange-800 font-medium transition">
                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
@@ -191,7 +193,7 @@
                     ` : ''}
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap text-right">
-                    <div class="text-sm font-bold text-purple-600">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
+                    <div class="text-sm font-bold text-orange-600">₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</div>
                     <div class="text-xs text-gray-500">Est. Value</div>
                 </td>
             </tr>
