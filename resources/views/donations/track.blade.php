@@ -116,8 +116,164 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Recent Verified Donations List --}}
+                <div class="mt-12 bg-white rounded-xl shadow-xl p-8" id="recent-donations">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Blockchain-Verified Donations</h2>
+                        <p class="text-gray-600">All donations are recorded on the blockchain for complete transparency</p>
+                    </div>
+
+                    {{-- Loading State --}}
+                    <div id="donations-loading" class="text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
+                        <p class="mt-4 text-gray-600">Loading verified donations...</p>
+                    </div>
+
+                    {{-- Donations Grid --}}
+                    <div id="donations-content" class="hidden">
+                        <div class="grid md:grid-cols-2 gap-8 mb-8">
+                            {{-- Non-Monetary Donations --}}
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Non-Monetary Donations</h3>
+                                <p class="text-sm text-gray-600 mb-4">In-kind contributions tracked on-chain</p>
+                                <div id="physical-donations-list" class="space-y-3">
+                                    {{-- Physical donations will be inserted here --}}
+                                </div>
+                            </div>
+
+                            {{-- Monetary Donations --}}
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Monetary Donations</h3>
+                                <p class="text-sm text-gray-600 mb-4">Financial contributions verified on blockchain</p>
+                                <div id="online-donations-list" class="space-y-3">
+                                    {{-- Online donations will be inserted here --}}
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- View All Button --}}
+                        <div class="text-center pt-6 border-t border-gray-200">
+                            <a href="{{ route('donations.all') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                </svg>
+                                View All Transactions
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        {{-- JavaScript to load donations --}}
+        <script>
+            async function loadRecentDonations() {
+                try {
+                    const response = await fetch('/api/donations/recent-verified');
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error('Failed to load donations');
+                    }
+
+                    displayDonations(data.donations);
+                } catch (error) {
+                    console.error('Error loading donations:', error);
+                    document.getElementById('donations-loading').innerHTML = `
+                        <p class="text-red-600">Failed to load donations. Please try again later.</p>
+                    `;
+                }
+            }
+
+            function displayDonations(donations) {
+                // Hide loading, show content
+                document.getElementById('donations-loading').classList.add('hidden');
+                document.getElementById('donations-content').classList.remove('hidden');
+
+                // Separate donations by type
+                const physicalDonations = donations.filter(d => d.type === 'physical').slice(0, 5);
+                const onlineDonations = donations.filter(d => d.type === 'online').slice(0, 5);
+
+                // Render physical donations
+                const physicalList = document.getElementById('physical-donations-list');
+
+                if (donations.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-2 text-center py-8 text-gray-600">
+                            <p>No verified donations yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = donations.map(donation => {
+                    const isPhysical = donation.type === 'physical';
+                    const statusBadge = donation.blockchain_status === 'confirmed' ?
+                        '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Verified</span>' :
+                        '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800"><svg class="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Pending</span>';
+
+                    return `
+                        <div class="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <a href="/donation/track?tracking_code=${donation.tracking_code}" class="text-blue-600 hover:text-blue-800 font-mono text-sm font-semibold">
+                                        ${donation.tracking_code}
+                                    </a>
+                                    ${statusBadge}
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-xs text-gray-500">${donation.time_ago}</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                ${isPhysical ? `
+                                    <h3 class="text-lg font-bold text-gray-900 mb-1">${donation.category}</h3>
+                                    <p class="text-gray-600 text-sm">${donation.items_description}</p>
+                                    <p class="text-sm text-gray-500 mt-1">Est. Value: ₱${parseFloat(donation.estimated_value).toLocaleString('en-PH', {minimumFractionDigits: 2})}</p>
+                                ` : `
+                                    <h3 class="text-2xl font-bold text-green-600 mb-1">₱${parseFloat(donation.amount).toLocaleString('en-PH', {minimumFractionDigits: 2})}</h3>
+                                    <p class="text-gray-600 text-sm">Monetary • ${donation.payment_method || 'GCash'}</p>
+                                `}
+                            </div>
+
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Donor:</span>
+                                    <span class="font-medium text-gray-900">${donation.donor_name}</span>
+                                </div>
+                                ${donation.blockchain_tx_hash ? `
+                                    <div class="mt-3 pt-3 border-t border-gray-200">
+                                        <a href="${donation.explorer_url}" target="_blank" class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                            </svg>
+                                            View on Blockchain
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1 font-mono truncate" title="${donation.blockchain_tx_hash}">${donation.blockchain_tx_hash.substring(0, 20)}...</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            ${donation.blockchain_status === 'confirmed' ? `
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <div class="flex items-center text-xs text-green-600">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Permanently recorded on blockchain
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Load donations when page loads
+            document.addEventListener('DOMContentLoaded', loadRecentDonations);
+        </script>
     @endif
 
 </body>

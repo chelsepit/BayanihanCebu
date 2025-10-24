@@ -29,12 +29,13 @@ Route::prefix('resident')->group(function () {
 // ==================== DONATION ROUTES (for residents) ====================
 Route::post('/donations', [DonationController::class, 'store']);
 Route::get('/donations/my', [DonationController::class, 'myDonations']);
-Route::get('/donations/{id}', [DonationController::class, 'show']);
+Route::get('/donations/recent-verified', [DonationController::class, 'getRecentVerified']); // Public: Recent verified donations
 Route::post('/donations/track', [DonationController::class, 'track']);
 Route::get('/donations/stats', [DonationController::class, 'getResidentStats']);
 Route::get('/donations', [DonationController::class, 'index']);
 Route::get('/donations/barangay/{barangayId}', [DonationController::class, 'getByBarangay']);
 Route::post('/donations/physical/{id}/verify-blockchain', [DonationController::class, 'verifyPhysicalDonationBlockchain']);
+Route::get('/donations/{id}', [DonationController::class, 'show']);
 // ==================== PAYMENT ROUTES (PayMongo) ====================
 Route::post('/payments/create-intent', [PaymentController::class, 'createPaymentIntent']);
 Route::post('/payments/attach-method', [PaymentController::class, 'attachPaymentMethod']);

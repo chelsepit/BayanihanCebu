@@ -110,7 +110,6 @@ public function trackDonation(Request $request)
             'payment_reference' => $validated['payment_reference'] ?? null,
             'tx_hash' => $validated['tx_hash'] ?? null,
             'wallet_address' => $validated['wallet_address'] ?? null,
-            'verification_status' => 'pending',
             'blockchain_status' => 'pending',
         ]);
 
@@ -162,7 +161,7 @@ public function trackDonation(Request $request)
             'total_barangays' => Barangay::count(),
             // ✅ CHANGED: Affected = pending or in_progress (not completed)
             'affected_barangays' => Barangay::whereIn('donation_status', ['pending', 'in_progress'])->count(),
-            'total_online_donations' => Donation::where('verification_status', 'verified')->sum('amount'),
+            'total_online_donations' => Donation::where('payment_status', 'paid')->sum('amount'),
             'total_physical_donations' => PhysicalDonation::sum('estimated_value'),
             'total_donors' => Donation::distinct('donor_email')->count() + PhysicalDonation::distinct('donor_email')->count(),
             'urgent_needs' => ResourceNeed::whereIn('urgency', ['critical', 'high'])->count(),
