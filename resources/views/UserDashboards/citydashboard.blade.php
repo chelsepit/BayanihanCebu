@@ -2490,14 +2490,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     barangays.forEach(barangay => {
                         if (barangay.lat && barangay.lng) {
+                            // ✅ UPDATED: Use donation_status (with legacy fallback)
+                            const status = barangay.donation_status || barangay.status || barangay.disaster_status || 'pending';
                             const marker = L.marker([barangay.lat, barangay.lng], {
-                                icon: createMapIcon(barangay.status || barangay.disaster_status)
+                                icon: createMapIcon(status)
                             }).addTo(homeMapInstance);
+
+                            // Format status for display
+                            const statusDisplay = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            const statusEmoji = {pending: '🔴', in_progress: '🟠', completed: '🟢'}[status] || '';
 
                             marker.bindPopup(`
                                 <div class="p-2">
                                     <strong class="text-sm">${escapeHtml(barangay.name)}</strong><br>
-                                    <span class="text-xs text-gray-600">Status: ${escapeHtml(barangay.status || barangay.disaster_status)}</span><br>
+                                    <span class="text-xs text-gray-600">Status: ${statusEmoji} ${escapeHtml(statusDisplay)}</span><br>
                                     <span class="text-xs text-gray-600">Affected Families: ${barangay.affected_families || 0}</span>
                                 </div>
                             `);
@@ -2512,14 +2518,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function createMapIcon(status) {
+            // ✅ UPDATED: New donation status colors
+            // 🔴 Red = Pending (nobody checked request yet)
+            // 🟠 Orange = In Progress (help promised, not arrived)
+            // 🟢 Green = Completed (got what they needed)
             const statusColors = {
+                pending: '#ef4444',      // Red
+                in_progress: '#f97316',  // Orange
+                completed: '#10b981',    // Green
+                // Legacy support (will be removed after migration)
                 safe: '#10b981',
                 warning: '#f59e0b',
                 critical: '#f97316',
                 emergency: '#ef4444'
             };
 
-            const color = statusColors[status] || statusColors['safe'];
+            const color = statusColors[status] || statusColors['pending'];
 
             return L.divIcon({
                 className: 'custom-marker-icon',

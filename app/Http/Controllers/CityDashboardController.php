@@ -43,14 +43,17 @@ class CityDashboardController extends Controller
             $physicalDonations = PhysicalDonation::whereNotNull('estimated_value')
                 ->sum('estimated_value');
 
-            $totalAffectedFamilies = Barangay::where('disaster_status', '!=', 'safe')
+            // ✅ UPDATED: Use donation_status instead of disaster_status
+            // Affected = those still needing help (pending or in_progress)
+            $totalAffectedFamilies = Barangay::whereIn('donation_status', ['pending', 'in_progress'])
                 ->sum('affected_families');
 
-            $affectedBarangays = Barangay::where('disaster_status', '!=', 'safe')->count();
+            $affectedBarangays = Barangay::whereIn('donation_status', ['pending', 'in_progress'])->count();
 
-            $activeFundraisers = Barangay::where('disaster_status', '!=', 'safe')->count();
+            $activeFundraisers = Barangay::whereIn('donation_status', ['pending', 'in_progress'])->count();
 
-            $criticalBarangays = Barangay::whereIn('disaster_status', ['critical', 'emergency'])->count();
+            // ✅ UPDATED: Critical = those with pending requests (nobody checked yet)
+            $criticalBarangays = Barangay::where('donation_status', 'pending')->count();
 
             $totalDonors = Donation::whereIn('status', ['confirmed', 'distributed', 'completed'])
                 ->distinct('donor_email')
@@ -81,16 +84,17 @@ class CityDashboardController extends Controller
      * Get all barangays for map - UPDATED TO USE RESOURCE_NEEDS
      */
    /**
- * Get all barangays for LDRRMO map - Shows ALL barangays (including Safe)
+ * Get all barangays for LDRRMO map - Shows ALL barangays
+ * ✅ UPDATED: Uses donation_status instead of disaster_status
  */
 public function getBarangaysMapData()
 {
     $barangays = Barangay::select([
         'barangay_id',
-        'name', 
-        'disaster_status as status',
+        'name',
+        'donation_status', // ✅ CHANGED: from disaster_status
         'affected_families',
-        'latitude as lat', 
+        'latitude as lat',
         'longitude as lng'
     ])
     ->with(['resourceNeeds' => function($query) {
@@ -146,11 +150,11 @@ public function getBarangaysMapData()
                 ->limit(10)
                 ->get();
 
-            // Disaster Status Distribution
-            $disasterStatusDistribution = Barangay::select('disaster_status', DB::raw('count(*) as count'))
-                ->groupBy('disaster_status')
+            // ✅ UPDATED: Donation Status Distribution (was Disaster Status Distribution)
+            $donationStatusDistribution = Barangay::select('donation_status', DB::raw('count(*) as count'))
+                ->groupBy('donation_status')
                 ->get()
-                ->pluck('count', 'disaster_status')
+                ->pluck('count', 'donation_status')
                 ->toArray();
 
             // Affected Families by Barangay
@@ -200,7 +204,7 @@ public function getBarangaysMapData()
 
             return response()->json([
                 'donations_by_barangay' => $donationsByBarangay,
-                'disaster_status_distribution' => $disasterStatusDistribution,
+                'donation_status_distribution' => $donationStatusDistribution, // ✅ CHANGED from disaster_status_distribution
                 'affected_families_by_barangay' => $affectedFamiliesByBarangay,
                 'payment_method_distribution' => $paymentMethodDistribution,
                 'resource_needs_count' => $activeResourceNeeds,
@@ -238,8 +242,8 @@ public function getBarangaysMapData()
                 return [
                     'barangay_id' => $barangay->barangay_id,
                     'name' => $barangay->name,
-                    'status' => $barangay->disaster_status,
-                    'disaster_type' => $barangay->disaster_type,
+                    'donation_status' => $barangay->donation_status, // ✅ CHANGED from disaster_status
+                    'disaster_type' => $barangay->disaster_type, // Keep for historical context
                     'affected_families' => $barangay->affected_families ?? 0,
                     'donations_received' => $onlineDonations + $physicalDonations,
                     'online_donations' => $onlineDonations,
@@ -299,7 +303,7 @@ public function getBarangaysMapData()
             return response()->json([
                 'barangay' => $barangay,
                 'current_situation' => [
-                    'status' => $barangay->disaster_status,
+                    'donation_status' => $barangay->donation_status, // ✅ CHANGED from disaster_status
                     'disaster_type' => $barangay->disaster_type,
                     'description' => $barangay->needs_summary,
                     'affected_families' => $barangay->affected_families,
@@ -326,13 +330,14 @@ public function getBarangaysMapData()
     }
 
     /**
-     * Update barangay disaster status
+     * Update barangay donation status
+     * ✅ UPDATED: Changed from disaster_status to donation_status
      */
     public function updateBarangayStatus(Request $request, $barangayId)
     {
         try {
             $validated = $request->validate([
-                'disaster_status' => 'required|in:safe,warning,critical,emergency',
+                'donation_status' => 'required|in:pending,in_progress,completed', // ✅ CHANGED
                 'affected_families' => 'sometimes|integer|min:0',
                 'needs_summary' => 'nullable|string|max:1000'
             ]);
@@ -342,14 +347,14 @@ public function getBarangaysMapData()
 
             return response()->json([
                 'success' => true,
-                'message' => 'Barangay status updated successfully',
+                'message' => 'Barangay donation status updated successfully', // ✅ UPDATED message
                 'data' => $barangay
             ]);
         } catch (\Exception $e) {
-            Log::error('Error updating barangay status: ' . $e->getMessage());
+            Log::error('Error updating barangay donation status: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating barangay status',
+                'message' => 'Error updating barangay donation status',
                 'error' => $e->getMessage()
             ], 500);
         }
