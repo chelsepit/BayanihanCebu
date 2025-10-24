@@ -64,6 +64,15 @@ Route::get('/donation/success/{trackingCode}', [PublicMapController::class, 'don
 Route::get('/api/statistics', [PublicMapController::class, 'statistics'])->name('api.statistics');
 Route::get('/api/barangays', [PublicMapController::class, 'apiBarangays'])->name('api.barangays');
 
+// Public Legal Pages
+Route::get('/privacy-policy', function () {
+    return view('public.privacy-policy');
+})->name('privacy.policy');
+
+Route::get('/terms-of-service', function () {
+    return view('public.terms-of-service');
+})->name('terms.of.service');
+
 // ==================== PROTECTED ROUTES ====================
 
 // Get current user info (all authenticated users)
