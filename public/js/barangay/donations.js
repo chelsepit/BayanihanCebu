@@ -145,7 +145,12 @@ async function loadOnlineDonations() {
 
                 let actionButton = '';
                 if (donation.verification_status === 'pending') {
-                    actionButton = '<button onclick="openVerificationModal(' + donation.id + ')" class="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>';
+                    // Only show verify button if blockchain verified, otherwise show both buttons
+                    if (donation.blockchain_verified) {
+                        actionButton = '<button onclick="autoVerifyBlockchainDonation(' + donation.id + ')" class="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Auto-Verify</button>';
+                    } else {
+                        actionButton = '<button onclick="openVerificationModal(' + donation.id + ')" class="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>';
+                    }
                 } else if (donation.verification_status === 'verified') {
                     actionButton = '<span class="text-xs text-gray-500">Verified</span>';
                 } else {
@@ -238,6 +243,33 @@ async function confirmVerification(action) {
         }
     } catch (error) {
         console.error('Error verifying donation:', error);
+        alert('Failed to verify donation. Please try again.');
+    }
+}
+
+/**
+ * Auto-verify a donation that is already blockchain verified
+ * @param {number} donationId - The donation ID
+ */
+async function autoVerifyBlockchainDonation(donationId) {
+    if (!confirm('This donation is already verified on the blockchain.\n\nWould you like to mark it as verified?')) {
+        return;
+    }
+
+    try {
+        const response = await fetchAPI(`/api/bdrrmc/donations/${donationId}/verify`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'verify' })
+        });
+
+        if (response.success) {
+            alert('✅ Donation verified successfully!');
+            loadOnlineDonations(); // Reload the list
+        } else {
+            alert('Error: ' + response.message);
+        }
+    } catch (error) {
+        console.error('Error auto-verifying donation:', error);
         alert('Failed to verify donation. Please try again.');
     }
 }

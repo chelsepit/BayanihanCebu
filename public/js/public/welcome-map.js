@@ -466,14 +466,21 @@ function loadHeroStatistics() {
     fetch("/api/statistics")
         .then((response) => response.json())
         .then((stats) => {
+            // Total Donations: Blockchain-verified donations only
             document.getElementById("heroTotalDonations").textContent =
                 formatCurrency(stats.total_donations || 0);
+
+            // Families Affected: Sum of all barangays
             document.getElementById("heroAffectedFamilies").textContent =
                 formatNumber(stats.total_affected_families || 0);
-            document.getElementById("heroVerifiedTransactions").textContent =
-                formatNumber(stats.total_donors || 0);
-            document.getElementById("heroActiveFundraisers").textContent =
-                formatNumber(stats.barangays_affected || 0);
+
+            // Active Family Needs: Verified resource needs
+            document.getElementById("heroActiveFamilyNeeds").textContent =
+                formatNumber(stats.active_family_needs || 0);
+
+            // Active Matches: Accepted matches from LDRRMO
+            document.getElementById("heroActiveMatches").textContent =
+                formatNumber(stats.active_matches || 0);
         })
         .catch((error) => {
             console.error("Error loading hero statistics:", error);
