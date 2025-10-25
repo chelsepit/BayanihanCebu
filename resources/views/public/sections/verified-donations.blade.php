@@ -159,10 +159,9 @@
         return `
             <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-4 py-4 whitespace-nowrap">
-                    <a href="/donation/track?tracking_code=${donation.tracking_code}"
-                       class="font-mono text-xs font-medium text-blue-600 hover:text-blue-800 transition">
+                    <span class="font-mono text-xs font-medium text-blue-600 hover:text-blue-800 transition">
                         ${donation.tracking_code}
-                    </a>
+                    </span>
                     <div class="flex items-center mt-1">
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
