@@ -133,17 +133,46 @@ public function trackDonation(Request $request)
 
     /**
      * Get statistics for the map
-     * ✅ UPDATED: Uses donation_status instead of disaster_status
+     * ✅ UPDATED: Shows blockchain-verified donations, all affected families, active needs, and active matches
      */
     public function statistics()
     {
+        // Total Donations: Only blockchain-verified donations (both online and physical)
+        $totalOnlineVerified = Donation::where('blockchain_status', 'confirmed')
+            ->whereNotNull('blockchain_tx_hash')
+            ->sum('amount');
+
+        $totalPhysicalVerified = PhysicalDonation::where('blockchain_status', 'confirmed')
+            ->whereNotNull('blockchain_tx_hash')
+            ->sum('estimated_value');
+
+        $totalDonations = $totalOnlineVerified + $totalPhysicalVerified;
+
+        // Total Affected Families: Sum from all barangays
+        $totalAffectedFamilies = Barangay::sum('affected_families');
+
+        // Active Family Needs: Count all verified (not fulfilled) resource needs
+        $activeFamilyNeeds = ResourceNeed::where('status', '!=', 'fulfilled')
+            ->where('verification_status', 'verified')
+            ->count();
+
+        // Active Matches: Count accepted matches from LDRRMO
+        $activeMatches = \App\Models\ResourceMatch::where('status', 'accepted')->count();
+
         $stats = [
+            'total_donations' => $totalDonations, // Only blockchain-verified
+            'total_affected_families' => $totalAffectedFamilies, // Sum of all barangays
+            'active_family_needs' => $activeFamilyNeeds, // Verified resource needs
+            'active_matches' => $activeMatches, // Active matches
+
+            // Legacy fields (for backwards compatibility)
             'total_barangays' => Barangay::count(),
-            // ✅ CHANGED: Affected = pending or in_progress (not completed)
             'affected_barangays' => Barangay::whereIn('donation_status', ['pending', 'in_progress'])->count(),
-            'total_online_donations' => Donation::where('payment_status', 'paid')->sum('amount'),
-            'total_physical_donations' => PhysicalDonation::sum('estimated_value'),
-            'total_donors' => Donation::distinct('donor_email')->count() + PhysicalDonation::distinct('donor_email')->count(),
+            'total_online_donations' => $totalOnlineVerified,
+            'total_physical_donations' => $totalPhysicalVerified,
+            // Count blockchain-verified donations (since emails are often NULL)
+            'total_donors' => Donation::where('blockchain_status', 'confirmed')->whereNotNull('blockchain_tx_hash')->count() +
+                              PhysicalDonation::where('blockchain_status', 'confirmed')->whereNotNull('blockchain_tx_hash')->count(),
             'urgent_needs' => ResourceNeed::whereIn('urgency', ['critical', 'high'])->count(),
         ];
 

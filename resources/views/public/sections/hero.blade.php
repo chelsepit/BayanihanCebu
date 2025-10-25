@@ -3,7 +3,7 @@
     <div class="hero-header">
         <div class="hero-logo">
             <div class="logo-icon">
-                <img src="{{ Vite::asset('resources/images/logo-icon.png') }}" alt="Logo Icon" class="w-30 mx-auto mb-5">
+<img src="{{ asset('images/logo-icon.png') }}" alt="Logo Icon" class="w-30 mx-auto mb-5">
             </div>
 
             <div class="logo-text">
@@ -47,12 +47,12 @@
                 <div class="stat-label">Families Affected</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="heroVerifiedTransactions">0</div>
-                <div class="stat-label">Verified Transactions</div>
+                <div class="stat-number" id="heroActiveFamilyNeeds">0</div>
+                <div class="stat-label">Active Family Needs</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="heroActiveFundraisers">0</div>
-                <div class="stat-label">Active Fundraisers</div>
+                <div class="stat-number" id="heroActiveMatches">0</div>
+                <div class="stat-label">Active Matches</div>
             </div>
         </div>
     </div>

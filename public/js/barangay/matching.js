@@ -536,6 +536,15 @@ function displayActiveMatches(matches) {
             }
 
             <div class="flex gap-2 justify-end">
+                ${
+                    role === "requester"
+                        ? `
+                    <button onclick="event.stopPropagation(); markMatchAsComplete(${match.id})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                        <i class="fas fa-check-circle mr-2"></i>Mark as Complete
+                    </button>
+                `
+                        : ""
+                }
                 <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold">
                     <i class="fas fa-comments mr-2"></i>Open Conversation
                 </button>
@@ -777,6 +786,41 @@ async function submitReject() {
     } catch (error) {
         console.error("Error rejecting match:", error);
         alert("Failed to reject match. Please try again.");
+    }
+}
+
+/**
+ * Marks a match as complete (only for requesting barangay)
+ * @async
+ * @param {number} matchId - The ID of the match
+ * @returns {Promise<void>}
+ */
+async function markMatchAsComplete(matchId) {
+    if (!confirm('Are you sure you want to mark this match as complete?\n\nThis confirms that you have received the donation from the donor barangay.')) {
+        return;
+    }
+
+    try {
+        const response = await fetchAPI(`/api/bdrrmc/matches/${matchId}/complete`, {
+            method: 'POST'
+        });
+
+        if (response.success) {
+            alert('✅ Match marked as complete!\n\nThe donation has been successfully recorded.');
+
+            // Reload active matches to update the UI
+            loadActiveMatches();
+
+            // Also reload stats if available
+            if (typeof loadStats === 'function') {
+                loadStats();
+            }
+        } else {
+            alert('Error: ' + (response.message || 'Failed to complete match'));
+        }
+    } catch (error) {
+        console.error('Error marking match as complete:', error);
+        alert('Failed to mark match as complete. Please try again.');
     }
 }
 
