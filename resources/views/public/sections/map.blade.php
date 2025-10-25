@@ -79,7 +79,7 @@
                     Quick Actions
                 </div>
                 <div class="quick-actions">
-                    <a href="#donate" class="action-btn action-btn-primary">
+                    <a href="{{ route('login') }}" class="action-btn action-btn-primary">
                         ❤️ Make a Donation
                     </a>
                     <a href="#track" class="action-btn action-btn-secondary">

@@ -20,7 +20,7 @@
                 <h2>Transparent Disaster Relief for Cebu</h2>
                 <p>Every donation is tracked on the blockchain. Every peso reaches those in need. Join us in building a more transparent and efficient disaster relief system.</p>
                 <div class="hero-buttons">
-                    <a href="#donate" class="btn btn-donate">
+                    <a href={{ route('login') }} class="btn btn-donate">
                         ❤️ Donate Now
                     </a>
                     <a href="#track" class="btn btn-track">
