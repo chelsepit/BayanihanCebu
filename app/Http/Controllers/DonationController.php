@@ -67,6 +67,7 @@ class DonationController extends Controller
                 'donor_email' => $validated['donor_email'] ?? null,
                 'donor_phone' => $validated['donor_phone'] ?? null,
                 'is_anonymous' => $validated['is_anonymous'] ?? false,
+                'payment_method' => $validated['payment_method'], // Fixed: Save payment method
                 'payment_status' => 'pending',
                 'status' => 'pending',
             ]);
@@ -173,6 +174,7 @@ class DonationController extends Controller
                 'donor_email' => $validated['donor_email'] ?? null,
                 'donor_phone' => $validated['donor_phone'] ?? null,
                 'is_anonymous' => $validated['is_anonymous'] ?? false,
+                'payment_method' => $validated['payment_method'], // Fixed: Save payment method
                 'payment_status' => 'pending',
                 'status' => 'pending',
             ]);
@@ -289,10 +291,13 @@ class DonationController extends Controller
 
                     if ($isPaid) {
                         // Found the paid donation!
+                        $paymentMethodUsed = $session['attributes']['payment_method_used'] ?? null;
+
                         $donation->update([
                             'payment_status' => 'paid',
                             'status' => 'confirmed',
                             'payment_id' => $paymentId,
+                            'payment_method' => $paymentMethodUsed, // Save payment method
                             'paid_at' => now(),
                         ]);
 
@@ -300,6 +305,7 @@ class DonationController extends Controller
                             'donation_id' => $donation->id,
                             'tracking_code' => $donation->tracking_code,
                             'amount' => $donation->amount,
+                            'payment_method' => $paymentMethodUsed,
                         ]);
 
                         // Dispatch blockchain recording job
@@ -365,10 +371,13 @@ class DonationController extends Controller
 
             if ($paymentStatus === 'paid') {
                 // Payment confirmed - update donation
+                $paymentMethodUsed = $session['attributes']['payment_method_used'] ?? null;
+
                 $donation->update([
                     'payment_status' => 'paid',
                     'status' => 'confirmed',
                     'payment_id' => $session['attributes']['payments'][0]['id'] ?? null,
+                    'payment_method' => $paymentMethodUsed, // Save payment method
                     'paid_at' => now(),
                 ]);
 
@@ -376,6 +385,7 @@ class DonationController extends Controller
                     'donation_id' => $donation->id,
                     'tracking_code' => $donation->tracking_code,
                     'amount' => $donation->amount,
+                    'payment_method' => $paymentMethodUsed,
                 ]);
 
                 // Dispatch blockchain recording job
@@ -575,11 +585,26 @@ class DonationController extends Controller
             }
 
             DB::transaction(function () use ($donation, $attributes) {
+                // Try to get payment method from session
+                $paymentMethodUsed = null;
+                if ($donation->payment_session_id) {
+                    try {
+                        $session = $this->paymongo->getCheckoutSession($donation->payment_session_id);
+                        $paymentMethodUsed = $session['attributes']['payment_method_used'] ?? null;
+                    } catch (\Exception $e) {
+                        Log::warning('Could not fetch payment method from session', [
+                            'donation_id' => $donation->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
                 // Update donation status
                 $donation->update([
                     'payment_status' => 'paid',
                     'status' => 'confirmed',
                     'payment_id' => $attributes['payment_id'] ?? null,
+                    'payment_method' => $paymentMethodUsed, // Save payment method
                     'paid_at' => now(),
                 ]);
 
@@ -587,6 +612,7 @@ class DonationController extends Controller
                     'donation_id' => $donation->id,
                     'tracking_code' => $donation->tracking_code,
                     'amount' => $donation->amount,
+                    'payment_method' => $paymentMethodUsed,
                 ]);
 
                 // 🔥 AUTOMATIC BLOCKCHAIN RECORDING 🔥

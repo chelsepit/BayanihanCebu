@@ -402,11 +402,11 @@ public function completeMatch(Request $request, $matchId)
             'donatingBarangay'
         ])->findOrFail($matchId);
 
-        // Verify this barangay is a participant
-        if (!in_array($barangayId, [$match->requesting_barangay_id, $match->donating_barangay_id])) {
+        // ONLY the requesting barangay (receiver) can mark as complete
+        if ($barangayId !== $match->requesting_barangay_id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized'
+                'message' => 'Only the receiving barangay can mark this match as complete'
             ], 403);
         }
 
@@ -706,7 +706,7 @@ public function recordDonation(Request $request)
                 return [
                     'id' => $donation->id,
                     'tracking_code' => $donation->tracking_code,
-                    'donor_name' => $donation->donor_display_name,
+                    'donor_name' => $donation->getDonorDisplayName(), // Fixed: Call as method
                     'donor_email' => $donation->is_anonymous ? null : $donation->donor_email,
                     'amount' => $donation->amount,
                     'payment_method' => $donation->payment_method,
@@ -1169,15 +1169,23 @@ public function recordDonation(Request $request)
                 'rejection_reason' => 'required_if:action,reject|max:500'
             ]);
 
+            // Prevent rejection of blockchain-verified donations (ONLY for reject action)
+            if ($request->action === 'reject' && $donation->blockchain_status === 'confirmed' && $donation->blockchain_tx_hash) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot reject a donation that has been recorded on the blockchain. The blockchain serves as immutable proof of this payment.'
+                ], 400);
+            }
+
             if ($request->action === 'verify') {
                 $donation->verification_status = 'verified';
-                $donation->verified_by = $userId; // Fixed: use user_id instead of barangay_id
+                $donation->verified_by = $userId;
                 $donation->verified_at = now();
                 $donation->status = 'confirmed';
                 $message = 'Donation verified successfully';
             } else {
                 $donation->verification_status = 'rejected';
-                $donation->verified_by = $userId; // Fixed: use user_id instead of barangay_id
+                $donation->verified_by = $userId;
                 $donation->verified_at = now();
                 $donation->rejection_reason = $request->rejection_reason;
                 $message = 'Donation rejected';

@@ -106,12 +106,13 @@ class Barangay extends Model
     }
 
     /**
-     * Get total raised from donations
+     * Get total raised from blockchain-verified donations only
      */
     public function getTotalRaisedAttribute()
     {
         return $this->donations()
-            ->whereIn('status', ['confirmed', 'distributed', 'completed'])
+            ->where('blockchain_status', 'confirmed')
+            ->whereNotNull('blockchain_tx_hash')
             ->sum('amount');
     }
 

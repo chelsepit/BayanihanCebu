@@ -1,0 +1,33 @@
+/**
+ * LDRRMO City Dashboard - Layout Styles
+ * General layout, containers, and base styles
+ */
+
+/* Tab System */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-btn.active {
+    border-bottom: 3px solid #CA6702;
+    color: #CA6702;
+}
+
+/* Error Messages */
+.error-message {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+/* Ensure no horizontal scroll */
+#map-tab {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
