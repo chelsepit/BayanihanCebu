@@ -130,17 +130,17 @@
 
                     @php
                         $accounts = [
-                            'Apas' => 'bdrrmcCC001@bayanihancebu.com',
-                            'Basak Pardo' => 'bdrrmcCC002@bayanihancebu.com',
-                            'Basak San Nicolas' => 'bdrrmcCC003@bayanihancebu.com',
-                            'Busay' => 'bdrrmcCC004@bayanihancebu.com',
-                            'Capitol Site' => 'bdrrmcCC005@bayanihancebu.com',
-                            'Mabolo' => 'bdrrmcCC006@bayanihancebu.com',
-                            'Tisa' => 'bdrrmcCC007@bayanihancebu.com',
-                            'Guadalupe' => 'bdrrmcCC008@bayanihancebu.com',
-                            'Bambad' => 'bdrrmcCC009@bayanihancebu.com',
-                            'Talamban' => 'bdrrmcCC010@bayanihancebu.com',
-                            'Lahug' => 'bdrrmcCC011@bayanihancebu.com',
+                            'Apas' => 'bdrrmc.CC001@bayanihancebu.com',
+                            'Basak Pardo' => 'bdrrmc.CC002@bayanihancebu.com',
+                            'Basak San Nicolas' => 'bdrrmc.CC003@bayanihancebu.com',
+                            'Busay' => 'bdrrmc.CC004@bayanihancebu.com',
+                            'Capitol Site' => 'bdrrmc.CC005@bayanihancebu.com',
+                            'Mabolo' => 'bdrrmc.CC006@bayanihancebu.com',
+                            'Tisa' => 'bdrrmc.CC007@bayanihancebu.com',
+                            'Guadalupe' => 'bdrrmc.CC008@bayanihancebu.com',
+                            'Bambad' => 'bdrrmc.CC009@bayanihancebu.com',
+                            'Talamban' => 'bdrrmc.CC010@bayanihancebu.com',
+                            'Lahug' => 'bdrrmc.CC011@bayanihancebu.com',
                         ];
                     @endphp
 

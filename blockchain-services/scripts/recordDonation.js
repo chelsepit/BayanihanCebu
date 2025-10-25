@@ -1,7 +1,7 @@
 const { ethers } = require("ethers");
 const path = require('path');
 const fs = require('fs');
-require("dotenv").config({ path: path.join(__dirname, '../.env') });
+require("dotenv").config({ path: path.join(__dirname, '../.env'), override: true });
 
 const [,, trackingCode, amount, barangay, donationTypeInput, offChainHashInput] = process.argv;
 
@@ -47,8 +47,14 @@ async function main() {
       process.exit(1);
     }
 
-    // Resolve ABI path relative to the blockchain-services directory
-    const abiPath = path.join(__dirname, '..', CONTRACT_ABI_PATH);
+    // Resolve ABI path relative to the blockchain-services directory, with fallback to default ABI
+    let abiPath = path.join(__dirname, '..', CONTRACT_ABI_PATH || 'abi/DonationRecorder.json');
+    if (!fs.existsSync(abiPath)) {
+      // Fallback to known default location
+      const fallback = path.join(__dirname, '..', 'abi', 'DonationRecorder.json');
+      console.warn(`⚠️ ABI not found at ${abiPath}. Falling back to: ${fallback}`);
+      abiPath = fallback;
+    }
     console.log(`📄 Loading ABI from: ${abiPath}`);
     const abi = JSON.parse(fs.readFileSync(abiPath, "utf8"));
     console.log(`✅ Loaded ABI with ${abi.length} functions`);

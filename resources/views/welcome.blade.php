@@ -10,8 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="{{ asset('js/simple-realtime.js') }}"></script>
-
+    
     <!-- External CSS -->
     <link rel="stylesheet" href="{{ asset('css/public/welcome.css') }}">
 </head>

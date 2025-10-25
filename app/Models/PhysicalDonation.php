@@ -40,6 +40,9 @@ class PhysicalDonation extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected $appends = ['explorer_url'];
+
+
     // Relationship: belongs to a barangay
     public function barangay()
     {
@@ -135,7 +138,17 @@ class PhysicalDonation extends Model
             default => 'gray'
         };
     }
-
+/**
+ * Get the blockchain explorer URL
+ */
+public function getExplorerUrlAttribute(): ?string
+{
+    if (!$this->blockchain_tx_hash) {
+        return null;
+    }
+    
+    return "https://sepolia-blockscout.lisk.com/tx/{$this->blockchain_tx_hash}";
+}
     /**
      * Get verification status label
      */

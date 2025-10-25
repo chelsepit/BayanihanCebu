@@ -837,7 +837,7 @@ class DonationController extends Controller
 
         // Get recent physical donations
         $physicalDonations = \App\Models\PhysicalDonation::with('barangay')
-            ->where('blockchain_status', 'confirmed')
+            ->where('verification_status', 'verified')
             ->whereNotNull('blockchain_tx_hash')
             ->orderBy('blockchain_recorded_at', 'desc')
             ->limit(10)
