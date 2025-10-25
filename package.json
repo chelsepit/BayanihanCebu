@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "serve": "php artisan serve",
-    "start": "concurrently \"php artisan serve\" \"npm run dev\" \"start-queue-worker.bat\"",
+    "start": "concurrently \"php artisan serve --port=8001\" \"npm run dev\" \"start-queue-worker.bat\"",
     "prepare": "husky"
   },
   "devDependencies": {
