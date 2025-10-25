@@ -17,15 +17,15 @@
                 <div class="legend-items">
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #ef4444;"></span>
-                        <span>🔴 Pending</span>
+                        <span> Pending</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #f97316;"></span>
-                        <span>🟠 In Progress</span>
+                        <span> In Progress</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-dot" style="background: #10b981;"></span>
-                        <span>🟢 Completed</span>
+                        <span> Completed</span>
                     </div>
                 </div>
             </div>

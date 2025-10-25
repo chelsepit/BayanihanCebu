@@ -105,6 +105,23 @@
         </div>
     </div>
 
+   <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+    <p class="text-xs font-semibold text-gray-700 mb-2">List of Accounts:</p>
+    <div class="text-xs text-gray-600 space-y-0.5 text-left">
+        <p><span class="font-medium">Ldrrmo:</span> ldrrmo@cebu.gov.ph <span class="font-medium">Pass:</span>ldrrmo123</p>
+        <p><span class="font-medium">BDRRMC (Apas):</span> bdrrmcCC001.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Basak Pardo):</span> bdrrmcCC002.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Basak San Nicolas):</span> bdrrmcCC003.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Busay):</span> bdrrmcCC004.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Capitol Site):</span> bdrrmcCC005.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Mabolo):</span> bdrrmcCC006.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Tisa):</span> bdrrmcCC007.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Guadalupe):</span> bdrrmcCC008.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Bambad):</span> bdrrmcCC009.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Talamban):</span> bdrrmcCC010.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+        <p><span class="font-medium">BDRRMC (Lahug):</span> bdrrmcCC011.bayanihancebu.com <span class="font-medium">Pass:</span>bdrrmc123</p>
+     </div>
+
     <script>
         // Toggle password visibility
         function togglePassword(inputId, iconId) {
