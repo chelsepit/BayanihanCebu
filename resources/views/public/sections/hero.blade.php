@@ -3,7 +3,7 @@
     <div class="hero-header">
         <div class="hero-logo">
             <div class="logo-icon">
-                <img src="{{ Vite::asset('resources/images/logo-icon.png') }}" alt="Logo Icon" class="w-30 mx-auto mb-5">
+<img src="{{ asset('images/logo-icon.png') }}" alt="Logo Icon" class="w-30 mx-auto mb-5">
             </div>
 
             <div class="logo-text">
